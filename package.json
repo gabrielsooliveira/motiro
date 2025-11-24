@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite"
+  },
+  "devDependencies": {
+    "axios": "^1.11.0",
+    "concurrently": "^9.0.1",
+    "laravel-vite-plugin": "^2.0.0",
+    "sass": "^1.93.2",
+    "vite": "^7.0.7"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@fortawesome/free-brands-svg-icons": "^6.6.0",
+    "@fortawesome/free-regular-svg-icons": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/vue-fontawesome": "^3.0.8",
+    "@inertiajs/vue3": "^2.2.13",
+    "@popperjs/core": "^2.11.8",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "bootstrap": "^5.3.3",
+    "chart.js": "^3.9.1",
+    "vue-chart-3": "^3.1.8"
+  }
+}
