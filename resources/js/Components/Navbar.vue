@@ -37,20 +37,18 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <nav
-        class="navbar navbar-expand-lg navbar-light bg-light shadow-sm fixed-top z-1"
-    >
+    <nav class="navbar navbar-expand-lg bg-dark shadow-sm fixed-top z-1">
         <div class="container-fluid">
             <!-- Logo -->
             <Link
-                class="navbar-brand fw-semibold text-primary title-page"
-                :href="route('index')"
+                class="navbar-brand fw-semibold text-white title-page"
+                :href="route('home')"
                 >Motirõ</Link
             >
 
             <!-- Botão toggle -->
             <button
-                class="btn d-lg-none border-0"
+                class="btn d-lg-none text-white border-0"
                 type="button"
                 @click="toggleMenu"
             >
@@ -65,7 +63,7 @@ onBeforeUnmount(() => {
                     <li class="nav-item">
                         <Link
                             class="nav-link"
-                            :href="route('index')"
+                            :href="route('home')"
                             :class="{
                                 'link-secondary': $page.url === '/',
                             }"
@@ -73,14 +71,22 @@ onBeforeUnmount(() => {
                         >
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Hackathons</a>
+                        <Link
+                            class="nav-link"
+                            :href="route('hackathons.index')"
+                            :class="{
+                                'link-secondary':
+                                    route().current('hackathons.*'),
+                            }"
+                            >Hackathons</Link
+                        >
                     </li>
                 </ul>
                 <template v-if="user">
                     <div class="d-flex align-items-center">
                         <div class="dropdown ms-auto">
                             <a
-                                class="nav-link dropdown-toggle d-flex align-items-center"
+                                class="nav-link link-light dropdown-toggle d-flex align-items-center"
                                 href="#"
                                 id="userDropdown"
                                 role="button"
@@ -165,7 +171,7 @@ onBeforeUnmount(() => {
                 <li class="nav-item">
                     <Link
                         class="nav-link"
-                        :href="route('index')"
+                        :href="route('home')"
                         @click="closeMenu"
                         :class="{
                             'link-secondary': $page.url === '/',
@@ -174,8 +180,14 @@ onBeforeUnmount(() => {
                     >
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" @click="closeMenu"
-                        >Hackathons</a
+                    <Link
+                        class="nav-link"
+                        :href="route('hackathons.index')"
+                        @click="closeMenu"
+                        :class="{
+                            'link-secondary': route().current('hackathons.*'),
+                        }"
+                        >Hackathons</Link
                     >
                 </li>
                 <template v-if="user">
