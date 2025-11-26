@@ -14,7 +14,7 @@ onMounted(() => {
     timer = setInterval(() => {
         index.value = (index.value + 1) % props.words.length;
         currentWord.value = props.words[index.value];
-    }, 5000);
+    }, 2200);
 });
 
 onBeforeUnmount(() => {

@@ -12,7 +12,7 @@ defineProps({
 </script>
 
 <template>
-    <div class="position-relative mb-5">
+    <div class="position-relative mb-1">
         <!-- Banner de fundo -->
         <div
             class="overflow-hidden rounded-5 rounded-bottom-0"
@@ -27,7 +27,7 @@ defineProps({
 
         <!-- Conteúdo sobre o banner -->
         <div
-            class="position-absolute bottom-0 start-0 mb-4 ms-4 d-flex align-items-center gap-3"
+            class="position-absolute bottom-0 start-0 mb-3 ms-3 d-flex align-items-center gap-3 px-3"
         >
             <!-- Logo/Avatar -->
 
@@ -35,11 +35,11 @@ defineProps({
                 :src="hackathon.logo"
                 alt="Hackathon Logo"
                 class="object-fit-contain bg-white rounded-circle border"
-                height="80"
+                height="95"
             />
 
             <!-- Título + tags -->
-            <div class="text-white">
+            <div class="text-white ms-3">
                 <h1 class="fw-bold mb-1">{{ hackathon.title }}</h1>
                 <div class="d-flex flex-wrap gap-2">
                     <span
@@ -56,13 +56,3 @@ defineProps({
         </div>
     </div>
 </template>
-
-<style scoped>
-.object-fit-cover {
-    object-fit: cover;
-}
-
-.object-fit-contain {
-    object-fit: contain;
-}
-</style>
