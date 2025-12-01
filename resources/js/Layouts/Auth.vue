@@ -1,9 +1,15 @@
+<script setup>
+import Toast from "@/js/Components/Toast.vue";
+</script>
+
 <template>
     <div
-        class="min-vh-100 d-flex align-items-center justify-content-center bg-light"
+        class="d-flex justify-content-center align-items-center bg-primary bg-gradient py-3 min-vh-100"
     >
-        <div class="auth-container rounded-4 shadow-sm p-4 p-md-5 bg-white">
-            <slot></slot>
+        <div class="card p-5 shadow-lg rounded-4">
+            <slot />
         </div>
     </div>
+
+    <Toast />
 </template>
