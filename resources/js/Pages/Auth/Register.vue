@@ -1,50 +1,37 @@
 <script setup>
 import { useForm, Head, Link } from "@inertiajs/vue3";
-import { onMounted } from "vue";
-
-const props = defineProps({
-    tipos: Array,
-});
 
 const form = useForm({
-    nome: "",
+    name: "",
     email: "",
-    senha: "",
-    senha_confirmation: "",
-    tipo_usuario_id: null,
-});
-
-onMounted(() => {
-    if (props.tipos.length > 0) {
-        form.tipo_usuario_id = props.tipos[0].id;
-    }
+    password: "",
+    password_confirmation: "",
 });
 </script>
 
 <template>
-    <Head title="Registro" />
+    <Head>
+        <title>Registre-se</title>
+    </Head>
 
-    <!-- Cabeçalho -->
     <div class="text-center mb-4">
         <h2 class="fw-bold text-primary">Registre-se agora mesmo!</h2>
         <p class="text-muted small">Crie sua conta para continuar</p>
     </div>
 
-    <!-- Formulário -->
-    <form @submit.prevent="form.post(route('register_store'))">
-        <!-- Nome -->
+    <form @submit.prevent="form.post(route('register.store'))">
         <div class="mb-2">
-            <label class="form-label fw-semibold" for="nome">Nome</label>
+            <label class="form-label fw-semibold" for="name">Nome</label>
             <input
                 id="name"
                 type="text"
-                v-model="form.nome"
+                v-model="form.name"
                 class="form-control"
                 required
-                autocomplete="nome"
+                autocomplete="name"
             />
-            <span v-if="form.errors.nome" class="text-danger small">{{
-                form.errors.nome
+            <span v-if="form.errors.name" class="text-danger small">{{
+                form.errors.name
             }}</span>
         </div>
 
@@ -64,66 +51,37 @@ onMounted(() => {
             }}</span>
         </div>
 
+        <!-- password -->
         <div class="mb-2">
-            <label for="tipousuario" class="form-label fw-semibold"
-                >Tipo de Usuário</label
-            >
-            <div>
-                <div
-                    class="form-check form-check-inline"
-                    v-for="tipo in props.tipos"
-                    :key="tipo.id"
-                >
-                    <input
-                        class="form-check-input"
-                        type="radio"
-                        name="tipousuario"
-                        :id="'tipo' + tipo.nome"
-                        :value="tipo.id"
-                        v-model="form.tipo_usuario_id"
-                    />
-
-                    <label
-                        class="form-check-label text-capitalize"
-                        :for="'tipo' + tipo.nome"
-                    >
-                        {{ tipo.nome }}
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <!-- Senha -->
-        <div class="mb-2">
-            <label class="form-label fw-semibold" for="senha">Senha</label>
+            <label class="form-label fw-semibold" for="password">Senha</label>
             <input
-                id="senha"
+                id="password"
                 type="password"
-                v-model="form.senha"
+                v-model="form.password"
                 class="form-control"
                 required
             />
-            <span v-if="form.errors.senha" class="text-danger small">{{
-                form.errors.senha
+            <span v-if="form.errors.password" class="text-danger small">{{
+                form.errors.password
             }}</span>
         </div>
-        <!-- Confirmar Senha -->
+        <!-- Confirmar password -->
         <div class="mb-2">
-            <label class="form-label fw-semibold" for="senha_confirmation"
+            <label class="form-label fw-semibold" for="password_confirmation"
                 >Confirme sua senha</label
             >
             <input
-                id="senha_confirmation"
+                id="password_confirmation"
                 type="password"
-                v-model="form.senha_confirmation"
+                v-model="form.password_confirmation"
                 class="form-control"
                 required
             />
             <span
-                v-if="form.errors.senha_confirmation"
+                v-if="form.errors.password_confirmation"
                 class="text-danger small"
             >
-                {{ form.errors.senha_confirmation }}
+                {{ form.errors.password_confirmation }}
             </span>
         </div>
 
@@ -154,14 +112,12 @@ onMounted(() => {
         </div>
     </form>
 
-    <!-- Separador -->
     <div class="d-flex align-items-center my-3">
         <hr class="flex-grow-1" />
         <span class="mx-2 text-muted small">ou registre-se com</span>
         <hr class="flex-grow-1" />
     </div>
 
-    <!-- Redes Sociais -->
     <div class="d-flex justify-content-center gap-3 mb-3">
         <a
             href="/auth/google/redirect"
@@ -175,7 +131,6 @@ onMounted(() => {
         </a>
     </div>
 
-    <!-- Links extras -->
     <div class="text-center small">
         <Link :href="route('login')" class="text-decoration-none fw-semibold">
             Já tem uma conta?

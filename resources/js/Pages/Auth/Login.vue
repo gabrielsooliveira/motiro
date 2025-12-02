@@ -22,7 +22,7 @@ const toggleView = () => {
         <p class="text-muted small">Faça o login para continuar</p>
     </div>
 
-    <form @submit.prevent="form.post(route('login_store'))">
+    <form @submit.prevent="form.post(route('login.store'))">
         <!-- Email -->
         <div class="mb-3">
             <label class="form-label fw-semibold" for="email">Email</label>

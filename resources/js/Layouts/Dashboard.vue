@@ -1,12 +1,12 @@
 <script setup>
-import Navbar from "@/js/components/Navbar.vue";
+import Toast from "@/js/Components/Toast.vue";
+import Sidebar from "@/js/Components/Sidebar.vue";
 </script>
 
 <template>
-    <div>
-        <Navbar />
-        <div class="container-fluid mt-5 pt-5">
-            <slot />
-        </div>
-    </div>
+    <Sidebar>
+        <slot />
+    </Sidebar>
+
+    <Toast />
 </template>

@@ -106,7 +106,7 @@ const hackathons = [
                 :key="hackathon.id"
             >
                 <Link
-                    :href="route('hackathons.show', hackathon.id)"
+                    :href="route('hackathon.show', hackathon.id)"
                     class="text-decoration-none"
                 >
                     <HackathonCard :hackathon="hackathon" />

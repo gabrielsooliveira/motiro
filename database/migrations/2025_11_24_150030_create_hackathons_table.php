@@ -13,16 +13,14 @@ return new class extends Migration
     {
         Schema::create('hackathons', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('organization_id'); // hackathon pertence à uma organização
+            $table->uuid('organization_id');
             $table->string('title');
             $table->text('description')->nullable();
             $table->dateTime('start_date')->nullable();
             $table->dateTime('end_date')->nullable();
             $table->enum('status', ['draft', 'registration', 'submission', 'voting', 'finished'])->default('draft');
-            // landing page customizada, banner, logo
             $table->string('banner_url')->nullable();
             $table->string('logo_url')->nullable();
-            // talvez link de streaming
             $table->string('livestream_url')->nullable();
             $table->timestamps();
 

@@ -1,5 +1,5 @@
 <script setup>
-import { Head } from "@inertiajs/vue3";
+import { Head, Link } from "@inertiajs/vue3";
 import HeroFeatures from "@/js/Components/Hero/HeroFeatures.vue";
 import HeroImages from "@/js/Components/Hero/HeroImages.vue";
 import AnimateText from "@/js/Components/AnimateText.vue";
@@ -34,12 +34,15 @@ const words = ["pessoas", "projetos", "equipes", "ideias"];
                 <HeroFeatures />
 
                 <div class="d-grid d-md-flex flex-row gap-2 mt-4">
-                    <a href="#" class="btn btn-primary btn-sm">
-                        Entrar como Participante
-                    </a>
-                    <a href="#" class="btn btn-secondary btn-sm">
-                        Área da Organização
-                    </a>
+                    <Link :href="route('login')" class="btn btn-primary btn-sm">
+                        Acessar a Plataforma
+                    </Link>
+                    <Link
+                        :href="route('hackathons.index')"
+                        class="btn btn-secondary btn-sm"
+                    >
+                        Ver nossos Hackathons
+                    </Link>
                 </div>
             </div>
 

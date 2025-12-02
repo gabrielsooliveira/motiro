@@ -13,7 +13,6 @@ defineProps({
 
 <template>
     <div class="position-relative mb-1">
-        <!-- Banner de fundo -->
         <div
             class="overflow-hidden rounded-5 rounded-bottom-0"
             style="height: 260px"
@@ -25,12 +24,9 @@ defineProps({
             />
         </div>
 
-        <!-- Conteúdo sobre o banner -->
         <div
             class="position-absolute bottom-0 start-0 mb-3 ms-3 d-flex align-items-center gap-3 px-3"
         >
-            <!-- Logo/Avatar -->
-
             <img
                 :src="hackathon.logo"
                 alt="Hackathon Logo"
@@ -38,7 +34,6 @@ defineProps({
                 height="95"
             />
 
-            <!-- Título + tags -->
             <div class="text-white ms-3">
                 <h1 class="fw-bold mb-1">{{ hackathon.title }}</h1>
                 <div class="d-flex flex-wrap gap-2">

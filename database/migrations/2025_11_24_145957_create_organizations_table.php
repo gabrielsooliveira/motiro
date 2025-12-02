@@ -14,13 +14,28 @@ return new class extends Migration
         Schema::create('organizations', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->string('email')->unique(); // email corporativo
-            $table->string('slug')->unique(); // para URL estilo /org/nome
+            $table->string('email')->unique();
+            $table->string('slug')->unique();
             $table->string('logo')->nullable();
             $table->string('website')->nullable();
             $table->text('description')->nullable();
-            $table->string('password'); // se a organização também faz login por si só
+            $table->string('password');
+            $table->boolean('is_active')->default(false);
+            $table->uuid('owner_id');
             $table->timestamps();
+
+            $table->foreign('owner_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+        Schema::create('organization_user', function (Blueprint $table) {
+            $table->uuid('organization_id');
+            $table->uuid('user_id');
+            $table->string('role', ['member', 'admin', 'jugde'])->default('member');
+            $table->timestamps();
+
+            $table->primary(['organization_id', 'user_id']);
+            $table->foreign('organization_id')->references('id')->on('organizations')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

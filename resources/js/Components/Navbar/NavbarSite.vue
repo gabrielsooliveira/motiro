@@ -142,7 +142,7 @@ onBeforeUnmount(() => {
                 <template v-else>
                     <Link
                         :href="route('login')"
-                        class="btn btn-primary fw-semibold"
+                        class="btn btn-primary btn-sm fw-semibold"
                     >
                         <span class="me-2">Entrar</span>
                         <font-awesome-icon
@@ -182,7 +182,7 @@ onBeforeUnmount(() => {
                 <li class="nav-item">
                     <Link
                         class="nav-link"
-                        :href="route('hackathons.index')"
+                        :href="route('hackathon.index')"
                         @click="closeMenu"
                         :class="{
                             'link-secondary': route().current('hackathons.*'),

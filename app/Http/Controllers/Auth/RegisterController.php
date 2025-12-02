@@ -17,6 +17,7 @@ class RegisterController extends Controller
 
     public function store(Request $request)
     {
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
@@ -30,10 +31,9 @@ class RegisterController extends Controller
         ]);
 
         if (Auth::attempt(['email' => $user['email'], 'password' => $request->password])) {
-            return redirect()->route('dashboard_index')->with('success', 'Usuario criado com sucesso');
+            return redirect()->route('dashboard.index')->with('success', 'Usuario criado com sucesso');
         } else {
             return redirect()->back()->with('error', 'Usuario não foi criado!');
         }
-
     }
 }
