@@ -17,11 +17,6 @@ const toggleView = () => {
 <template>
     <Head title="Login" />
 
-    <div class="text-center mb-4">
-        <h2 class="fw-bold text-primary">Bem-vindo de volta!</h2>
-        <p class="text-muted small">Faça o login para continuar</p>
-    </div>
-
     <form @submit.prevent="form.post(route('login.store'))">
         <!-- Email -->
         <div class="mb-3">
@@ -70,7 +65,7 @@ const toggleView = () => {
         <div class="d-grid mb-2">
             <button
                 type="submit"
-                class="btn btn-primary fw-semibold py-2 text-white"
+                class="btn btn-main fw-semibold py-2"
                 :disabled="form.processing"
             >
                 Entrar

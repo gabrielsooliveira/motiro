@@ -16,7 +16,7 @@ const words = ["pessoas", "projetos", "equipes", "ideias"];
         <div class="row align-items-center">
             <div class="col-xxl-5 col-12 mt-5">
                 <blockquote class="blockquote">
-                    <span class="fw-semibold text-primary fs-6">
+                    <span class="fw-semibold fs-6">
                         “Motirõ é a reunião de pessoas colhendo ou construindo
                         algo juntos, uns ajudando os outros.”
                         <cite class="blockquote-footer"
@@ -27,19 +27,22 @@ const words = ["pessoas", "projetos", "equipes", "ideias"];
 
                 <h1 class="title-page mt-3 mb-5">
                     A plataforma de hackathons que une
-                    <AnimateText :words="words" :color="'blue'" /> para mudar o
-                    mundo
+                    <AnimateText :words="words" :color="'thirdary'" /> para
+                    mudar o mundo
                 </h1>
 
                 <HeroFeatures />
 
                 <div class="d-grid d-md-flex flex-row gap-2 mt-4">
-                    <Link :href="route('login')" class="btn btn-primary btn-sm">
+                    <Link
+                        :href="route('login')"
+                        class="btn btn-primary btn-lg fw-semibold"
+                    >
                         Acessar a Plataforma
                     </Link>
                     <Link
-                        :href="route('hackathons.index')"
-                        class="btn btn-secondary btn-sm"
+                        :href="route('hackathon.index')"
+                        class="btn btn-secondary btn-lg fw-semibold"
                     >
                         Ver nossos Hackathons
                     </Link>

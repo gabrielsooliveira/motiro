@@ -1,9 +1,21 @@
 <script setup>
-import { Link } from "@inertiajs/vue3";
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { Link, usePage } from "@inertiajs/vue3";
+import { ref, onUnmounted, onMounted, onBeforeUnmount, computed } from "vue";
 
-defineProps({ user: Object });
+const page = usePage();
+const user = computed(() => page.props.user);
+
 const isMenuOpen = ref(false);
+const isScrolled = ref(false);
+const isMdUp = ref(window.innerWidth >= 992);
+
+const handleScroll = () => {
+    isScrolled.value = window.scrollY > 5;
+};
+
+const handleResize = () => {
+    isMdUp.value = window.innerWidth >= 992;
+};
 const toggleMenu = () => {
     isMenuOpen.value = !isMenuOpen.value;
 };
@@ -29,115 +41,86 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
     document.addEventListener("click", handleClickOutside);
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleResize);
 });
-
+onUnmounted(() => {
+    window.removeEventListener("scroll", handleScroll);
+    window.removeEventListener("resize", handleResize);
+});
 onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside);
+});
+
+const navbarClass = computed(() => {
+    const baseClasses = "navbar navbar-expand-lg fixed-top z-1 py-2";
+    const bgClass =
+        !isMdUp.value || isScrolled.value
+            ? "bg-light border-bottom shadow-sm"
+            : "bg-transparent";
+
+    return `${baseClasses} ${bgClass}`;
 });
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg bg-dark shadow-sm fixed-top z-1 py-2">
+    <nav :class="navbarClass">
         <div class="container-fluid">
-            <!-- Logo -->
             <Link
-                class="navbar-brand fw-semibold text-white title-page"
+                class="navbar-brand fw-semibold title-page text-light"
                 :href="route('home')"
                 >Motirõ</Link
             >
-
-            <!-- Botão toggle -->
             <button
-                class="btn d-lg-none text-white border-0"
+                class="btn d-lg-none text-light border-0"
                 type="button"
                 @click="toggleMenu"
             >
                 <font-awesome-icon icon="fas fa-bars" size="lg" />
             </button>
 
-            <!-- Navbar padrão para desktop -->
             <div
                 class="collapse navbar-collapse d-none d-lg-block flex-wrap align-items-center justify-content-between"
             >
-                <ul class="nav justify-content-center fw-semibold">
+                <ul class="nav justify-content-center fw-bold">
                     <li class="nav-item">
                         <Link
-                            class="nav-link"
                             :href="route('home')"
-                            :class="{
-                                'link-secondary': $page.url === '/',
-                            }"
-                            >Inicio</Link
+                            class="nav-link"
+                            :class="[
+                                $page.url === '/'
+                                    ? 'link-thirdary'
+                                    : 'link-light',
+                            ]"
                         >
+                            Início
+                        </Link>
                     </li>
+
                     <li class="nav-item">
                         <Link
+                            :href="route('hackathon.index')"
                             class="nav-link"
-                            :href="route('hackathons.index')"
-                            :class="{
-                                'link-secondary':
-                                    route().current('hackathons.*'),
-                            }"
-                            >Hackathons</Link
+                            :class="[
+                                route().current('hackathon.*')
+                                    ? 'link-thirdary'
+                                    : 'link-light',
+                            ]"
                         >
+                            Hackathons
+                        </Link>
                     </li>
                 </ul>
                 <template v-if="user">
-                    <div class="d-flex align-items-center">
-                        <div class="dropdown ms-auto">
-                            <a
-                                class="nav-link link-light dropdown-toggle d-flex align-items-center"
-                                href="#"
-                                id="userDropdown"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                            >
-                                <img
-                                    src="https://dummyimage.com/600x400/000/fff"
-                                    class="rounded-circle me-2"
-                                    alt="User Avatar"
-                                    width="32"
-                                    height="32"
-                                />
-                                <span>Gabriel</span>
-                            </a>
-                            <ul
-                                class="dropdown-menu dropdown-menu-end shadow mt-3"
-                                aria-labelledby="userDropdown"
-                            >
-                                <li>
-                                    <a
-                                        class="dropdown-item"
-                                        href="#"
-                                        @click="closeMenu"
-                                        >Perfil</a
-                                    >
-                                </li>
-                                <li>
-                                    <a
-                                        class="dropdown-item"
-                                        href="#"
-                                        @click="closeMenu"
-                                        >Configurações</a
-                                    >
-                                </li>
-                                <li><hr class="dropdown-divider" /></li>
-                                <li>
-                                    <Link
-                                        :href="route('logout')"
-                                        method="post"
-                                        as="button"
-                                        class="dropdown-item text-danger"
-                                        ><font-awesome-icon
-                                            icon="fa-solid fa-right-from-bracket"
-                                        />
-                                        Logout</Link
-                                    >
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+                    <Link
+                        :href="route('dashboard.index')"
+                        class="btn btn-primary btn-sm fw-semibold"
+                    >
+                        <span class="me-2">Dashboard</span>
+                        <font-awesome-icon
+                            icon="fa-solid fa-right-to-bracket"
+                        ></font-awesome-icon>
+                    </Link>
                 </template>
                 <template v-else>
                     <Link
@@ -174,7 +157,7 @@ onBeforeUnmount(() => {
                         :href="route('home')"
                         @click="closeMenu"
                         :class="{
-                            'link-secondary': $page.url === '/',
+                            'link-primary-dark fw-semibold': $page.url === '/',
                         }"
                         >Inicio</Link
                     >
@@ -185,7 +168,8 @@ onBeforeUnmount(() => {
                         :href="route('hackathon.index')"
                         @click="closeMenu"
                         :class="{
-                            'link-secondary': route().current('hackathons.*'),
+                            'link-primary-dark fw-semibold':
+                                route().current('hackathon.*'),
                         }"
                         >Hackathons</Link
                     >

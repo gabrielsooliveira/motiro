@@ -1,17 +1,5 @@
 .custom-navbar {
     transition: all 0.3s ease;
-    background-color: #fff !important;
-
-    .nav-link {
-        color: #555 !important;
-        font-weight: 500;
-        transition: color 0.2s ease;
-
-        &:hover,
-        &.active {
-            color: #0d6efd !important;
-        }
-    }
 
     .navbar-brand {
         font-size: 1.25rem;
@@ -39,7 +27,7 @@
 .slide-fade-enter-to,
 .slide-fade-leave-from {
   opacity: 1;
-  max-height: 500px; /* altura máxima para animação */
+  max-height: 500px;
   transform: translateY(0);
 }
 

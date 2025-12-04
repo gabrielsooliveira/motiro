@@ -46,7 +46,7 @@ onBeforeUnmount(() => {
     <div class="d-flex min-vh-100">
         <aside
             ref="sidebar"
-            class="bg-primary-dark d-md-block position-fixed vh-100 d-xl-flex flex-column p-3 shadow-lg"
+            class="bg-primary-dark d-md-block position-fixed vh-100 d-xl-flex flex-column p-3 shadow-lg vh-100"
             :class="['sidebar', { open: isSidebarOpen }]"
         >
             <ul class="nav nav-pills flex-column mb-auto fw-bold">
@@ -55,7 +55,7 @@ onBeforeUnmount(() => {
                         :href="route('dashboard.index')"
                         class="nav-link link-light d-flex align-items-center px-3 py-2 rounded mb-1"
                         ><font-awesome-icon
-                            icon="fa-solid fa-house"
+                            icon="fa-solid fa-layer-group"
                             class="me-2"
                         />
                         Inicio</Link

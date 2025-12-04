@@ -18,7 +18,7 @@ const hackathon = {
             <div class="mt-3">
                 <Link
                     class="text-decoration-none fw-semibold"
-                    :href="route('hackathons.index')"
+                    :href="route('hackathon.index')"
                 >
                     <font-awesome-icon
                         icon="fa-solid fa-circle-left"

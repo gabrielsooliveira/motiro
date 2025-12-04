@@ -14,11 +14,6 @@ const form = useForm({
         <title>Registre-se</title>
     </Head>
 
-    <div class="text-center mb-4">
-        <h2 class="fw-bold text-primary">Registre-se agora mesmo!</h2>
-        <p class="text-muted small">Crie sua conta para continuar</p>
-    </div>
-
     <form @submit.prevent="form.post(route('register.store'))">
         <div class="mb-2">
             <label class="form-label fw-semibold" for="name">Nome</label>
@@ -100,7 +95,6 @@ const form = useForm({
             </label>
         </div>
 
-        <!-- Botão -->
         <div class="d-grid mb-3">
             <button
                 type="submit"

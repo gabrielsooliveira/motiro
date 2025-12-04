@@ -1,21 +1,35 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
 import CreateOrganizationOffCanvas from "@/js/Components/Offcanvas/Organization/CreateOrganizationOffCanvas.vue";
+import NotificationButton from "@/js/Components/Notifications/NotificationButton.vue";
 
 const emit = defineEmits(["toggleSidebar"]);
+
+const notifications = [
+    {
+        title: "Notificação 1",
+        message: "Mensagem 1",
+        read: false,
+    },
+    {
+        title: "Notificação 2",
+        message: "Mensagem 2",
+        read: true,
+    },
+];
 </script>
 
 <template>
-    <div
-        class="d-flex justify-content-between align-items-center sticky-top container-fluid"
-    >
+    <nav class="navbar sticky-top container-fluid align-items-center py-2">
         <Link
-            class="navbar-brand fw-semibold text-primary title-page"
             :href="route('dashboard.index')"
-            >Motirõ</Link
+            class="navbar-brand fw-semibold text-primary title-page"
         >
+            Motirõ
+        </Link>
 
-        <div class="d-none d-md-block">
+        <div class="d-none d-md-flex align-items-center text-primary gap-3">
+            <NotificationButton :notifications="notifications" />
             <CreateOrganizationOffCanvas />
         </div>
 
@@ -27,5 +41,5 @@ const emit = defineEmits(["toggleSidebar"]);
                 <font-awesome-icon icon="fa-solid fa-bars" />
             </button>
         </div>
-    </div>
+    </nav>
 </template>

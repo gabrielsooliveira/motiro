@@ -6,7 +6,7 @@
             <span>
                 <font-awesome-icon
                     icon="fa-solid fa-circle-check"
-                    class="text-primary"
+                    class="text-thirdary"
                 />
             </span>
             <span>Hackathons com premiações incriveis</span>
@@ -16,7 +16,7 @@
             <span>
                 <font-awesome-icon
                     icon="fa-solid fa-circle-check"
-                    class="text-primary"
+                    class="text-thirdary"
                 />
             </span>
             <span>Times colaborativos e comunidade ativa</span>
@@ -26,7 +26,7 @@
             <span>
                 <font-awesome-icon
                     icon="fa-solid fa-circle-check"
-                    class="text-primary"
+                    class="text-thirdary"
                 />
             </span>
             <span>Ambiente que conecta pessoas, ideias e oportunidades</span>
