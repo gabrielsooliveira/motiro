@@ -4,7 +4,6 @@ import CreateOrganizationOffCanvas from "@/js/Components/Offcanvas/Organization/
 import NotificationButton from "@/js/Components/Notifications/NotificationButton.vue";
 
 const emit = defineEmits(["toggleSidebar"]);
-
 const notifications = [
     {
         title: "Notificação 1",
@@ -20,13 +19,18 @@ const notifications = [
 </script>
 
 <template>
-    <nav class="navbar sticky-top container-fluid align-items-center py-2">
-        <div class="d-none d-md-flex align-items-center text-primary gap-3">
-            <NotificationButton :notifications="notifications" />
+    <nav class="navbar sticky-top container-fluid py-2">
+        <div class="justify-content-end d-none d-md-flex w-100">
             <CreateOrganizationOffCanvas />
+            <NotificationButton :notifications="notifications" />
         </div>
 
-        <div class="d-md-none">
+        <div class="d-md-none d-flex justify-content-between w-100">
+            <Link
+                class="navbar-brand fw-semibold title-page text-light"
+                :href="route('home')"
+                >Motirõ</Link
+            >
             <button
                 class="btn btn-primary text-white"
                 @click="emit('toggleSidebar')"

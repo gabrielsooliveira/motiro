@@ -8,7 +8,7 @@ defineProps({
 </script>
 
 <template>
-    <div class="card shadow-sm h-100 card-animated border-2 border-secondary">
+    <div class="card shadow-sm h-100 card-animated border-1 border-light">
         <div class="position-relative">
             <img
                 :src="hackathon.banner"

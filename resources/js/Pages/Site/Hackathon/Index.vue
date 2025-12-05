@@ -93,8 +93,8 @@ const hackathons = [
         </div>
     </div>
 
-    <div class="px-5 mt-5">
-        <div class="row g-4">
+    <div class="mt-5">
+        <div class="row g-3">
             <div
                 class="col-12 col-md-6 col-lg-3"
                 v-for="hackathon in hackathons"

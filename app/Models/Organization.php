@@ -22,4 +22,14 @@ class Organization extends Model
         'is_active',
         'owner_id',
     ];
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'organization_user', 'organization_id', 'user_id');
+    }
 }

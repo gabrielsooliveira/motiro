@@ -56,7 +56,7 @@ const navbarClass = computed(() => {
     const baseClasses = "navbar navbar-expand-lg fixed-top z-1 p-3";
     const bgClass =
         !isMdUp.value || isScrolled.value
-            ? "bg-dark shadow-sm"
+            ? "bg-light shadow-sm"
             : "bg-transparent";
 
     return `${baseClasses} ${bgClass}`;
@@ -67,12 +67,12 @@ const navbarClass = computed(() => {
     <nav :class="navbarClass">
         <div class="container-fluid">
             <Link
-                class="navbar-brand fw-semibold title-page text-light"
+                class="navbar-brand fw-semibold title-page"
                 :href="route('home')"
                 >Motirõ</Link
             >
             <button
-                class="btn d-lg-none text-light border-0"
+                class="btn d-lg-none border-0"
                 type="button"
                 @click="toggleMenu"
             >
@@ -82,7 +82,7 @@ const navbarClass = computed(() => {
             <div
                 class="collapse navbar-collapse d-none d-lg-block flex-wrap align-items-center justify-content-between"
             >
-                <ul class="nav justify-content-center fw-bold">
+                <ul class="nav justify-content-center fw-semibold">
                     <li class="nav-item">
                         <Link
                             :href="route('home')"
@@ -90,7 +90,7 @@ const navbarClass = computed(() => {
                             :class="[
                                 $page.url === '/'
                                     ? 'link-thirdary'
-                                    : 'link-light',
+                                    : 'link-dark',
                             ]"
                         >
                             Início
@@ -104,7 +104,7 @@ const navbarClass = computed(() => {
                             :class="[
                                 route().current('hackathon.*')
                                     ? 'link-thirdary'
-                                    : 'link-light',
+                                    : 'link-dark',
                             ]"
                         >
                             Hackathons
@@ -148,11 +148,9 @@ const navbarClass = computed(() => {
             v-if="isMenuOpen"
             class="position-fixed top-0 start-0 w-100 h-100 bg-body d-flex flex-column p-4 z-3 overflow-y-auto"
         >
-            <div
-                class="d-flex justify-content-between align-items-center mb-4 text-light"
-            >
-                <h5 class="fw-bold mb-0">Menu</h5>
-                <button class="btn btn-link link-light fs-4" @click="closeMenu">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="text-dark fw-bold mb-0">Menu</h5>
+                <button class="btn btn-link link-dark fs-4" @click="closeMenu">
                     <font-awesome-icon icon="fas fa-xmark" />
                 </button>
             </div>
@@ -164,7 +162,7 @@ const navbarClass = computed(() => {
                         :href="route('home')"
                         @click="closeMenu"
                         :class="[
-                            $page.url === '/' ? 'link-thirdary' : 'link-light',
+                            $page.url === '/' ? 'link-thirdary' : 'link-dark',
                         ]"
                         >Inicio</Link
                     >
@@ -177,7 +175,7 @@ const navbarClass = computed(() => {
                         :class="[
                             route().current('hackathon.*')
                                 ? 'link-thirdary'
-                                : 'link-light',
+                                : 'link-dark',
                         ]"
                         >Hackathons</Link
                     >

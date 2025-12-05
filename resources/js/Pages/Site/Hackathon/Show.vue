@@ -17,7 +17,7 @@ const hackathon = {
         <div class="d-flex justify-content-between align-items-center my-4">
             <div class="mt-3">
                 <Link
-                    class="text-decoration-none text-light fw-semibold"
+                    class="text-decoration-none text-dark fw-semibold"
                     :href="route('hackathon.index')"
                 >
                     <font-awesome-icon

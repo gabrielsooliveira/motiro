@@ -63,7 +63,7 @@ const toggleView = () => {
         <div class="d-grid mb-2">
             <button
                 type="submit"
-                class="btn btn-primary fw-semibold py-2"
+                class="btn btn-dark fw-semibold py-2"
                 :disabled="form.processing"
             >
                 Entrar
@@ -96,13 +96,13 @@ const toggleView = () => {
         </a>
     </div>
 
-    <div class="text-center small">
+    <div class="text-center small fs-6">
         <Link
             :href="route('register')"
             class="text-decoration-none fw-semibold link-light"
         >
             Ainda não possui uma conta?
-            <span class="text-primary">Registre-se</span>
+            <span class="text-dark">Registre-se</span>
         </Link>
         <br />
         <Link

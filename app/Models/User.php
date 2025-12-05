@@ -34,7 +34,6 @@ class User extends Authenticatable
         parent::boot();
 
         static::creating(function ($user) {
-            // só gera se não foi definido manualmente
             if (empty($user->username)) {
                 $user->username = static::generateUsername($user->name);
             }
@@ -43,13 +42,10 @@ class User extends Authenticatable
 
     private static function generateUsername($name)
     {
-        // 1) transforma o nome em slug
         $base = Str::slug($name);
-
         $username = $base;
         $count = 1;
 
-        // 2) verifica se já existe
         while (static::where('username', $username)->exists()) {
             $username = $base . $count;
             $count++;
@@ -57,11 +53,17 @@ class User extends Authenticatable
 
         return $username;
     }
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function organizations()
+    {
+        return $this->belongsToMany(Organization::class, 'organization_user', 'user_id', 'organization_id');
     }
 }

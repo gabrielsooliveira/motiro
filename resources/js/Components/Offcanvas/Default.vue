@@ -4,7 +4,8 @@ import { Offcanvas } from "bootstrap";
 
 const props = defineProps({
     id: { type: String, required: true },
-    title: { type: String, default: "Offcanvas" },
+    title: { type: String, default: "" },
+    subtitle: { type: String, default: "" },
     placement: { type: String, default: "start" },
     modelValue: { type: Boolean, default: false },
 });
@@ -41,14 +42,18 @@ watch(
         ref="offcanvasRef"
     >
         <div class="offcanvas-header">
-            <h5 class="offcanvas-title" :id="`${id}-label`">
-                {{ title }}
-            </h5>
+            <div>
+                <h5 class="offcanvas-title" :id="`${id}-label`">
+                    {{ title }}
+                </h5>
+            </div>
             <button
-                class="btn-close"
+                class="btn border-0 ms-auto"
                 data-bs-dismiss="offcanvas"
                 @click="emits('update:modelValue', false)"
-            ></button>
+            >
+                <font-awesome-icon icon="fa-solid fa-xmark" class="fs-4 pt-2" />
+            </button>
         </div>
 
         <div class="offcanvas-body">

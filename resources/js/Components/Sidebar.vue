@@ -7,7 +7,6 @@ const isSidebarOpen = ref(false);
 const isMobile = ref(false);
 const sidebar = ref(null);
 
-defineProps({ user: Object });
 const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value;
 };
@@ -83,20 +82,6 @@ onBeforeUnmount(() => {
                             class="me-2"
                         />
                         Meus Hackathons</Link
-                    >
-                </li>
-                <li class="nav-item">
-                    <Link
-                        :href="route('dashboard.index')"
-                        class="nav-link link-light d-flex align-items-center px-3 py-2 rounded mb-1"
-                        :class="[
-                            $page.url === '/organizations' ? 'bg-primary' : '',
-                        ]"
-                        ><font-awesome-icon
-                            icon="fa-solid fa-building"
-                            class="me-2"
-                        />
-                        Organizações</Link
                     >
                 </li>
                 <li class="nav-item">

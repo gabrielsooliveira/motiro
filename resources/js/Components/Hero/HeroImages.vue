@@ -8,7 +8,7 @@
             <div class="position-relative">
                 <div class="position-absolute bottom-25 start-0 text-light">
                     <div
-                        class="bg-thirdary rounded-pill py-2 px-3 shadow mb-2 d-inline-block"
+                        class="bg-thirdary bg-gradient rounded-pill py-2 px-3 shadow mb-2 d-inline-block"
                     >
                         <font-awesome-icon icon="fa-solid fa-trophy" />
                         <span class="fw-semibold ms-2"
@@ -17,7 +17,7 @@
                     </div>
 
                     <div
-                        class="bg-thirdary rounded-pill py-2 px-3 shadow mb-2 d-inline-block"
+                        class="bg-thirdary bg-gradient rounded-pill py-2 px-3 shadow mb-2 d-inline-block"
                     >
                         <font-awesome-icon icon="fa-solid fa-people-group" />
                         <span class="fw-semibold ms-2"
@@ -26,7 +26,7 @@
                     </div>
 
                     <div
-                        class="bg-thirdary rounded-pill py-2 px-3 shadow d-inline-block"
+                        class="bg-thirdary bg-gradient rounded-pill py-2 px-3 shadow d-inline-block"
                     >
                         <font-awesome-icon icon="fa-solid fa-diagram-project" />
                         <span class="fw-semibold ms-2"

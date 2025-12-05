@@ -24,8 +24,11 @@ const storeOrganization = () => {
 </script>
 
 <template>
-    <button class="btn btn-sm border-0" @click="open = true">
-        <font-awesome-icon icon="fas fa-suitcase" class="fs-5" />
+    <button
+        class="btn btn-sm btn-outline-primary fw-semibold"
+        @click="open = true"
+    >
+        Criar Organização
     </button>
 
     <Offcanvas

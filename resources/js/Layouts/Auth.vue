@@ -1,7 +1,7 @@
 <script setup>
 import Toast from "@/js/Components/Toast.vue";
-import ImageLogin from "@/assets/images/undraw/login-image.png";
-import ImageRegister from "@/assets/images/undraw/register-image.png";
+import ImageLogin from "@/assets/images/undraw/login-image.svg";
+import ImageRegister from "@/assets/images/undraw/register-image.svg";
 
 const content = [
     {
@@ -20,7 +20,7 @@ const content = [
 <template>
     <div class="min-vh-100 d-flex flex-column flex-lg-row">
         <div
-            class="d-flex flex-column justify-content-center align-items-center p-5"
+            class="d-flex flex-column justify-content-center align-items-center p-5 bg-primary text-white min-vh-100"
         >
             <div class="w-100">
                 <slot />
@@ -28,7 +28,7 @@ const content = [
         </div>
 
         <div
-            class="d-flex flex-column justify-content-center align-items-center flex-grow-1 text-center d-none d-lg-flex bg-light text-dark"
+            class="d-flex flex-column justify-content-center align-items-center flex-grow-1 text-center d-none d-lg-flex"
         >
             <template v-if="$page.url === '/login'">
                 <img

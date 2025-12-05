@@ -14,4 +14,14 @@ class OrganizationUser extends Model
         'user_id',
         'role',
     ];
+
+    public function organization()
+    {
+        return $this->belongsTo(Organization::class, 'organization_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
