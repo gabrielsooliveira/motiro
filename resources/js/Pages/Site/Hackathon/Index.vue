@@ -62,8 +62,8 @@ const hackathons = [
                 <div class="text-center mb-3">
                     <div class="d-flex flex-column gap-3">
                         <h1 class="mb-0 title-page">
-                            Entre em algum dos
-                            <span class="text-primary">hackathons</span>
+                            Encontre os
+                            <span class="text-thirdary">hackathons</span>
                             que transformam o mundo
                         </h1>
 
@@ -81,10 +81,9 @@ const hackathons = [
                                 </span>
                                 <input
                                     type="search"
-                                    class="form-control ps-5 form-control-lg"
+                                    class="form-control ps-5 form-control-lg text-light"
                                     id="hackathonssearch"
-                                    name="hackathons"
-                                    placeholder="Buscar hackathon"
+                                    name="hackathonssearch"
                                 />
                             </div>
                         </form>
@@ -94,14 +93,10 @@ const hackathons = [
         </div>
     </div>
 
-    <div class="my-4">
-        <hr />
-    </div>
-
-    <div class="container">
+    <div class="px-5 mt-5">
         <div class="row g-4">
             <div
-                class="col-12 col-md-6 col-lg-4"
+                class="col-12 col-md-6 col-lg-3"
                 v-for="hackathon in hackathons"
                 :key="hackathon.id"
             >

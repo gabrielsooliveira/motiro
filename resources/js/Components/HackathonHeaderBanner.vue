@@ -30,24 +30,9 @@ defineProps({
             <img
                 :src="hackathon.logo"
                 alt="Hackathon Logo"
-                class="object-fit-contain bg-white rounded-circle border"
-                height="95"
+                class="object-fit-contain rounded-circle border-5 border"
+                height="140"
             />
-
-            <div class="text-white ms-3">
-                <h1 class="fw-bold mb-1">{{ hackathon.title }}</h1>
-                <div class="d-flex flex-wrap gap-2">
-                    <span
-                        v-for="tag in hackathon.tags"
-                        :key="tag"
-                        class="badge bg-primary bg-opacity-75 d-flex align-items-center"
-                    >
-                        <FontAwesomeIcon :icon="faTag" class="me-1" />
-                        {{ tag }}
-                    </span>
-                </div>
-                <p class="mt-2">{{ hackathon.subtitle }}</p>
-            </div>
         </div>
     </div>
 </template>

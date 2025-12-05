@@ -30,7 +30,6 @@ const form = useForm({
             }}</span>
         </div>
 
-        <!-- Email -->
         <div class="mb-2">
             <label class="form-label fw-semibold" for="email">Email</label>
             <input
@@ -46,7 +45,6 @@ const form = useForm({
             }}</span>
         </div>
 
-        <!-- password -->
         <div class="mb-2">
             <label class="form-label fw-semibold" for="password">Senha</label>
             <input
@@ -88,7 +86,7 @@ const form = useForm({
                 id="term"
                 required
             />
-            <label class="form-check-label small text-muted" for="term">
+            <label class="form-check-label small" for="term">
                 Li e concordo com os
                 <a href="#" target="_blank">Termos de Uso</a> e
                 <a href="#" target="_blank">Política de Privacidade</a>
@@ -108,7 +106,7 @@ const form = useForm({
 
     <div class="d-flex align-items-center my-3">
         <hr class="flex-grow-1" />
-        <span class="mx-2 text-muted small">ou registre-se com</span>
+        <span class="mx-2 small">ou registre-se com</span>
         <hr class="flex-grow-1" />
     </div>
 
@@ -126,12 +124,18 @@ const form = useForm({
     </div>
 
     <div class="text-center small">
-        <Link :href="route('login')" class="text-decoration-none fw-semibold">
+        <Link
+            :href="route('login')"
+            class="text-decoration-none link-light fw-semibold"
+        >
             Já tem uma conta?
-            <span class="text-dark">Faça login.</span>
+            <span class="text-thirdary">Faça login.</span>
         </Link>
         <br />
-        <Link :href="route('home')" class="text-decoration-none fw-semibold">
+        <Link
+            :href="route('home')"
+            class="text-decoration-none link-light fw-semibold"
+        >
             <font-awesome-icon icon="fa-solid fa-door-open" class="me-1" />
             Voltar para a Home
         </Link>

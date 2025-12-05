@@ -21,13 +21,6 @@ const notifications = [
 
 <template>
     <nav class="navbar sticky-top container-fluid align-items-center py-2">
-        <Link
-            :href="route('dashboard.index')"
-            class="navbar-brand fw-semibold text-primary title-page"
-        >
-            Motirõ
-        </Link>
-
         <div class="d-none d-md-flex align-items-center text-primary gap-3">
             <NotificationButton :notifications="notifications" />
             <CreateOrganizationOffCanvas />

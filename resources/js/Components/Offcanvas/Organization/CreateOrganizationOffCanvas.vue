@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
-import Offcanvas from "@/js/components/Offcanvas/Default.vue";
+import Offcanvas from "@/js/Components/Offcanvas/Default.vue";
 
 const open = ref(false);
 

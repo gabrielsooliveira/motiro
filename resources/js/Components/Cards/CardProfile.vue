@@ -8,8 +8,7 @@ defineProps({
 </script>
 
 <template>
-    <div class="card shadow-sm hackathon-card h-100 border border-light">
-        <!-- Banner -->
+    <div class="card shadow-sm h-100 card-animated border-2 border-secondary">
         <div class="position-relative">
             <img
                 :src="hackathon.banner"
@@ -24,26 +23,22 @@ defineProps({
             />
             <div>
                 <span
-                    class="position-absolute top-0 end-0 mt-3 me-3 bg-primary-dark rounded-pill py-1 px-3 text-white fw-semibold"
+                    class="position-absolute top-0 end-0 mt-3 me-3 bg-dark rounded-pill py-1 px-3 text-white fw-semibold"
                 >
                     {{ hackathon.etapa }}
                 </span>
             </div>
         </div>
 
-        <!-- Conteúdo -->
-        <div class="card-body d-flex flex-column mt-2">
-            <!-- Título -->
-            <h5 class="card-title fw-bold text-truncate">
+        <div class="card-body d-flex flex-column pt-5 bg-white">
+            <h5 class="card-title text-primary fw-bold fs-3 text-truncate">
                 {{ hackathon.title }}
             </h5>
 
-            <!-- Descrição -->
             <p class="text-muted text-truncate small mb-2">
                 {{ hackathon.description }}
             </p>
 
-            <!-- Tags -->
             <div class="d-flex flex-wrap gap-2 mb-3">
                 <span
                     v-for="tag in hackathon.tags"
@@ -54,7 +49,6 @@ defineProps({
                 </span>
             </div>
 
-            <!-- Estatísticas -->
             <ul class="list-inline small text-muted">
                 <li class="list-inline-item me-3">
                     <font-awesome-icon icon="fas fa-users" class="me-1" />
@@ -69,10 +63,3 @@ defineProps({
         </div>
     </div>
 </template>
-
-<style scoped>
-.hackathon-card:hover {
-    transform: translateY(-4px);
-    transition: 0.4s ease;
-}
-</style>

@@ -46,19 +46,69 @@ onBeforeUnmount(() => {
     <div class="d-flex min-vh-100">
         <aside
             ref="sidebar"
-            class="bg-primary-dark d-md-block position-fixed vh-100 d-xl-flex flex-column p-3 shadow-lg vh-100"
+            class="bg-secondary d-md-block position-fixed vh-100 d-xl-flex flex-column p-3 shadow-lg vh-100 border-end border-secondary"
             :class="['sidebar', { open: isSidebarOpen }]"
         >
+            <Link
+                :href="route('dashboard.index')"
+                class="text-decoration-none fw-semibold text-light fs-3 title-page"
+            >
+                Motirõ
+            </Link>
+            <hr class="text-light" />
             <ul class="nav nav-pills flex-column mb-auto fw-bold">
                 <li class="nav-item">
                     <Link
                         :href="route('dashboard.index')"
                         class="nav-link link-light d-flex align-items-center px-3 py-2 rounded mb-1"
+                        :class="[
+                            $page.url === '/dashboard' ? 'bg-primary' : '',
+                        ]"
                         ><font-awesome-icon
                             icon="fa-solid fa-layer-group"
                             class="me-2"
                         />
-                        Inicio</Link
+                        Dashboard</Link
+                    >
+                </li>
+                <li class="nav-item">
+                    <Link
+                        :href="route('dashboard.index')"
+                        class="nav-link link-light d-flex align-items-center px-3 py-2 rounded mb-1"
+                        :class="[
+                            $page.url === '/hackathons' ? 'bg-primary' : '',
+                        ]"
+                        ><font-awesome-icon
+                            icon="fa-regular fa-calendar"
+                            class="me-2"
+                        />
+                        Meus Hackathons</Link
+                    >
+                </li>
+                <li class="nav-item">
+                    <Link
+                        :href="route('dashboard.index')"
+                        class="nav-link link-light d-flex align-items-center px-3 py-2 rounded mb-1"
+                        :class="[
+                            $page.url === '/organizations' ? 'bg-primary' : '',
+                        ]"
+                        ><font-awesome-icon
+                            icon="fa-solid fa-building"
+                            class="me-2"
+                        />
+                        Organizações</Link
+                    >
+                </li>
+                <li class="nav-item">
+                    <Link
+                        :href="route('dashboard.index')"
+                        class="nav-link link-light d-flex align-items-center px-3 py-2 rounded mb-1"
+                        :class="[$page.url === '/actives' ? 'bg-primary' : '']"
+                        ><font-awesome-icon
+                            icon="fa-solid fa-list-check"
+                            class="me-2"
+                        />
+                        Atividades</Link
                     >
                 </li>
             </ul>
@@ -69,7 +119,7 @@ onBeforeUnmount(() => {
                     :href="route('logout')"
                     method="post"
                     as="button"
-                    class="btn btn-danger text-light d-flex align-items-center gap-3 px-3 fw-semibold"
+                    class="btn link-danger d-flex align-items-center gap-3 px-3 fw-semibold border-0"
                     ><font-awesome-icon icon="fa-solid fa-right-from-bracket" />
                     Sair</Link
                 >

@@ -53,10 +53,10 @@ onBeforeUnmount(() => {
 });
 
 const navbarClass = computed(() => {
-    const baseClasses = "navbar navbar-expand-lg fixed-top z-1 py-2";
+    const baseClasses = "navbar navbar-expand-lg fixed-top z-1 p-3";
     const bgClass =
         !isMdUp.value || isScrolled.value
-            ? "bg-light border-bottom shadow-sm"
+            ? "bg-dark shadow-sm"
             : "bg-transparent";
 
     return `${baseClasses} ${bgClass}`;
@@ -114,7 +114,7 @@ const navbarClass = computed(() => {
                 <template v-if="user">
                     <Link
                         :href="route('dashboard.index')"
-                        class="btn btn-primary btn-sm fw-semibold"
+                        class="btn btn-primary fw-semibold"
                     >
                         <span class="me-2">Dashboard</span>
                         <font-awesome-icon
@@ -123,15 +123,20 @@ const navbarClass = computed(() => {
                     </Link>
                 </template>
                 <template v-else>
-                    <Link
-                        :href="route('login')"
-                        class="btn btn-primary btn-sm fw-semibold"
-                    >
-                        <span class="me-2">Entrar</span>
-                        <font-awesome-icon
-                            icon="fa-solid fa-right-to-bracket"
-                        ></font-awesome-icon>
-                    </Link>
+                    <div class="d-flex gap-2">
+                        <Link
+                            :href="route('login')"
+                            class="btn btn-outline-thirdary fw-semibold"
+                        >
+                            <span>Entrar</span>
+                        </Link>
+                        <Link
+                            :href="route('register')"
+                            class="btn btn-primary fw-semibold"
+                        >
+                            <span>Criar Conta</span>
+                        </Link>
+                    </div>
                 </template>
             </div>
         </div>
@@ -141,11 +146,13 @@ const navbarClass = computed(() => {
     <transition name="fade">
         <div
             v-if="isMenuOpen"
-            class="position-fixed top-0 start-0 w-100 h-100 bg-light d-flex flex-column p-4 z-3 overflow-y-auto"
+            class="position-fixed top-0 start-0 w-100 h-100 bg-body d-flex flex-column p-4 z-3 overflow-y-auto"
         >
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold text-primary mb-0">Menu</h5>
-                <button class="btn btn-link text-dark fs-4" @click="closeMenu">
+            <div
+                class="d-flex justify-content-between align-items-center mb-4 text-light"
+            >
+                <h5 class="fw-bold mb-0">Menu</h5>
+                <button class="btn btn-link link-light fs-4" @click="closeMenu">
                     <font-awesome-icon icon="fas fa-xmark" />
                 </button>
             </div>
@@ -156,9 +163,9 @@ const navbarClass = computed(() => {
                         class="nav-link"
                         :href="route('home')"
                         @click="closeMenu"
-                        :class="{
-                            'link-primary-dark fw-semibold': $page.url === '/',
-                        }"
+                        :class="[
+                            $page.url === '/' ? 'link-thirdary' : 'link-light',
+                        ]"
                         >Inicio</Link
                     >
                 </li>
@@ -167,10 +174,11 @@ const navbarClass = computed(() => {
                         class="nav-link"
                         :href="route('hackathon.index')"
                         @click="closeMenu"
-                        :class="{
-                            'link-primary-dark fw-semibold':
-                                route().current('hackathon.*'),
-                        }"
+                        :class="[
+                            route().current('hackathon.*')
+                                ? 'link-thirdary'
+                                : 'link-light',
+                        ]"
                         >Hackathons</Link
                     >
                 </li>

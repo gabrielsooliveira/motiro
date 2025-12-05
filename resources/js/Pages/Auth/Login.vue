@@ -18,7 +18,6 @@ const toggleView = () => {
     <Head title="Login" />
 
     <form @submit.prevent="form.post(route('login.store'))">
-        <!-- Email -->
         <div class="mb-3">
             <label class="form-label fw-semibold" for="email">Email</label>
             <input
@@ -31,7 +30,6 @@ const toggleView = () => {
             />
         </div>
 
-        <!-- Senha -->
         <div class="mb-3">
             <label class="form-label fw-semibold" for="password">Senha</label>
             <div class="input-group">
@@ -57,7 +55,7 @@ const toggleView = () => {
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <Link class="text-decoration-none small" href="#"
+            <Link class="text-decoration-none link-primary small" href="#"
                 >Esqueceu sua senha?</Link
             >
         </div>
@@ -65,14 +63,14 @@ const toggleView = () => {
         <div class="d-grid mb-2">
             <button
                 type="submit"
-                class="btn btn-main fw-semibold py-2"
+                class="btn btn-primary fw-semibold py-2"
                 :disabled="form.processing"
             >
                 Entrar
             </button>
         </div>
 
-        <p class="text-center small text-muted mb-4">
+        <p class="text-center small mb-4">
             Ao fazer login você concorda com os
             <a href="#" target="_blank">Termos de Uso</a> e
             <a href="#" target="_blank">Política de Privacidade</a>.
@@ -81,7 +79,7 @@ const toggleView = () => {
 
     <div class="d-flex align-items-center my-3">
         <hr class="flex-grow-1" />
-        <span class="mx-2 text-muted small">ou continue com</span>
+        <span class="mx-2 small">ou continue com</span>
         <hr class="flex-grow-1" />
     </div>
 
@@ -101,13 +99,16 @@ const toggleView = () => {
     <div class="text-center small">
         <Link
             :href="route('register')"
-            class="text-decoration-none fw-semibold"
+            class="text-decoration-none fw-semibold link-light"
         >
             Ainda não possui uma conta?
-            <span class="text-dark">Registre-se</span>
+            <span class="text-primary">Registre-se</span>
         </Link>
         <br />
-        <Link :href="route('home')" class="text-decoration-none fw-semibold">
+        <Link
+            :href="route('home')"
+            class="text-decoration-none fw-semibold link-light"
+        >
             <font-awesome-icon icon="fa-solid fa-door-open" class="me-1" />
             Voltar para a Home
         </Link>
