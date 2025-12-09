@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
-import HackathonHeaderBanner from "@/js/Components/HackathonHeaderBanner.vue";
+import BannerHackathon from "@/js/Components/Banner/BannerHackathon.vue";
 
 const hackathon = {
     banner: "https://dummyimage.com/1200x400/ccc/ffffff&text=+",
@@ -38,6 +38,6 @@ const hackathon = {
             </div>
         </div>
 
-        <HackathonHeaderBanner :hackathon="hackathon" />
+        <BannerHackathon :item="hackathon" />
     </div>
 </template>

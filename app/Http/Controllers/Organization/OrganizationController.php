@@ -10,6 +10,11 @@ use Illuminate\Support\Str;
 
 class OrganizationController extends Controller
 {
+    public function index()
+    {
+        return inertia('Dashboard/Organization/Index');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

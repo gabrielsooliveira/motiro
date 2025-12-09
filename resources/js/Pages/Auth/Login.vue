@@ -55,7 +55,7 @@ const toggleView = () => {
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <Link class="text-decoration-none link-primary small" href="#"
+            <Link class="text-decoration-none link-thirdary small" href="#"
                 >Esqueceu sua senha?</Link
             >
         </div>
@@ -63,7 +63,7 @@ const toggleView = () => {
         <div class="d-grid mb-2">
             <button
                 type="submit"
-                class="btn btn-dark fw-semibold py-2"
+                class="btn btn-primary fw-semibold py-2"
                 :disabled="form.processing"
             >
                 Entrar
@@ -72,8 +72,11 @@ const toggleView = () => {
 
         <p class="text-center small mb-4">
             Ao fazer login você concorda com os
-            <a href="#" target="_blank">Termos de Uso</a> e
-            <a href="#" target="_blank">Política de Privacidade</a>.
+            <a href="#" class="text-thirdary" target="_blank">Termos de Uso</a>
+            e
+            <a href="#" class="text-thirdary" target="_blank"
+                >Política de Privacidade</a
+            >.
         </p>
     </form>
 
@@ -96,13 +99,13 @@ const toggleView = () => {
         </a>
     </div>
 
-    <div class="text-center small fs-6">
+    <div class="text-center">
         <Link
             :href="route('register')"
             class="text-decoration-none fw-semibold link-light"
         >
             Ainda não possui uma conta?
-            <span class="text-dark">Registre-se</span>
+            <span class="text-thirdary">Registre-se</span>
         </Link>
         <br />
         <Link

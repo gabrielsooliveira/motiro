@@ -87,11 +87,11 @@ const navbarClass = computed(() => {
                         <Link
                             :href="route('home')"
                             class="nav-link"
-                            :class="[
+                            :class="
                                 $page.url === '/'
                                     ? 'link-thirdary'
-                                    : 'link-dark',
-                            ]"
+                                    : 'link-dark'
+                            "
                         >
                             Início
                         </Link>
@@ -101,11 +101,11 @@ const navbarClass = computed(() => {
                         <Link
                             :href="route('hackathon.index')"
                             class="nav-link"
-                            :class="[
+                            :class="
                                 route().current('hackathon.*')
                                     ? 'link-thirdary'
-                                    : 'link-dark',
-                            ]"
+                                    : 'link-dark'
+                            "
                         >
                             Hackathons
                         </Link>
@@ -161,9 +161,9 @@ const navbarClass = computed(() => {
                         class="nav-link"
                         :href="route('home')"
                         @click="closeMenu"
-                        :class="[
-                            $page.url === '/' ? 'link-thirdary' : 'link-dark',
-                        ]"
+                        :class="
+                            $page.url === '/' ? 'link-thirdary' : 'link-dark'
+                        "
                         >Inicio</Link
                     >
                 </li>
@@ -172,11 +172,11 @@ const navbarClass = computed(() => {
                         class="nav-link"
                         :href="route('hackathon.index')"
                         @click="closeMenu"
-                        :class="[
+                        :class="
                             route().current('hackathon.*')
                                 ? 'link-thirdary'
-                                : 'link-dark',
-                        ]"
+                                : 'link-dark'
+                        "
                         >Hackathons</Link
                     >
                 </li>

@@ -9,7 +9,7 @@ defineProps({
 
 <template>
     <div class="card shadow-sm h-100 card-animated border-1 border-light">
-        <div class="position-relative">
+        <div class="position-relative pb-4">
             <img
                 :src="hackathon.banner"
                 class="card-img-top object-fit-cover"
@@ -17,7 +17,7 @@ defineProps({
             />
             <img
                 :src="hackathon.logo"
-                class="position-absolute top-50 start-0 rounded border object-fit-cover bg-white ms-2 mt-4"
+                class="position-absolute top-50 start-0 rounded border object-fit-cover bg-white ms-2 mt-3"
                 height="60"
                 loading="lazy"
             />
@@ -30,7 +30,7 @@ defineProps({
             </div>
         </div>
 
-        <div class="card-body d-flex flex-column pt-5 bg-white">
+        <div class="card-body d-flex flex-column bg-white">
             <h5 class="card-title text-primary fw-bold fs-3 text-truncate">
                 {{ hackathon.title }}
             </h5>

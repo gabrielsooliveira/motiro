@@ -88,8 +88,13 @@ const form = useForm({
             />
             <label class="form-check-label small" for="term">
                 Li e concordo com os
-                <a href="#" target="_blank">Termos de Uso</a> e
-                <a href="#" target="_blank">Política de Privacidade</a>
+                <a href="#" class="text-thirdary" target="_blank"
+                    >Termos de Uso</a
+                >
+                e
+                <a href="#" class="text-thirdary" target="_blank"
+                    >Política de Privacidade</a
+                >
             </label>
         </div>
 
@@ -123,7 +128,7 @@ const form = useForm({
         </a>
     </div>
 
-    <div class="text-center small">
+    <div class="text-center">
         <Link
             :href="route('login')"
             class="text-decoration-none link-light fw-semibold"

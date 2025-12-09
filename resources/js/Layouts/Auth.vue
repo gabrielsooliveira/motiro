@@ -20,7 +20,7 @@ const content = [
 <template>
     <div class="min-vh-100 d-flex flex-column flex-lg-row">
         <div
-            class="d-flex flex-column justify-content-center align-items-center p-5 bg-primary text-white min-vh-100"
+            class="d-flex flex-column justify-content-center align-items-center p-5 bg-dark text-white min-vh-100"
         >
             <div class="w-100">
                 <slot />

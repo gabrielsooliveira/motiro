@@ -96,6 +96,18 @@ onBeforeUnmount(() => {
                         Atividades</Link
                     >
                 </li>
+                <li class="nav-item">
+                    <Link
+                        :href="route('organization.index')"
+                        class="nav-link link-light d-flex align-items-center px-3 py-2 rounded mb-1"
+                        :class="[$page.url === '/actives' ? 'bg-primary' : '']"
+                        ><font-awesome-icon
+                            icon="fa-solid fa-building-user"
+                            class="me-2"
+                        />
+                        Organizações</Link
+                    >
+                </li>
             </ul>
 
             <hr class="mt-auto text-light" />
