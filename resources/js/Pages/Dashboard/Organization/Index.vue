@@ -3,21 +3,9 @@ import { Head } from "@inertiajs/vue3";
 import { ref } from "vue";
 import CreateOrganizationOffCanvas from "@/js/Components/Offcanvas/Organization/CreateOrganizationOffCanvas.vue";
 
-// Lista mockada — você pode trocar pela API
-const projects = ref([
-    {
-        id: 1,
-        title: "Material UI XD Version",
-        description: "A modern UI kit built for easy prototyping.",
-        progress: 60,
-        image: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61",
-        members: [
-            "https://i.pravatar.cc/40?img=1",
-            "https://i.pravatar.cc/40?img=2",
-            "https://i.pravatar.cc/40?img=3",
-        ],
-    },
-]);
+defineProps({
+    organizations: Array,
+});
 </script>
 <template>
     <Head>
@@ -36,15 +24,15 @@ const projects = ref([
 
         <div class="row g-4">
             <div
-                v-for="project in projects"
-                :key="project.id"
+                v-for="organization in organizations"
+                :key="organization.id"
                 class="col-xl-4 col-lg-6 col-md-6 col-sm-12"
             >
                 <div class="card shadow-sm border-0 h-100">
                     <img
-                        :src="project.image"
-                        class="card-img-top"
-                        style="height: 180px; object-fit: cover"
+                        :src="organization.organization.image"
+                        class="card-img-top object-fit-cover"
+                        height="140"
                     />
 
                     <div class="card-body">
@@ -52,7 +40,7 @@ const projects = ref([
                             class="d-flex justify-content-between align-items-start"
                         >
                             <h5 class="fw-bold mb-0 pb-0">
-                                {{ project.title }}
+                                {{ organization.organization.name }}
                             </h5>
 
                             <button class="btn btn-sm btn-light border">
@@ -63,12 +51,13 @@ const projects = ref([
                         </div>
 
                         <p class="text-muted small mt-0">
-                            {{ project.description }}
+                            {{ organization.organization.description }}
                         </p>
 
                         <div class="d-flex mb-3">
                             <div
-                                v-for="(img, i) in project.members"
+                                v-for="(img, i) in organization.organization
+                                    .members"
                                 :key="i"
                                 class="me-2"
                             >

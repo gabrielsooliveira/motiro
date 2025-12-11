@@ -12,7 +12,14 @@ class OrganizationController extends Controller
 {
     public function index()
     {
-        return inertia('Dashboard/Organization/Index');
+        $organizations = OrganizationUser::where('user_id', auth()->user()->id)
+            ->with('organization:id,name,logo,description')
+            ->select('organization_id', 'role')
+            ->get();
+
+        return inertia('Dashboard/Organization/Index', [
+            'organizations' => $organizations,
+        ]);
     }
 
     public function store(Request $request)
