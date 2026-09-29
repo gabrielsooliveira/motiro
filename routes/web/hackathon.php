@@ -1,13 +1,9 @@
 <?php
 
+use App\Http\Controllers\HackathonController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('hackathon')->name('hackathon.')->group(function () {
-    Route::get('/', function () {
-        return inertia('Site/Hackathon/Index');
-    })->name('index');
-
-    Route::get('/{slug}', function () {
-        return inertia('Site/Hackathon/Show');
-    })->name('show');
+Route::prefix('hackathons')->name('hackathon.')->group(function () {
+    Route::get('/', [HackathonController::class, 'index'])->name('index');
+    Route::get('/{slug}', [HackathonController::class, 'show'])->name('show');
 });

@@ -1,139 +1,154 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
-import { Link } from "@inertiajs/vue3";
-import Navbar from "@/js/Components/Navbar/NavbarDashboard.vue";
+import { Link, usePage } from "@inertiajs/vue3";
+import { ref, onUnmounted, onMounted, onBeforeUnmount, computed } from "vue";
 
-const isSidebarOpen = ref(false);
-const isMobile = ref(false);
-const sidebar = ref(null);
+const page = usePage();
+const user = computed(() => page.props.auth.user);
 
-const toggleSidebar = () => {
-    isSidebarOpen.value = !isSidebarOpen.value;
+const isMenuOpen = ref(false);
+const isScrolled = ref(false);
+const isMdUp = ref(window.innerWidth >= 992);
+
+const handleScroll = () => {
+    isScrolled.value = window.scrollY > 5;
 };
 
-const checkMobile = () => {
-    isMobile.value = window.innerWidth < 768;
-    if (!isMobile.value && isSidebarOpen.value) {
-        isSidebarOpen.value = false;
-    }
+const handleResize = () => {
+    isMdUp.value = window.innerWidth >= 992;
+};
+const toggleMenu = () => {
+    isMenuOpen.value = !isMenuOpen.value;
 };
 
-const handleOutsideClick = (event) => {
-    if (isSidebarOpen.value && isMobile.value && sidebar.value) {
-        const isClickInsideSidebar = sidebar.value.contains(event.target);
-        const isClickOnToggleBtn = event.target.closest(".btn-primary");
+const closeMenu = () => {
+    isMenuOpen.value = false;
+};
 
-        if (!isClickInsideSidebar && !isClickOnToggleBtn) {
-            isSidebarOpen.value = false;
-        }
+// Fecha se clicar fora do painel no mobile
+const handleClickOutside = (event) => {
+    const modalMenu = document.querySelector(".mobile-menu");
+    const toggler = document.querySelector(".navbar-toggler");
+
+    if (
+        isMenuOpen.value &&
+        modalMenu &&
+        !modalMenu.contains(event.target) &&
+        toggler &&
+        !toggler.contains(event.target)
+    ) {
+        closeMenu();
     }
 };
 
 onMounted(() => {
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    document.addEventListener("click", handleOutsideClick);
+    document.addEventListener("click", handleClickOutside);
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleResize);
+});
+onUnmounted(() => {
+    window.removeEventListener("scroll", handleScroll);
+    window.removeEventListener("resize", handleResize);
+});
+onBeforeUnmount(() => {
+    document.removeEventListener("click", handleClickOutside);
 });
 
-onBeforeUnmount(() => {
-    window.removeEventListener("resize", checkMobile);
-    document.removeEventListener("click", handleOutsideClick);
+const navbarClass = computed(() => {
+    const baseClasses = "navbar navbar-expand-lg fixed-top z-1 px-3";
+    const bgClass =
+        !isMdUp.value || isScrolled.value
+            ? "bg-light shadow-sm"
+            : "bg-transparent";
+
+    return `${baseClasses} ${bgClass}`;
 });
 </script>
 
 <template>
-    <div class="d-flex min-vh-100">
-        <aside
-            ref="sidebar"
-            class="bg-secondary d-md-block position-fixed vh-100 d-xl-flex flex-column p-3 shadow-lg vh-100 border-end border-secondary"
-            :class="['sidebar', { open: isSidebarOpen }]"
-        >
-            <Link
-                :href="route('dashboard.index')"
-                class="text-decoration-none fw-semibold text-light fs-3 title-page"
+    <!-- Original Mobile Top Navigation Bar -->
+    <nav :class="navbarClass" class="d-lg-none">
+        <div class="container-fluid">
+            <button
+                class="btn border-0 navbar-toggler"
+                type="button"
+                @click="toggleMenu"
             >
-                Motirõ
+                <font-awesome-icon icon="fas fa-bars" size="lg" />
+            </button>
+        </div>
+    </nav>
+
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar d-none d-lg-flex flex-column justify-content-between z-5">
+        <div class="sidebar-top">
+
+            <!-- Navigation Links -->
+            <nav class="sidebar-nav py-4 px-3">
+                <ul class="nav flex-column gap-2">
+                    <li class="nav-item">
+                        <Link class="nav-link-custom" :href="route('dashboard.index')" :class="{ active: $page.url === '/' }">
+                            <font-awesome-icon icon="fas fa-house" class="nav-icon" />
+                            <span>Início</span>
+                        </Link>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <Link class="nav-link-custom" :href="route('organization.index')" :class="[$page.url === '/organization' ? 'bg-primary' : '']">
+                            <font-awesome-icon icon="fas fa-house" class="nav-icon" />
+                            <span>Organização</span>
+                        </Link>
+                    </li> -->
+                </ul>
+            </nav>
+        </div>
+
+        <!-- User Profile & Action Menu -->
+        <div class="sidebar-footer p-3 border-top">
+            <Link :href="route('logout')" method="post" as="button" class="btn btn-outline-danger d-flex align-items-center gap-2 py-2 w-100 text-start">
+                <font-awesome-icon icon="fa-solid fa-right-from-bracket" />
+                <span>Sair</span>
             </Link>
-            <hr class="text-light" />
-            <ul class="nav nav-pills flex-column mb-auto fw-bold">
+        </div>
+    </aside>
+
+    <!-- Original Mobile Navigation Drawer (with .mobile-menu selector added) -->
+    <transition name="fade">
+        <div
+            v-if="isMenuOpen"
+            class="mobile-menu position-fixed top-0 start-0 w-100 h-100 bg-body d-flex flex-column p-4 z-3 overflow-y-auto"
+        >
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="text-dark fw-bold mb-0">Menu</h5>
+                <button class="btn btn-link link-dark fs-4" @click="closeMenu">
+                    <font-awesome-icon icon="fas fa-xmark" />
+                </button>
+            </div>
+
+            <ul class="nav flex-column fw-semibold">
                 <li class="nav-item">
                     <Link
+                        class="nav-link"
                         :href="route('dashboard.index')"
-                        class="nav-link link-light d-flex align-items-center px-3 py-2 rounded mb-1"
-                        :class="[
-                            $page.url === '/dashboard' ? 'bg-primary' : '',
-                        ]"
-                        ><font-awesome-icon
-                            icon="fa-solid fa-layer-group"
-                            class="me-2"
-                        />
-                        Dashboard</Link
+                        :class="{
+                            'link-secondary': $page.url === '/',
+                        }"
+                        @click="closeMenu"
+                        >Inicio</Link
                     >
                 </li>
+                <li><hr /></li>
                 <li class="nav-item">
                     <Link
-                        :href="route('dashboard.index')"
-                        class="nav-link link-light d-flex align-items-center px-3 py-2 rounded mb-1"
-                        :class="[
-                            $page.url === '/hackathons' ? 'bg-primary' : '',
-                        ]"
+                        :href="route('logout')"
+                        method="post"
+                        as="button"
+                        class="nav-link link-danger"
                         ><font-awesome-icon
-                            icon="fa-regular fa-calendar"
-                            class="me-2"
+                            icon="fa-solid fa-right-from-bracket"
                         />
-                        Meus Hackathons</Link
-                    >
-                </li>
-                <li class="nav-item">
-                    <Link
-                        :href="route('dashboard.index')"
-                        class="nav-link link-light d-flex align-items-center px-3 py-2 rounded mb-1"
-                        :class="[$page.url === '/actives' ? 'bg-primary' : '']"
-                        ><font-awesome-icon
-                            icon="fa-solid fa-list-check"
-                            class="me-2"
-                        />
-                        Atividades</Link
-                    >
-                </li>
-                <li class="nav-item">
-                    <Link
-                        :href="route('organization.index')"
-                        class="nav-link link-light d-flex align-items-center px-3 py-2 rounded mb-1"
-                        :class="[$page.url === '/actives' ? 'bg-primary' : '']"
-                        ><font-awesome-icon
-                            icon="fa-solid fa-building-user"
-                            class="me-2"
-                        />
-                        Organizações</Link
+                        Logout</Link
                     >
                 </li>
             </ul>
-
-            <hr class="mt-auto text-light" />
-            <div class="d-grid gap-2">
-                <Link
-                    :href="route('logout')"
-                    method="post"
-                    as="button"
-                    class="btn link-danger d-flex align-items-center gap-3 px-3 fw-semibold border-0"
-                    ><font-awesome-icon icon="fa-solid fa-right-from-bracket" />
-                    Sair</Link
-                >
-            </div>
-        </aside>
-
-        <div
-            v-if="isMobile && isSidebarOpen"
-            class="overlay"
-            @click="toggleSidebar"
-        ></div>
-
-        <div class="w-100" :class="{ 'ms-md-260': !isMobile }">
-            <main class="container py-3">
-                <Navbar @toggleSidebar="toggleSidebar" />
-                <slot />
-            </main>
         </div>
-    </div>
+    </transition>
 </template>

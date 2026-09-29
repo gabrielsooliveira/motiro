@@ -1,4 +1,9 @@
-<script setup></script>
+<script setup>
+import Image1 from '@/assets/images/undraw/undraw_astronaut_j6je.svg';
+import Image2 from '@/assets/images/undraw/undraw_launch-day_w9g1.svg';
+import Image3 from '@/assets/images/undraw/undraw_space-exploration_dhu1.svg';
+import Image4 from '@/assets/images/undraw/undraw_to-the-moon_w1wa.svg';
+</script>
 
 <template>
     <div class="row">
@@ -48,14 +53,14 @@
         <!-- Center main student image -->
         <div class="col-xxl-6 mt-8 mt-xxl-0">
             <div
-                class="bg-thirdary d-flex justify-content-center rounded-4 position-relative"
+                class=" d-flex justify-content-center rounded-4 position-relative"
                 style="padding-bottom: 150px; padding-top: 100px"
             >
                 <img
-                    src="https://geeksui.codescandy.com/geeks/assets/images/landing-immigration/college-student-holding-laptop-pointing-right.png"
-                    alt="college student holding laptop pointing right"
+                    :src="Image4"
+                    alt=""
                     loading="lazy"
-                    class="position-absolute bottom-0 me-5"
+                    class="position-absolute bottom-0 img-fluid"
                 />
             </div>
         </div>
@@ -65,14 +70,14 @@
             class="col-xxl-6 d-none d-xxl-flex flex-column justify-content-end"
         >
             <div
-                class="bg-primary d-flex justify-content-center rounded-4 position-relative mx-5"
+                class=" d-flex justify-content-center rounded-4 position-relative mx-5"
                 style="padding-bottom: 150px; padding-top: 100px"
             >
                 <img
-                    src="https://geeksui.codescandy.com/geeks/assets/images/landing-immigration/front-view-young-man-going-university-with-bag.png"
-                    alt="young man going university with bag"
+                    :src="Image3"
+                    alt=""
                     loading="lazy"
-                    class="position-absolute bottom-0"
+                    class="position-absolute bottom-0 img-fluid"
                 />
             </div>
         </div>
@@ -82,7 +87,7 @@
             <svg width="204" height="200" viewBox="0 0 204 177">
                 <path
                     d="M204 9C204 108 123 188 24 188H15C6 188 0 181 0 173V22C0 10 8 0 20 0H188C197 0 204 7 204 9Z"
-                    fill="#3B4452"
+                    fill="#A659F7"
                 />
             </svg>
         </div>

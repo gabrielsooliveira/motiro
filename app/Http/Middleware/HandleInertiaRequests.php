@@ -35,8 +35,18 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
-            'user' => fn() => $request->user() || $request->organization ?  $request->user()->only('name', 'email') : null,
+            'user' => fn() => $user ? [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'is_org_admin' => $user->organizations()->wherePivot('role', 'admin')->exists(),
+                'is_judge' => $user->judgeAssignments()->exists(),
+                'has_teams' => $user->teams()->exists(),
+            ] : null,
             'flash' => [
                 'success' => fn() => $request->session()->get('success'),
                 'error' => fn() => $request->session()->get('error'),

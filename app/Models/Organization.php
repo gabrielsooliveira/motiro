@@ -15,6 +15,7 @@ class Organization extends Model
         'name',
         'email',
         'slug',
+        'type',
         'logo',
         'website',
         'description',
@@ -31,5 +32,10 @@ class Organization extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'organization_user', 'organization_id', 'user_id');
+    }
+
+    public function hackathons()
+    {
+        return $this->hasMany(Hackathon::class);
     }
 }
