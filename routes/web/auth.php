@@ -15,4 +15,8 @@ Route::middleware(['guest'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [LogoutController::class, 'store'])->name('logout');
+
+    // Context resolution and switching
+    Route::get('/select-context', [\App\Http\Controllers\ContextController::class, 'select'])->name('context.select');
+    Route::post('/switch-context', [\App\Http\Controllers\ContextController::class, 'switch'])->name('context.switch');
 });

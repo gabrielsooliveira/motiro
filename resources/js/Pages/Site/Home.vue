@@ -11,7 +11,7 @@ const pillars = [
         icon: ["fas", "user-astronaut"],
         iconColor: "text-primary",
         title: "Competidores",
-        description: "Estudantes, desenvolvedores, designers e profissionais que buscam resolver problemas reais e aprender na prática.",
+        description: "Estudantes e profissionais que buscam resolver problemas reais e aprender na prática.",
     },
     {
         icon: ["fas", "users"],
@@ -48,7 +48,7 @@ const steps = [
     {
         number: "02",
         title: "Monte sua Equipe",
-        description: "Crie seu time ou aceite convites de outros competidores, definindo papéis e alinhando tecnologias.",
+        description: "Crie seu time ou aceite convites de outros participantes, definindo papéis e alinhando tecnologias.",
     },
     {
         number: "03",
@@ -128,7 +128,7 @@ const steps = [
                 </div>
 
                 <div class="mt-4 pt-2 d-flex align-items-center gap-3 text-muted small">
-                    <span><font-awesome-icon :icon="['fas', 'check']" class="text-success me-1" /> 100% Gratuito para competidores</span>
+                    <span><font-awesome-icon :icon="['fas', 'check']" class="text-success me-1" /> 100% Gratuito para participantes</span>
                     <span><font-awesome-icon :icon="['fas', 'check']" class="text-success me-1" /> Multi-Hackathon & Seguro</span>
                 </div>
             </div>
@@ -214,7 +214,7 @@ const steps = [
                                 <font-awesome-icon :icon="['fas', 'user-astronaut']" />
                             </span>
                             <div>
-                                <h3 class="fw-bold mb-0 text-dark">Para Competidores</h3>
+                                <h3 class="fw-bold mb-0 text-dark">Para Participantes</h3>
                                 <span class="text-success fw-semibold small">Estudantes, Devs, Designers, Criadores</span>
                             </div>
                         </div>

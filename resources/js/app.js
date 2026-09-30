@@ -18,7 +18,7 @@ import { far } from '@fortawesome/free-regular-svg-icons';
 library.add(fas, fab, far);
 
 createInertiaApp({
-    title: title => `Motirõ - ${title}`,
+    title: title => `Motirõ | ${title}`,
     resolve: name => {
         const pages = import.meta.glob('./Pages/**/*.vue')
         const resolvePageComponent = (name, pages) => {
@@ -30,7 +30,9 @@ createInertiaApp({
         };
         const page = resolvePageComponent(name, pages);
         page.then(module => {
-            if (name.startsWith('Auth/')) {
+            if (name === 'Auth/SelectContext') {
+                module.default.layout = null;
+            } else if (name.startsWith('Auth/')) {
                 module.default.layout = LayoutAuth;
             } else if (name.startsWith('Dashboard/')) {
                 module.default.layout = LayoutDashboard;

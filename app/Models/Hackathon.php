@@ -106,4 +106,21 @@ class Hackathon extends Model
     {
         return $this->hasMany(AuditLog::class);
     }
+
+    public function members()
+    {
+        return $this->hasMany(HackathonMember::class);
+    }
+
+    public function staffUsers()
+    {
+        return $this->belongsToMany(User::class, 'hackathon_members', 'hackathon_id', 'user_id')
+            ->withPivot('role', 'permissions')
+            ->withTimestamps();
+    }
+
+    public function challenges()
+    {
+        return $this->hasMany(HackathonChallenge::class)->orderBy('order');
+    }
 }

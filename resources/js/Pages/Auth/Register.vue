@@ -42,7 +42,7 @@ const submitOrganization = () => {
 
 <template>
     <Head>
-        <title>Criar Conta | Motirõ</title>
+        <title>Criar Conta</title>
     </Head>
 
     <div class="p-3" style="max-width: 460px; margin: 0 auto;">
@@ -65,12 +65,12 @@ const submitOrganization = () => {
                     <div class="mb-3 text-primary fs-1">
                         <font-awesome-icon :icon="['fas', 'user-astronaut']" />
                     </div>
-                    <h5 class="fw-bold mb-1">Competidor</h5>
+                    <h5 class="fw-bold mb-1">Participante</h5>
                     <p class="text-light text-opacity-75 small mb-3">
                         Participe de Hackathons, forme ou encontre equipes, submeta projetos e mostre seu potencial.
                     </p>
                     <button class="btn btn-primary w-100 fw-semibold" @click="selectedType = 'competitor'">
-                        Criar Conta de Competidor
+                        Criar Conta de Participante
                     </button>
                 </div>
             </div>
@@ -104,7 +104,7 @@ const submitOrganization = () => {
                 <button type="button" class="btn btn-link link-light text-decoration-none p-0 small" @click="selectedType = null">
                     &larr; Escolher outro perfil
                 </button>
-                <span class="badge bg-primary">Perfil: Competidor</span>
+                <span class="badge bg-primary">Perfil: Participante</span>
             </div>
 
             <form @submit.prevent="submitCompetitor">
@@ -166,7 +166,7 @@ const submitOrganization = () => {
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100 fw-semibold mb-3" :disabled="competitorForm.processing">
-                    Finalizar Cadastro de Competidor
+                    Finalizar Cadastro de Participante
                 </button>
 
                 <div class="text-center">

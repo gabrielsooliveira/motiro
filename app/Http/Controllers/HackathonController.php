@@ -101,7 +101,11 @@ class HackathonController extends Controller
     public function manage(string $id): Response
     {
         $hackathon = Hackathon::with([
-            'organization',
+            'organization.users' => function ($q) {
+                $q->wherePivot('is_active', true)->select('users.id', 'users.name', 'users.email', 'users.avatar');
+            },
+            'members.user:id,name,email,avatar',
+            'challenges',
             'stages',
             'evaluationCriteria',
             'registrations.team.members',
@@ -113,9 +117,14 @@ class HackathonController extends Controller
 
         $this->authorizeAdmin($hackathon);
 
+        $user = Auth::user();
+        $isOrgAdmin = $hackathon->organization && ($hackathon->organization->owner_id === $user->id || $user->isOrganizationAdmin($hackathon->organization_id));
+        $isHackathonAdmin = $hackathon->members()->where('user_id', $user->id)->where('role', 'admin')->exists();
+
         return Inertia::render('Dashboard/Hackathon/Manage', [
             'hackathon' => $hackathon,
             'rankings' => $hackathon->results_published ? $this->evaluationService->calculateRankings($hackathon) : null,
+            'canManageStaff' => $isOrgAdmin || $isHackathonAdmin,
         ]);
     }
 
@@ -124,6 +133,8 @@ class HackathonController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+
         $validated = $request->validate([
             'organization_id' => 'required|uuid|exists:organizations,id',
             'title' => 'required|string|max:255',
@@ -141,6 +152,12 @@ class HackathonController extends Controller
             'rules' => 'nullable|string',
         ]);
 
+        // Check user permission on organization
+        $isOrgAdmin = $user->isOrganizationAdmin($validated['organization_id']) || Organization::where('id', $validated['organization_id'])->where('owner_id', $user->id)->exists();
+        if (!$isOrgAdmin) {
+            abort(403, 'Apenas administradores da instituição podem criar hackathons.');
+        }
+
         $slug = Str::slug($validated['title']);
         $count = 1;
         while (Hackathon::where('slug', $slug)->exists()) {
@@ -151,6 +168,13 @@ class HackathonController extends Controller
         $validated['status'] = 'draft';
 
         $hackathon = Hackathon::create($validated);
+
+        // Assign creator as admin in hackathon_members
+        \App\Models\HackathonMember::create([
+            'hackathon_id' => $hackathon->id,
+            'user_id' => $user->id,
+            'role' => 'admin',
+        ]);
 
         // Create default stages
         $this->createDefaultStages($hackathon);
@@ -214,10 +238,7 @@ class HackathonController extends Controller
             abort(401);
         }
 
-        $isOwner = $hackathon->organization && $hackathon->organization->owner_id === $user->id;
-        $hasPermission = $user->hasPermission('hackathon.configure', $hackathon->organization_id, $hackathon->id);
-
-        if (!$isOwner && !$hasPermission) {
+        if (!$user->canManageHackathon($hackathon)) {
             abort(403, 'Acesso não autorizado para gerenciar este Hackathon.');
         }
     }

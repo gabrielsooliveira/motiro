@@ -12,15 +12,29 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
 use Inertia\Response;
 
 class RegisterController extends Controller
 {
     public function create(Request $request): Response
     {
-        return Inertia::render('Auth/Register', [
+        $invitationToken = $request->query('invitation');
+        $invitation = null;
+        if ($invitationToken) {
+            $invitation = \App\Models\OrganizationInvitation::with('organization')
+                ->where('token', $invitationToken)
+                ->where('status', 'pending')
+                ->first();
+        }
+
+        return inertia('Auth/Register', [
             'initialType' => $request->query('type'),
+            'invitation' => $invitation ? [
+                'token' => $invitation->token,
+                'email' => $invitation->email,
+                'role' => $invitation->role,
+                'organization_name' => $invitation->organization?->name,
+            ] : null,
         ]);
     }
 
@@ -37,7 +51,8 @@ class RegisterController extends Controller
                 'website' => ['nullable', 'url'],
             ]);
 
-            $user = DB::transaction(function () use ($request) {
+            $org = null;
+            $user = DB::transaction(function () use ($request, &$org) {
                 $user = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
@@ -69,6 +84,7 @@ class RegisterController extends Controller
                     'organization_id' => $org->id,
                     'user_id' => $user->id,
                     'role' => 'admin',
+                    'is_active' => true,
                 ]);
 
                 $orgAdminRole = Role::where('name', 'org_admin')->first();
@@ -82,7 +98,8 @@ class RegisterController extends Controller
             });
 
             Auth::login($user);
-            return redirect()->route('dashboard.index')->with('success', 'Organização cadastrada com sucesso! Bem-vindo ao painel.');
+            \App\Services\ContextService::setOrganizationContext($request, $org->id);
+            return redirect()->route('organization.dashboard')->with('success', 'Organização cadastrada com sucesso! Bem-vindo ao painel.');
         }
 
         // Competitor registration flow
@@ -92,7 +109,15 @@ class RegisterController extends Controller
             'password' => ['required', 'confirmed', 'min:6'],
         ]);
 
-        $user = DB::transaction(function () use ($request) {
+        $invitationToken = $request->input('invitation_token');
+        $invitation = null;
+        if ($invitationToken) {
+            $invitation = \App\Models\OrganizationInvitation::where('token', $invitationToken)
+                ->where('status', 'pending')
+                ->first();
+        }
+
+        $user = DB::transaction(function () use ($request, $invitation) {
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -101,15 +126,32 @@ class RegisterController extends Controller
                 'lgpd_consent_at' => now(),
             ]);
 
-            $competitorRole = Role::where('name', 'competitor')->first();
-            if ($competitorRole) {
-                $user->roles()->attach($competitorRole->id);
+            if ($invitation) {
+                OrganizationUser::create([
+                    'organization_id' => $invitation->organization_id,
+                    'user_id' => $user->id,
+                    'role' => $invitation->role,
+                    'is_active' => true,
+                ]);
+                $invitation->update(['status' => 'accepted']);
+            } else {
+                $competitorRole = Role::where('name', 'competitor')->first();
+                if ($competitorRole) {
+                    $user->roles()->attach($competitorRole->id);
+                }
             }
 
             return $user;
         });
 
         Auth::login($user);
-        return redirect()->route('dashboard.index')->with('success', 'Conta de competidor criada com sucesso! Explore os Hackathons disponíveis.');
+
+        if ($invitation) {
+            \App\Services\ContextService::setOrganizationContext($request, $invitation->organization_id);
+            return redirect()->route('organization.dashboard')->with('success', 'Convite aceito! Bem-vindo à instituição.');
+        }
+
+        \App\Services\ContextService::setCompetitorContext($request);
+        return redirect()->route('dashboard.index')->with('success', 'Conta de participante criada com sucesso! Explore os Hackathons disponíveis.');
     }
 }

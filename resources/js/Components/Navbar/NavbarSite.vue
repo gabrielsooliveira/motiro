@@ -194,7 +194,7 @@ const navbarClass = computed(() => {
                         class="btn btn-outline-primary btn-lg fw-semibold"
                         @click="closeMenu"
                     >
-                        Quero Participar (Competidor)
+                        Quero Participar (Participante)
                     </Link>
                     <Link
                         :href="route('register', { type: 'organization' })"

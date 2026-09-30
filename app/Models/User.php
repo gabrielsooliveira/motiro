@@ -82,7 +82,21 @@ class User extends Authenticatable
 
     public function organizations()
     {
-        return $this->belongsToMany(Organization::class, 'organization_user', 'user_id', 'organization_id');
+        return $this->belongsToMany(Organization::class, 'organization_user', 'user_id', 'organization_id')
+            ->withPivot('role', 'is_active')
+            ->withTimestamps();
+    }
+
+    public function hackathonStaffMemberships()
+    {
+        return $this->hasMany(HackathonMember::class);
+    }
+
+    public function staffHackathons()
+    {
+        return $this->belongsToMany(Hackathon::class, 'hackathon_members', 'user_id', 'hackathon_id')
+            ->withPivot('role', 'permissions')
+            ->withTimestamps();
     }
 
     public function teams()
@@ -158,5 +172,45 @@ class User extends Authenticatable
         }
 
         return $query->exists();
+    }
+
+    public function isOrganizationAdmin(?string $organizationId = null): bool
+    {
+        $query = $this->organizations()->wherePivot('is_active', true);
+        if ($organizationId) {
+            $query->where('organizations.id', $organizationId);
+        }
+        return $query->wherePivot('role', 'admin')->exists();
+    }
+
+    public function getOrganizationRole(string $organizationId): ?string
+    {
+        $org = $this->organizations()->where('organizations.id', $organizationId)->first();
+        return $org?->pivot?->role;
+    }
+
+    public function canManageHackathon(Hackathon $hackathon): bool
+    {
+        // 1. Organization owner always has access
+        if ($hackathon->organization && $hackathon->organization->owner_id === $this->id) {
+            return true;
+        }
+
+        // 2. Organization admin has access
+        if ($this->isOrganizationAdmin($hackathon->organization_id)) {
+            return true;
+        }
+
+        // 3. User is explicitly in hackathon_members as admin or manager
+        $member = HackathonMember::where('hackathon_id', $hackathon->id)
+            ->where('user_id', $this->id)
+            ->first();
+
+        if ($member && in_array($member->role, ['admin', 'manager'])) {
+            return true;
+        }
+
+        // 4. RBAC check
+        return $this->hasPermission('hackathon.configure', $hackathon->organization_id, $hackathon->id);
     }
 }

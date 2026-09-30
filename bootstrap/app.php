@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
         ]);
+        $middleware->alias([
+            'org.context' => \App\Http\Middleware\EnsureOrganizationContext::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

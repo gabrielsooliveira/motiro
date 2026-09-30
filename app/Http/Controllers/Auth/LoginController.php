@@ -20,7 +20,9 @@ class LoginController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            return redirect()->route('dashboard.index')->with('success', 'Login realizado com sucesso');
+            $targetRoute = \App\Services\ContextService::resolvePostLoginRoute(Auth::user(), $request);
+
+            return redirect()->to($targetRoute)->with('success', 'Login realizado com sucesso');
         }
 
         return back()->with('error', 'As credenciais fornecidas não coincidem com nossos registros.');

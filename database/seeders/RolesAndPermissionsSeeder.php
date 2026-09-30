@@ -81,9 +81,9 @@ class RolesAndPermissionsSeeder extends Seeder
             $permissionModels['evaluation.update']->id,
         ]);
 
-        $competitor = Role::firstOrCreate(
+        $participant = Role::firstOrCreate(
             ['name' => 'competitor'],
-            ['display_name' => 'Competidor', 'description' => 'Participante de equipes e hackathons']
+            ['display_name' => 'Competidor', 'description' => 'Competidor em hackathons e equipes']
         );
 
         $mentor = Role::firstOrCreate(

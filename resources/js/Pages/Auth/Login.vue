@@ -15,7 +15,9 @@ const toggleView = () => {
 </script>
 
 <template>
-    <Head title="Login" />
+    <Head>
+        <title>Login</title>
+    </Head>
 
     <form @submit.prevent="form.post(route('login.store'))">
         <div class="mb-3">

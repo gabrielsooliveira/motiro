@@ -41,7 +41,7 @@ const getStatusBadge = (status) => {
                 <form @submit.prevent="handleSearch" class="px-md-3">
                     <div class="input-group">
                         <input 
-                            v-model="searchQuery"
+                            
                             class="form-control py-2 px-3 fs-7 border-end-0 rounded-start-pill shadow-none" 
                             type="search" 
                             placeholder="Pesquisar Hackathons" 
@@ -64,7 +64,7 @@ const getStatusBadge = (status) => {
             <p>Não há hackathons disponíveis com os filtros selecionados ou ainda não foram criados.</p>
         </div>
 
-        <div v-else class="row g-4">
+        <div v-else class="row g-4 mt-3">
             <div v-for="hack in hackathons.data" :key="hack.id" class="col-md-6 col-lg-4">
                 <div class="hackathon-card card h-100 shadow-sm border-0">
                     <div class="position-relative">

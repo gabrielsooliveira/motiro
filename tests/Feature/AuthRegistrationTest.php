@@ -41,7 +41,7 @@ test('registers a new organization successfully', function () {
         'password_confirmation' => 'secret1234',
     ]);
 
-    $response->assertRedirect(route('dashboard.index'));
+    $response->assertRedirect(route('organization.dashboard'));
 
     $user = User::where('email', 'contato@univ-inova.edu.br')->first();
     expect($user)->not->toBeNull();

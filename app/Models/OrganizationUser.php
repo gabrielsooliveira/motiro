@@ -13,7 +13,15 @@ class OrganizationUser extends Model
         'organization_id',
         'user_id',
         'role',
+        'is_active',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
 
     public function organization()
     {
