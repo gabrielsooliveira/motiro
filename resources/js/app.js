@@ -32,9 +32,9 @@ createInertiaApp({
         page.then(module => {
             if (name === 'Auth/SelectContext') {
                 module.default.layout = null;
-            } else if (name.startsWith('Auth/')) {
+            } else if (name.startsWith('Participant/Auth/') || name.startsWith('Organization/Auth/')) {
                 module.default.layout = LayoutAuth;
-            } else if (name.startsWith('Dashboard/')) {
+            } else if (name.startsWith('Participant/Dashboard/') || name.startsWith('Organization/Dashboard/')) {
                 module.default.layout = LayoutDashboard;
             } else {
                 module.default.layout = LayoutSite;

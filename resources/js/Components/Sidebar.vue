@@ -97,16 +97,8 @@ const navbarClass = computed(() => {
             <!-- Brand / Logo -->
             <div class="px-3 pt-3 pb-2 border-bottom">
                 <Link :href="route('home')" class="d-flex align-items-center gap-2 text-decoration-none text-dark">
-                    <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 36px; height: 36px;">
-                        M
-                    </div>
                     <span class="fs-4 fw-bold tracking-tight">Motirõ</span>
                 </Link>
-            </div>
-
-            <!-- Context Switcher (Section 13) -->
-            <div class="p-3 border-bottom bg-light bg-opacity-50">
-                <ContextSwitcher />
             </div>
 
             <!-- Navigation Links -->

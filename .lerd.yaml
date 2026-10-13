@@ -1,0 +1,14 @@
+domains:
+  - motiro
+php_version: "8.3"
+node_version: "22"
+framework: laravel
+framework_version: "12"
+secured: true
+services:
+  - mailpit
+  - redis
+workers:
+  - queue
+  - schedule
+  - vite
