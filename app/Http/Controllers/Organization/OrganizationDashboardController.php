@@ -81,7 +81,7 @@ class OrganizationDashboardController extends Controller
 
         $membersCount = $organization->users()->wherePivot('is_active', true)->count();
 
-        return Inertia::render('Dashboard/Organization/Dashboard', [
+        return Inertia::render('Organization/Dashboard/Organization/Dashboard', [
             'organization' => [
                 'id' => $organization->id,
                 'name' => $organization->name,

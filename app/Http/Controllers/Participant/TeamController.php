@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Participant;
 
+use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\User;
@@ -31,7 +32,7 @@ class TeamController extends Controller
 
         $this->authorizeMember($team);
 
-        return Inertia::render('Dashboard/Team/Show', [
+        return Inertia::render('Organization/Dashboard/Team/Show', [
             'team' => $team,
             'isLeader' => $team->leader_id === Auth::id(),
         ]);

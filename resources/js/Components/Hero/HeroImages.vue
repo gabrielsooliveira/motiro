@@ -1,14 +1,12 @@
 <script setup>
-import Image1 from '@/assets/images/undraw/undraw_astronaut_j6je.svg';
-import Image2 from '@/assets/images/undraw/undraw_launch-day_w9g1.svg';
-import Image3 from '@/assets/images/undraw/undraw_space-exploration_dhu1.svg';
-import Image4 from '@/assets/images/undraw/undraw_to-the-moon_w1wa.svg';
+import Image1 from '@/assets/images/undraw/undraw_space-exploration_dhu1.svg';
+import Image2 from '@/assets/images/undraw/undraw_to-the-moon_w1wa.svg';
 </script>
 
 <template>
     <div class="row">
         <div
-            class="col-xxl-6 d-none d-xxl-flex flex-column justify-content-start align-items-center"
+            class="col-lg-6 d-none d-lg-flex flex-column justify-content-start align-items-center"
         >
             <div class="position-relative">
                 <div class="position-absolute bottom-25 start-0 text-light">
@@ -51,13 +49,13 @@ import Image4 from '@/assets/images/undraw/undraw_to-the-moon_w1wa.svg';
         </div>
 
         <!-- Center main student image -->
-        <div class="col-xxl-6 mt-8 mt-xxl-0">
+        <div class="col-lg-6 mt-8 mt-lg-0">
             <div
                 class=" d-flex justify-content-center rounded-4 position-relative"
                 style="padding-bottom: 150px; padding-top: 100px"
             >
                 <img
-                    :src="Image4"
+                    :src="Image2"
                     alt=""
                     loading="lazy"
                     class="position-absolute bottom-0 img-fluid"
@@ -67,14 +65,14 @@ import Image4 from '@/assets/images/undraw/undraw_to-the-moon_w1wa.svg';
 
         <!-- Right blue image (desktop only) -->
         <div
-            class="col-xxl-6 d-none d-xxl-flex flex-column justify-content-end"
+            class="col-lg-6 d-none d-lg-flex flex-column justify-content-end"
         >
             <div
                 class=" d-flex justify-content-center rounded-4 position-relative mx-5"
                 style="padding-bottom: 150px; padding-top: 100px"
             >
                 <img
-                    :src="Image3"
+                    :src="Image1"
                     alt=""
                     loading="lazy"
                     class="position-absolute bottom-0 img-fluid"
@@ -83,7 +81,7 @@ import Image4 from '@/assets/images/undraw/undraw_to-the-moon_w1wa.svg';
         </div>
 
         <!-- Right background SVG -->
-        <div class="col-xxl-6 d-none d-xxl-block mt-5">
+        <div class="col-lg-6 d-none d-lg-block mt-5">
             <svg width="204" height="200" viewBox="0 0 204 177">
                 <path
                     d="M204 9C204 108 123 188 24 188H15C6 188 0 181 0 173V22C0 10 8 0 20 0H188C197 0 204 7 204 9Z"

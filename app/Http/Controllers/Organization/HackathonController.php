@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Organization;
 
+use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\EvaluationCriterion;
 use App\Models\Hackathon;
@@ -121,7 +122,7 @@ class HackathonController extends Controller
         $isOrgAdmin = $hackathon->organization && ($hackathon->organization->owner_id === $user->id || $user->isOrganizationAdmin($hackathon->organization_id));
         $isHackathonAdmin = $hackathon->members()->where('user_id', $user->id)->where('role', 'admin')->exists();
 
-        return Inertia::render('Dashboard/Hackathon/Manage', [
+        return Inertia::render('Organization/Dashboard/Hackathon/Manage', [
             'hackathon' => $hackathon,
             'rankings' => $hackathon->results_published ? $this->evaluationService->calculateRankings($hackathon) : null,
             'canManageStaff' => $isOrgAdmin || $isHackathonAdmin,

@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\HackathonController;
-use App\Http\Controllers\JudgeController;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\RegistrationController;
-use App\Http\Controllers\TeamController;
+use App\Http\Controllers\Participant\DashboardController;
+use App\Http\Controllers\Organization\HackathonController;
+use App\Http\Controllers\Organization\JudgeController;
+use App\Http\Controllers\Participant\ProjectController;
+use App\Http\Controllers\Participant\RegistrationController;
+use App\Http\Controllers\Participant\TeamController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->prefix('dashboard')->group(function () {

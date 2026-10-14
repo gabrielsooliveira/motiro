@@ -139,13 +139,12 @@ const steps = [
         </div>
     </section>
 
-    <!-- 2. Section "O que é o Motirõ?" -->
-    <section id="sobre" class="py-5 bg-light border-top border-bottom">
+    <section id="sobre" class="py-5 border-top border-bottom background-img">
         <div class="container py-4">
             <div class="text-center max-w-700 mx-auto mb-5">
-                <span class="text-primary fw-bold text-uppercase small tracking-wide">Ecossistema Colaborativo</span>
-                <h2 class="fw-bold mt-2 mb-3">O que é o Motirõ?</h2>
-                <p class="text-secondary lead">
+                <span class="fw-bold text-uppercase small tracking-wide bg-white p-2 rounded text-dark">Ecossistema Colaborativo</span>
+                <h2 class="fw-bold mt-4 mb-3 text-light">O que é o Motirõ?</h2>
+                <p class="text-light lead">
                     O Motirõ é uma plataforma completa projetada para centralizar todo o ciclo de vida de um Hackathon,
                     conectando cinco pilares essenciais em um ambiente intuitivo e confiável.
                 </p>
@@ -167,34 +166,6 @@ const steps = [
         </div>
     </section>
 
-    <!-- 3. Section "Como Funciona?" -->
-    <section id="como-funciona" class="py-5">
-        <div class="container py-4">
-            <div class="text-center max-w-700 mx-auto mb-5">
-                <span class="text-primary fw-bold text-uppercase small tracking-wide">Passo a Passo</span>
-                <h2 class="fw-bold mt-2 mb-3">Como Funciona no Motirõ?</h2>
-                <p class="text-secondary lead">
-                    Da descoberta do desafio até o pódio, cada etapa é acompanhada com clareza e transparência.
-                </p>
-            </div>
-
-            <div class="row g-4 justify-content-center">
-                <div v-for="step in steps" :key="step.number" class="col-md-6 col-lg-4">
-                    <div class="step-card shadow-sm">
-                        <div class="step-number bg-primary text-white">
-                            {{ step.number }}
-                        </div>
-                        <h5 class="fw-bold mb-2">{{ step.title }}</h5>
-                        <p class="text-secondary small mb-0 lh-base">
-                            {{ step.description }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 4. Section "Para quem é o Motirõ?" (Distinct Roles Showcase) -->
     <section id="organizacoes" class="py-5 bg-light border-top border-bottom">
         <div class="container py-4">
             <div class="text-center max-w-700 mx-auto mb-5">
@@ -268,9 +239,35 @@ const steps = [
             </div>
         </div>
     </section>
+    
+    <section id="como-funciona" class="py-5">
+        <div class="container py-4">
+            <div class="text-center max-w-700 mx-auto mb-5">
+                <span class="text-primary fw-bold text-uppercase small tracking-wide">Passo a Passo</span>
+                <h2 class="fw-bold mt-2 mb-3">Como Funciona no Motirõ?</h2>
+                <p class="text-secondary lead">
+                    Da descoberta do desafio até o pódio, cada etapa é acompanhada com clareza e transparência.
+                </p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <div v-for="step in steps" :key="step.number" class="col-md-6 col-lg-4">
+                    <div class="step-card shadow-sm">
+                        <div class="step-number bg-primary text-white">
+                            {{ step.number }}
+                        </div>
+                        <h5 class="fw-bold mb-2">{{ step.title }}</h5>
+                        <p class="text-secondary small mb-0 lh-base">
+                            {{ step.description }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- 5. CTA Footer Banner -->
-    <section class="py-5 text-center bg-dark text-white">
+    <section class="py-5 text-center text-white background-img">
         <div class="container py-4">
             <h2 class="fw-bold mb-3">Pronto para dar vida a novas ideias?</h2>
             <p class="text-light text-opacity-75 lead mb-4 max-w-700 mx-auto">

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Participant;
 
+use App\Http\Controllers\Controller;
 use App\Models\Hackathon;
 use App\Models\Project;
 use App\Models\ProjectSubmission;
@@ -26,7 +27,7 @@ class ProjectController extends Controller
     {
         $project = Project::with(['hackathon', 'team.members', 'submissions.submitter'])->findOrFail($id);
 
-        return Inertia::render('Dashboard/Project/Show', [
+        return Inertia::render('Organization/Dashboard/Project/Show', [
             'project' => $project,
             'isTeamMember' => $project->team->members->contains('id', Auth::id()),
             'isSubmissionOpen' => $this->isSubmissionOpen($project->hackathon),

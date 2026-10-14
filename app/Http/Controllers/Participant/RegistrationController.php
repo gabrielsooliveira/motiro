@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Participant;
 
+use App\Http\Controllers\Controller;
 use App\Models\Hackathon;
 use App\Models\HackathonRegistration;
 use App\Models\Team;

@@ -34,7 +34,6 @@ const getRoleBadge = (role) => {
 
     <div class="min-vh-100 d-flex flex-column justify-content-center align-items-center py-5 bg-light">
         <div class="container" style="max-width: 820px;">
-            <!-- Logo / Brand Header -->
             <div class="text-center mb-4">
                 <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold mb-2">
                     Multi-Institucional

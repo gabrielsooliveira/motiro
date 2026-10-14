@@ -17,7 +17,7 @@ class OrganizationController extends Controller
             ->select('organization_id', 'role')
             ->get();
 
-        return inertia('Dashboard/Organization/Index', [
+        return inertia('Organization/Dashboard/Organization/Index', [
             'organizations' => $organizations,
         ]);
     }

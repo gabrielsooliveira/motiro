@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Participant;
 
+use App\Http\Controllers\Controller;
 use App\Models\Evaluation;
 use App\Models\Hackathon;
 use App\Models\JudgeAssignment;
@@ -76,7 +77,7 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        return Inertia::render('Dashboard/Home', [
+        return Inertia::render('Participant/Dashboard/Home', [
             'user' => $user,
             'competitor' => [
                 'teams' => $userTeams,

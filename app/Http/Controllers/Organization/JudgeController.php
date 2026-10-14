@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Organization;
 
+use App\Http\Controllers\Controller;
 use App\Models\ConflictOfInterest;
 use App\Models\Evaluation;
 use App\Models\EvaluationScore;
@@ -39,7 +40,7 @@ class JudgeController extends Controller
 
         $conflicts = ConflictOfInterest::where('user_id', $user->id)->get()->keyBy('project_id');
 
-        return Inertia::render('Dashboard/Judge/Index', [
+        return Inertia::render('Organization/Dashboard/Judge/Index', [
             'assignments' => $assignments,
             'evaluations' => $evaluations,
             'conflicts' => $conflicts,
@@ -88,7 +89,7 @@ class JudgeController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        return Inertia::render('Dashboard/Judge/Evaluate', [
+        return Inertia::render('Organization/Dashboard/Judge/Evaluate', [
             'project' => $project,
             'criteria' => $project->hackathon->evaluationCriteria,
             'evaluation' => $existingEvaluation,
