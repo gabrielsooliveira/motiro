@@ -45,7 +45,7 @@ const submitOrganization = () => {
         <title>Criar Conta</title>
     </Head>
 
-    <div class="p-3" style="max-width: 460px; margin: 0 auto;">
+    <div class="p-3 auth-register-container">
         <!-- Header -->
         <div class="text-center mb-4">
             <Link :href="route('home')" class="text-decoration-none">

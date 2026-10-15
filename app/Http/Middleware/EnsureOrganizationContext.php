@@ -10,31 +10,32 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureOrganizationContext
 {
     /**
-     * Handle an incoming request.
+     * Handle an incoming request for institutional context.
      */
     public function handle(Request $request, Closure $next, ?string $requiredRole = null): Response
     {
         $user = $request->user();
         if (!$user) {
-            return redirect()->route('login');
+            return redirect()->route('organization.login')
+                ->with('error', 'Faça login na Área da Organização para acessar.');
         }
 
         $activeOrg = ContextService::getActiveOrganization($request);
 
-        // If no active organization in session, try to auto-select
+        // If no active organization in session, try to resolve safely
         if (!$activeOrg) {
             $userOrgs = $user->organizations()->wherePivot('is_active', true)->get();
 
             if ($userOrgs->isEmpty()) {
-                // User has no organizations at all
-                return redirect()->route('dashboard.index')->with('error', 'Você não possui vínculo com nenhuma organização.');
+                // Deny administrative access without leaking or redirecting to participant portal
+                abort(403, 'Acesso restrito: você não possui vínculo ativo com nenhuma organização.');
             }
 
             if ($userOrgs->count() === 1) {
                 ContextService::setOrganizationContext($request, $userOrgs->first()->id);
                 $activeOrg = $userOrgs->first();
             } else {
-                return redirect()->route('context.select');
+                return redirect()->route('organization.select');
             }
         }
 

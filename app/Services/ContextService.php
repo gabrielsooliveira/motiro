@@ -83,24 +83,16 @@ class ContextService
         $contextType = $request->session()->get('current_context');
         $activeOrg = self::getActiveOrganization($request);
 
-        // If organization was set as context but no longer valid or not yet set
+        // If organization was set as context but no active org in session
         if ($contextType === self::CONTEXT_ORGANIZATION && !$activeOrg) {
             if ($userOrganizations->count() > 0) {
                 $activeOrg = $userOrganizations->first();
                 self::setOrganizationContext($request, $activeOrg->id);
-            } else {
-                $contextType = self::CONTEXT_COMPETITOR;
-                self::setCompetitorContext($request);
             }
         } elseif (!$contextType) {
-            if ($userOrganizations->count() > 0) {
-                $contextType = self::CONTEXT_ORGANIZATION;
-                $activeOrg = $userOrganizations->first();
-                self::setOrganizationContext($request, $activeOrg->id);
-            } else {
-                $contextType = self::CONTEXT_COMPETITOR;
-                self::setCompetitorContext($request);
-            }
+            // When no explicit context is present, default to competitor context
+            $contextType = self::CONTEXT_COMPETITOR;
+            self::setCompetitorContext($request);
         }
 
         $roleInOrg = null;

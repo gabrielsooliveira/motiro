@@ -1,0 +1,27 @@
+// Component: Empty State
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background-color: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-xl);
+
+  .empty-state-icon {
+    font-size: 3rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+  }
+
+  h5 {
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    max-width: 480px;
+    margin: 0 auto 1.25rem;
+  }
+}

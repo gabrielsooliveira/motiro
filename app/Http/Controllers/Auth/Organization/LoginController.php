@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Auth\Organization;
 
 use App\Http\Controllers\Controller;
 use App\Services\ContextService;
@@ -15,42 +15,62 @@ class LoginController extends Controller
         return inertia('Organization/Auth/Login');
     }
 
-    public function login(Request $request)
+    public function create(): Response
     {
-       $credentials = $request->only('email', 'password');
+        return $this->index();
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $credentials = $request->only('email', 'password');
 
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->with('error', 'As credenciais fornecidas não coincidem com nossos registros.');
+            return back()->withErrors([
+                'email' => 'As credenciais fornecidas não coincidem com nossos registros.',
+            ]);
+        }
+
+        $user = Auth::user();
+
+        // Consulta as organizações ativas vinculadas ao usuário
+        $userOrgs = $user->organizations()
+            ->wherePivot('is_active', true)
+            ->get();
+
+        // Se não houver organizações autorizadas, nega o acesso administrativo com orientação adequada
+        // Não redireciona automaticamente para a área do participante
+        if ($userOrgs->isEmpty()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Sua conta não possui vínculo com nenhuma organização. Caso deseje participar de eventos, acesse a Área do Participante ou realize o cadastro de uma nova organização.',
+            ]);
         }
 
         $request->session()->regenerate();
-        $user = Auth::user();
 
-        if ($context === 'organization') {
-            // Verify the user has at least one active organization
-            $userOrgs = $user->organizations()->wherePivot('is_active', true)->get();
+        // Se houver apenas uma organização, direciona diretamente para ela
+        if ($userOrgs->count() === 1) {
+            $organization = $userOrgs->first();
+            ContextService::setOrganizationContext($request, $organization->id);
 
-            if ($userOrgs->isEmpty()) {
-                // No org access — redirect to participant dashboard with warning
-                ContextService::setCompetitorContext($request);
-                return redirect()->route('dashboard.index')
-                    ->with('warning', 'Sua conta não possui acesso a nenhuma organização. Você foi redirecionado para a área do participante.');
-            }
-
-            if ($userOrgs->count() === 1) {
-                ContextService::setOrganizationContext($request, $userOrgs->first()->id);
-                return redirect()->route('organization.dashboard')
-                    ->with('success', 'Login realizado com sucesso. Bem-vindo à área institucional.');
-            }
-
-            // Multiple organizations — ask user to choose
-            return redirect()->route('context.select')
-                ->with('info', 'Selecione a organização em que deseja trabalhar.');
+            return redirect()->route('organization.dashboard')
+                ->with('success', 'Login realizado com sucesso. Bem-vindo à área institucional.');
         }
 
-        // Default: participant context
-        ContextService::setCompetitorContext($request);
-        return redirect()->route('dashboard.index')
-            ->with('success', 'Login realizado com sucesso. Bem-vindo ao Motirõ!');
+        // Se houver várias organizações, direciona para a tela de seleção
+        return redirect()->route('organization.select');
+    }
+
+    public function login(Request $request)
+    {
+        return $this->store($request);
     }
 }

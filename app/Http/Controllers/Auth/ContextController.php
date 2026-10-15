@@ -13,27 +13,44 @@ use Inertia\Response;
 class ContextController extends Controller
 {
     /**
-     * Show context selection screen
+     * Show context selection screen with reliable organization data
      */
     public function select(Request $request): Response|RedirectResponse
     {
         $user = Auth::user();
         if (!$user) {
-            return redirect()->route('login');
+            return redirect()->route('organization.login');
         }
 
         $organizations = $user->organizations()
             ->wherePivot('is_active', true)
-            ->get(['organizations.id', 'organizations.name', 'organizations.slug', 'organizations.logo', 'organizations.type']);
+            ->withCount('hackathons')
+            ->get(['organizations.id', 'organizations.name', 'organizations.slug', 'organizations.logo', 'organizations.type', 'organizations.description'])
+            ->map(function ($org) {
+                return [
+                    'id' => $org->id,
+                    'name' => $org->name,
+                    'slug' => $org->slug,
+                    'logo' => $org->logo,
+                    'type' => $org->type,
+                    'description' => $org->description,
+                    'role' => $org->pivot->role,
+                    'hackathons_count' => $org->hackathons_count,
+                ];
+            });
 
-        return Inertia::render('Auth/SelectContext', [
+        return Inertia::render('Organization/Auth/SelectContext', [
             'organizations' => $organizations,
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
         ]);
     }
 
     /**
-     * Switch current active context
+     * Switch current active context safely
      */
     public function switch(Request $request): RedirectResponse
     {
@@ -44,13 +61,14 @@ class ContextController extends Controller
 
         if ($validated['type'] === 'competitor') {
             ContextService::setCompetitorContext($request);
-            return redirect()->route('dashboard.index')->with('success', 'Contexto alterado para Competidor.');
+            return redirect()->route('participant.dashboard')->with('success', 'Contexto alterado para Participante.');
         }
 
+        // Backend validates the link before setting context
         $success = ContextService::setOrganizationContext($request, $validated['organization_id']);
 
         if (!$success) {
-            return redirect()->back()->with('error', 'Você não tem permissão para acessar esta instituição.');
+            return redirect()->back()->with('error', 'Acesso não autorizado para a organização selecionada.');
         }
 
         return redirect()->route('organization.dashboard')->with('success', 'Contexto institucional ativado.');

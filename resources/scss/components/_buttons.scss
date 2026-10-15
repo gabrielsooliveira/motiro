@@ -1,0 +1,24 @@
+// Component: Buttons
+.btn {
+  font-weight: 500;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+
+  &:hover,
+  &:focus {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+  }
+}

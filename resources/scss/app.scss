@@ -1,4 +1,50 @@
+// ==========================================================================
+// Motirõ Frontend Application Stylesheet
+// Architecture: Abstracts -> Base -> Components -> Layouts -> Pages
+// ==========================================================================
+
+// 1. Bootstrap Functions & Framework Variables
 @import "bootstrap/scss/functions";
 @import "bootstrap/scss/variables";
-@import './variables';
+
+// 2. Abstracts (Tokens, Theme Overrides, Mixins & Functions)
+@import "./abstracts/variables";
+@import "./abstracts/functions";
+@import "./abstracts/mixins";
+
+// 3. Bootstrap Framework Compilation
 @import "bootstrap/scss/bootstrap";
+
+// 4. Base Layers (Reset, Typography, Accessibility)
+@import "./base/reset";
+@import "./base/typography";
+@import "./base/accessibility";
+
+// 5. Shared Components
+@import "./components/buttons";
+@import "./components/forms";
+@import "./components/cards";
+@import "./components/badges";
+@import "./components/modals";
+@import "./components/pagination";
+@import "./components/empty-state";
+@import "./components/context-switcher";
+@import "./components/notifications";
+@import "./components/animated-text";
+
+// 6. Layouts
+@import "./layouts/dashboard";
+@import "./layouts/sidebar";
+@import "./layouts/navigation";
+@import "./layouts/auth";
+
+// 7. Pages & Views
+@import "./pages/hackathon-discovery";
+@import "./pages/hackathon-details";
+@import "./pages/hackathon-manage";
+@import "./pages/participant-dashboard";
+@import "./pages/organization-dashboard";
+@import "./pages/select-context";
+@import "./pages/select-login";
+@import "./pages/auth-register";
+@import "./pages/landing";

@@ -15,6 +15,6 @@ class LogoutController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')->with('success', 'Usuário deslogado com sucesso!');
+        return redirect()->route('home')->with('success', 'Usuário deslogado com sucesso!');
     }
 }

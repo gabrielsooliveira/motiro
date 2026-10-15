@@ -1,0 +1,83 @@
+// Component: Context Switcher (moved from ContextSwitcher.vue local styles)
+.context-switcher-btn {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: var(--color-surface-muted, #f8f9fa);
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background-color: var(--color-surface-subtle, #f1f3f5);
+    border-color: rgba(0, 0, 0, 0.18);
+  }
+}
+
+.context-switcher--org {
+  border-left: 4px solid var(--color-primary, #0d6efd);
+}
+
+.context-switcher--competitor {
+  border-left: 4px solid var(--color-warning, #ffc107);
+}
+
+.context-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(13, 110, 253, 0.1);
+  color: #0d6efd;
+}
+
+.context-switcher--competitor .context-icon {
+  background: rgba(255, 193, 7, 0.15);
+  color: #b28900;
+}
+
+.context-dropdown {
+  animation: contextFadeIn 0.15s ease-out;
+  min-width: 260px;
+}
+
+@keyframes contextFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Semantic helper classes for ContextSwitcher elements
+.context-switcher {
+  &__label {
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+  }
+
+  &__name {
+    font-size: 0.88rem;
+  }
+
+  &__badge {
+    font-size: 0.65rem;
+  }
+
+  &__header {
+    font-size: 0.7rem;
+  }
+
+  &__org-name {
+    font-size: 0.85rem;
+  }
+
+  &__org-role {
+    font-size: 0.72rem;
+  }
+
+  &__item-title {
+    font-size: 0.85rem;
+  }
+
+  &__item-desc {
+    font-size: 0.72rem;
+  }
+}

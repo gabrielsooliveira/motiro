@@ -91,7 +91,7 @@ const navbarClass = computed(() => {
                 <ul class="nav justify-content-center fw-semibold">
                     <li class="nav-item">
                         <Link
-                            :href="route('hackathon.index')"
+                            :href="route('hackathon.list')"
                             class="nav-link link-dark"
                         >
                             Hackathons
@@ -114,19 +114,19 @@ const navbarClass = computed(() => {
                 <template v-else>
                     <div class="d-flex align-items-center gap-2">
                         <Link
-                            :href="route('login')"
+                            :href="route('select.login')"
                             class="btn btn-link link-dark fw-semibold text-decoration-none"
                         >
                             Entrar
                         </Link>
                         <Link
-                            :href="route('register', { type: 'competitor' })"
+                            :href="route('participant.login')"
                             class="btn btn-outline-primary fw-semibold btn-sm"
                         >
                             Quero Participar
                         </Link>
                         <Link
-                            :href="route('register', { type: 'organization' })"
+                            :href="route('organization.login')"
                             class="btn btn-primary fw-semibold btn-sm"
                         >
                             Organizar Hackathon
@@ -162,7 +162,7 @@ const navbarClass = computed(() => {
                 </li>
                 <li class="nav-item">
                     <Link
-                        :href="route('hackathon.index')"
+                        :href="route('hackathon.list')"
                         class="nav-link link-dark"
                         @click="closeMenu"
                     >
@@ -183,21 +183,21 @@ const navbarClass = computed(() => {
                 </template>
                 <template v-else>
                     <Link
-                        :href="route('login')"
+                        :href="route('select.login')"
                         class="btn btn-outline-secondary btn-lg fw-semibold"
                         @click="closeMenu"
                     >
                         Entrar na Conta
                     </Link>
                     <Link
-                        :href="route('register', { type: 'competitor' })"
+                        :href="route('participant.login')"
                         class="btn btn-outline-primary btn-lg fw-semibold"
                         @click="closeMenu"
                     >
                         Quero Participar (Participante)
                     </Link>
                     <Link
-                        :href="route('register', { type: 'organization' })"
+                        :href="route('organization.login')"
                         class="btn btn-primary btn-lg fw-semibold"
                         @click="closeMenu"
                     >

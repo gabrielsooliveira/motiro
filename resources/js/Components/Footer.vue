@@ -5,7 +5,7 @@ import { Link, usePage } from "@inertiajs/vue3";
 </script>
 
 <template>
-    <footer class="main-footer pt-5">
+    <footer class="main-footer pt-5 pb-3">
         <div class="container-fluid px-lg-5">
             <div class="row g-4 mb-4">
                 <!-- Brand / Info -->

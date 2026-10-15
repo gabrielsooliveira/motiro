@@ -26,24 +26,56 @@ defineEmits(["accept-invite", "decline-invite", "create-team", "invite-member"])
 const page = usePage();
 const currentUser = computed(() => page.props.user);
 
-// Primary active team (or first team)
-const primaryTeam = computed(() => props.teams[0] || null);
-
-// Primary registration for active team
+// Primary active registration: from props.registrations or primaryTeam
 const activeRegistration = computed(() => {
-    if (!primaryTeam.value || !primaryTeam.value.registrations) return null;
-    return primaryTeam.value.registrations[0] || null;
+    if (props.registrations && props.registrations.length > 0) {
+        return props.registrations[0];
+    }
+    if (props.teams && props.teams[0]?.registrations) {
+        return props.teams[0].registrations[0] || null;
+    }
+    return null;
 });
 
-// Active hackathon linked to team
+// Primary active team: from activeRegistration or props.teams
+const primaryTeam = computed(() => {
+    if (activeRegistration.value?.team) {
+        return activeRegistration.value.team;
+    }
+    return props.teams[0] || null;
+});
+
+// Active hackathon linked to registration or team
 const activeHackathon = computed(() => {
-    return activeRegistration.value ? activeRegistration.value.hackathon : null;
+    return activeRegistration.value?.hackathon || (primaryTeam.value?.registrations ? primaryTeam.value.registrations[0]?.hackathon : null);
 });
 
-// Primary project
+// Whether participant is individual (no team assigned)
+const isIndividual = computed(() => {
+    if (!activeRegistration.value) return !primaryTeam.value;
+    return !activeRegistration.value.team_id && !primaryTeam.value;
+});
+
+// Is team eligible (minimum members met) or individual eligible
+const isEligible = computed(() => {
+    if (activeRegistration.value) {
+        return Boolean(activeRegistration.value.is_eligible);
+    }
+    if (primaryTeam.value && activeHackathon.value) {
+        return (primaryTeam.value.members?.length || 0) >= (activeHackathon.value.min_team_members || 1);
+    }
+    return false;
+});
+
+// Primary project (team project or individual project)
 const teamProject = computed(() => {
-    if (!primaryTeam.value) return null;
-    return props.projects.find((p) => p.team_id === primaryTeam.value.id) || null;
+    if (primaryTeam.value) {
+        return props.projects.find((p) => p.team_id === primaryTeam.value.id) || null;
+    }
+    if (activeHackathon.value) {
+        return props.projects.find((p) => p.hackathon_id === activeHackathon.value.id) || props.projects[0] || null;
+    }
+    return props.projects[0] || null;
 });
 
 // Check if current user is leader of primary team
@@ -145,21 +177,35 @@ const getStageStatus = (stage) => {
             </div>
         </div>
 
-        <!-- 2. Status da Participação Rápido (Se o competidor possui equipe cadastrada) -->
-        <div v-if="primaryTeam" class="card shadow-sm border-0 mb-4 bg-light">
+        <!-- 2. Status da Participação Rápido (Se o competidor possui inscrição ou equipe) -->
+        <div v-if="primaryTeam || activeRegistration" class="card shadow-sm border-0 mb-4 bg-light">
             <div class="card-body p-3">
                 <div class="row g-3 text-center text-md-start align-items-center">
                     <div class="col-md-3 border-end-md">
-                        <small class="text-muted d-block fw-semibold text-uppercase">Minha Equipe</small>
+                        <small class="text-muted d-block fw-semibold text-uppercase">Modalidade / Equipe</small>
                         <div class="d-flex align-items-center gap-2 mt-1">
-                            <font-awesome-icon :icon="['fas', 'circle-check']" class="text-success" />
-                            <strong class="text-truncate">{{ primaryTeam.name }}</strong>
+                            <template v-if="primaryTeam">
+                                <font-awesome-icon :icon="['fas', 'people-group']" class="text-primary" />
+                                <strong class="text-truncate">{{ primaryTeam.name }}</strong>
+                            </template>
+                            <template v-else-if="activeHackathon?.registration_type === 'team_only'">
+                                <span class="badge bg-warning text-dark">
+                                    <font-awesome-icon :icon="['fas', 'clock']" class="me-1" />
+                                    Aguardando Equipe
+                                </span>
+                            </template>
+                            <template v-else>
+                                <span class="badge bg-info text-dark">
+                                    <font-awesome-icon :icon="['fas', 'user']" class="me-1" />
+                                    Participação Individual
+                                </span>
+                            </template>
                         </div>
                     </div>
 
                     <div class="col-md-3 border-end-md">
                         <small class="text-muted d-block fw-semibold text-uppercase">Inscrição no Evento</small>
-                        <div class="mt-1">
+                        <div class="mt-1 d-flex align-items-center gap-2 flex-wrap">
                             <span v-if="activeRegistration?.status === 'approved'" class="badge bg-success">
                                 <font-awesome-icon :icon="['fas', 'check']" class="me-1" /> Aprovada
                             </span>
@@ -169,11 +215,18 @@ const getStageStatus = (stage) => {
                             <span v-else class="text-muted small">
                                 Não inscrito em evento
                             </span>
+
+                            <span v-if="isEligible" class="badge bg-success-subtle text-success border border-success-subtle small">
+                                Elegível
+                            </span>
+                            <span v-else class="badge bg-warning-subtle text-warning border border-warning-subtle small">
+                                Pendente de Equipe
+                            </span>
                         </div>
                     </div>
 
                     <div class="col-md-3 border-end-md">
-                        <small class="text-muted d-block fw-semibold text-uppercase">Projeto da Equipe</small>
+                        <small class="text-muted d-block fw-semibold text-uppercase">Projeto {{ primaryTeam ? 'da Equipe' : 'Individual' }}</small>
                         <div class="mt-1">
                             <span v-if="teamProject" class="badge bg-primary">
                                 <font-awesome-icon :icon="['fas', 'circle-check']" class="me-1" /> Enviado
@@ -197,22 +250,90 @@ const getStageStatus = (stage) => {
             </div>
         </div>
 
-        <!-- 3. Seções Centrais: Minha Equipe & Etapa Atual -->
+        <!-- 3. Seções Centrais: Minha Participação / Equipe & Etapa Atual -->
         <div class="row g-4">
-            <!-- Coluna da Equipe -->
+            <!-- Coluna da Equipe / Participação Individual -->
             <div class="col-lg-6">
-                <!-- Estado Vazio: Sem Equipe -->
-                <div v-if="!primaryTeam" class="card shadow-sm border-0 h-100">
+                <!-- Caso 1: Inscrito Individualmente (sem equipe) -->
+                <div v-if="!primaryTeam && activeRegistration" class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+                        <h5 class="card-title mb-0 fw-bold">
+                            <font-awesome-icon :icon="['fas', 'id-badge']" class="text-primary me-2" />
+                            Minha Inscrição no Hackathon
+                        </h5>
+                        <Link v-if="activeHackathon" :href="route('hackathon.show', activeHackathon.slug)" class="btn btn-sm btn-outline-primary">
+                            Ver Hackathon &rarr;
+                        </Link>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <span class="badge bg-primary-subtle text-primary">{{ activeHackathon?.title || 'Hackathon' }}</span>
+                                <span class="badge bg-light text-dark border">{{ activeHackathon?.modality }}</span>
+                            </div>
+
+                            <!-- Caso Team Only: Precisa de equipe -->
+                            <div v-if="activeHackathon?.registration_type === 'team_only'" class="alert alert-warning border-0 p-3 mb-3">
+                                <h6 class="fw-bold mb-1">
+                                    <font-awesome-icon :icon="['fas', 'triangle-exclamation']" class="me-1" />
+                                    Aguardando Formação de Equipe
+                                </h6>
+                                <p class="small mb-0">
+                                    Sua inscrição está confirmada, mas este hackathon exige participação em equipe. Crie uma equipe ou solicite entrada em uma equipe existente para estar apto a competir.
+                                </p>
+                            </div>
+
+                            <!-- Caso Individual: Participação Solo -->
+                            <div v-else-if="activeHackathon?.registration_type === 'individual'" class="alert alert-info border-0 p-3 mb-3">
+                                <h6 class="fw-bold mb-1">
+                                    <font-awesome-icon :icon="['fas', 'user-check']" class="me-1" />
+                                    Participação Individual Confirmada
+                                </h6>
+                                <p class="small mb-0">
+                                    Você está competindo individualmente. Desenvolva seu projeto e envie a solução antes do prazo limite.
+                                </p>
+                            </div>
+
+                            <!-- Caso Híbrido: Individual ou Equipe -->
+                            <div v-else class="alert alert-success border-0 p-3 mb-3">
+                                <h6 class="fw-bold mb-1">
+                                    <font-awesome-icon :icon="['fas', 'circle-check']" class="me-1" />
+                                    Inscrição Individual Ativa
+                                </h6>
+                                <p class="small mb-0">
+                                    Você está apto a competir individualmente. Se preferir trabalhar em grupo, você pode criar uma equipe ou ingressar em uma existente a qualquer momento.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 pt-3 border-top mt-3">
+                            <button
+                                v-if="activeHackathon?.allow_team_creation && activeHackathon?.registration_type !== 'individual'"
+                                class="btn btn-primary btn-sm fw-semibold"
+                                @click="$emit('create-team')"
+                            >
+                                <font-awesome-icon :icon="['fas', 'plus']" class="me-1" />
+                                + Criar Equipe
+                            </button>
+                            <Link v-if="activeHackathon" :href="route('hackathon.show', activeHackathon.slug)" class="btn btn-outline-primary btn-sm fw-semibold">
+                                Ver Desafios & Equipes
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Caso 2: Não possui equipe nem inscrição ativa -->
+                <div v-else-if="!primaryTeam && !activeRegistration" class="card shadow-sm border-0 h-100">
                     <div class="card-body p-4 text-center d-flex flex-column justify-content-center">
                         <div class="empty-state-icon text-muted mb-3 fs-1">
                             <font-awesome-icon :icon="['fas', 'users']" />
                         </div>
-                        <h5 class="fw-bold mb-2">Você ainda não faz parte de uma equipe.</h5>
+                        <h5 class="fw-bold mb-2">Você ainda não está inscrito em um Hackathon.</h5>
                         <p class="text-secondary small mb-4">
-                            Encontre um Hackathon disponível e monte sua equipe com outros talentos para começar a competir.
+                            Encontre um Hackathon disponível, inscreva-se individualmente ou monte sua equipe com outros talentos para começar a competir.
                         </p>
                         <div class="d-flex justify-content-center gap-2">
-                            <Link :href="route('hackathon.index')" class="btn btn-outline-primary btn-sm fw-semibold">
+                            <Link :href="route('hackathon.list')" class="btn btn-outline-primary btn-sm fw-semibold">
                                 Explorar Hackathons
                             </Link>
                             <button class="btn btn-primary btn-sm fw-semibold" @click="$emit('create-team')">
@@ -258,7 +379,7 @@ const getStageStatus = (stage) => {
                             </div>
                             <div v-else class="text-muted small mt-1">
                                 Esta equipe ainda não está inscrita em nenhum hackathon ativo.
-                                <Link :href="route('hackathon.index')" class="d-block mt-1 text-primary fw-semibold">
+                                <Link :href="route('hackathon.list')" class="d-block mt-1 text-primary fw-semibold">
                                     Encontrar um Hackathon para Inscrever &rarr;
                                 </Link>
                             </div>
@@ -311,7 +432,7 @@ const getStageStatus = (stage) => {
                             Explore as competições abertas, verifique as datas e inscreva sua equipe para desbloquear a timeline de etapas.
                         </p>
                         <div>
-                            <Link :href="route('hackathon.index')" class="btn btn-primary btn-sm fw-semibold">
+                            <Link :href="route('hackathon.list')" class="btn btn-primary btn-sm fw-semibold">
                                 Explorar Hackathons Abertos
                             </Link>
                         </div>

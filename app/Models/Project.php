@@ -12,6 +12,7 @@ class Project extends Model
     protected $fillable = [
         'hackathon_id',
         'team_id',
+        'user_id',
         'title',
         'slug',
         'short_description',
@@ -49,6 +50,16 @@ class Project extends Model
     public function team()
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function isIndividual(): bool
+    {
+        return empty($this->team_id) && !empty($this->user_id);
     }
 
     public function submissions()

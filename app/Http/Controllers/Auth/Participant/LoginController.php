@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth\Participant;
 
 use App\Http\Controllers\Controller;
+use App\Services\ContextService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Response;
@@ -14,7 +15,12 @@ class LoginController extends Controller
         return inertia('Participant/Auth/Login');
     }
 
-    public function login(Request $request)
+    public function create(): Response
+    {
+        return $this->index();
+    }
+
+    public function store(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
@@ -23,14 +29,21 @@ class LoginController extends Controller
 
         $credentials = $request->only('email', 'password');
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended('participant.dashboard.index');
+            ContextService::setCompetitorContext($request);
+
+            return redirect()->route('participant.dashboard');
         }
 
         return back()->withErrors([
             'email' => 'As credenciais fornecidas não coincidem com nossos registros.',
         ]);
+    }
+
+    public function login(Request $request)
+    {
+        return $this->store($request);
     }
 }

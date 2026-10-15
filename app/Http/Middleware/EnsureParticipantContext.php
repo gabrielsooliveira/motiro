@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\ContextService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +17,11 @@ class EnsureParticipantContext
     {
         if (!$request->user()) {
             return redirect()->route('participant.login')
-                ->with('error', 'Faça login para acessar a área do participante.');
+                ->with('error', 'Faça login na Área do Participante para continuar.');
+        }
+
+        if ($request->session()->get('current_context') !== ContextService::CONTEXT_COMPETITOR) {
+            ContextService::setCompetitorContext($request);
         }
 
         return $next($request);

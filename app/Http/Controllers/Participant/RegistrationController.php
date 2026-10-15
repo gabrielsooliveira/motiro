@@ -22,34 +22,55 @@ class RegistrationController extends Controller
     }
 
     /**
-     * Submit team registration to a hackathon
+     * Submit registration (individual or team) to a hackathon
      */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'hackathon_id' => 'required|uuid|exists:hackathons,id',
-            'team_id' => 'required|uuid|exists:teams,id',
+            'participation_type' => 'nullable|in:individual,team',
+            'team_id' => 'nullable|uuid|exists:teams,id',
             'custom_answers' => 'nullable|array',
+            'submitted_documents' => 'nullable|array',
         ]);
 
         $hackathon = Hackathon::findOrFail($validated['hackathon_id']);
-        $team = Team::findOrFail($validated['team_id']);
         $user = Auth::user();
-
-        // Verify that the user is the leader of this team
-        if ($team->leader_id !== $user->id) {
-            return redirect()->back()->withErrors(['team_id' => 'Apenas o líder da equipe pode inscrevê-la no Hackathon.']);
-        }
+        $participationType = $validated['participation_type'] ?? (!empty($validated['team_id']) ? 'team' : 'individual');
 
         try {
-            $this->registrationService->registerTeam(
+            if ($participationType === 'team' || !empty($validated['team_id'])) {
+                if (empty($validated['team_id'])) {
+                    return redirect()->back()->withErrors(['team_id' => 'Selecione uma equipe para realizar a inscrição por equipe.']);
+                }
+
+                $team = Team::findOrFail($validated['team_id']);
+
+                // Verify that the user is the leader or a member of this team
+                if ($team->leader_id !== $user->id && !$team->members->contains('id', $user->id)) {
+                    return redirect()->back()->withErrors(['team_id' => 'Apenas o líder ou integrantes da equipe podem inscrevê-la no Hackathon.']);
+                }
+
+                $this->registrationService->registerTeam(
+                    $hackathon,
+                    $team,
+                    $user,
+                    $validated['custom_answers'] ?? [],
+                    $validated['submitted_documents'] ?? []
+                );
+
+                return redirect()->back()->with('success', 'Inscrição da equipe realizada com sucesso!');
+            }
+
+            // Inscrição individual
+            $this->registrationService->registerIndividual(
                 $hackathon,
-                $team,
                 $user,
-                $validated['custom_answers'] ?? []
+                $validated['custom_answers'] ?? [],
+                $validated['submitted_documents'] ?? []
             );
 
-            return redirect()->back()->with('success', 'Inscrição realizada com sucesso!');
+            return redirect()->back()->with('success', 'Inscrição individual realizada com sucesso!');
         } catch (Exception $e) {
             return redirect()->back()->withErrors(['registration' => $e->getMessage()]);
         }

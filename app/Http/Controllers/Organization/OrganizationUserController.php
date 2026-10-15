@@ -71,7 +71,7 @@ class OrganizationUserController extends Controller
         // Hackathons of the org (for quick filter or reference)
         $orgHackathons = $organization->hackathons()->select('id', 'title')->get();
 
-        return Inertia::render('Dashboard/Organization/Users', [
+        return Inertia::render('Organization/Dashboard/Organization/Users', [
             'organization' => $organization->only(['id', 'name', 'slug']),
             'members' => $members,
             'invitations' => $invitations,

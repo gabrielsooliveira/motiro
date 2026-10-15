@@ -109,8 +109,12 @@ class HackathonController extends Controller
             'challenges',
             'stages',
             'evaluationCriteria',
+            'registrations.user:id,name,email,avatar',
             'registrations.team.members',
+            'teams.members',
+            'teams.leader',
             'projects.team',
+            'projects.user',
             'judgeAssignments.judge',
             'conflictsOfInterest.user',
             'auditLogs.user',
@@ -147,9 +151,17 @@ class HackathonController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'registration_start_date' => 'nullable|date',
             'registration_end_date' => 'nullable|date|after_or_equal:registration_start_date',
+            'registration_type' => 'nullable|in:individual,team_only,individual_or_team',
+            'allow_team_creation' => 'nullable|boolean',
+            'allow_team_invites' => 'nullable|boolean',
+            'allow_team_requests' => 'nullable|boolean',
+            'allow_org_team_management' => 'nullable|boolean',
+            'team_formation_deadline' => 'nullable|date',
+            'team_management_deadline' => 'nullable|date',
             'min_team_members' => 'required|integer|min:1',
             'max_team_members' => 'required|integer|gte:min_team_members',
             'max_teams' => 'nullable|integer|min:1',
+            'max_participants' => 'nullable|integer|min:1',
             'rules' => 'nullable|string',
         ]);
 
@@ -158,6 +170,10 @@ class HackathonController extends Controller
         if (!$isOrgAdmin) {
             abort(403, 'Apenas administradores da instituição podem criar hackathons.');
         }
+
+        $regType = $validated['registration_type'] ?? 'individual_or_team';
+        $validated['registration_type'] = $regType;
+        $validated['requires_team'] = ($regType === 'team_only');
 
         $slug = Str::slug($validated['title']);
         $count = 1;
@@ -196,8 +212,37 @@ class HackathonController extends Controller
         $hackathon = Hackathon::findOrFail($id);
         $this->authorizeAdmin($hackathon);
 
+        $validated = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'category' => 'nullable|string|max:100',
+            'modality' => 'sometimes|in:presential,online,hybrid',
+            'location' => 'nullable|string|max:255',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'registration_start_date' => 'nullable|date',
+            'registration_end_date' => 'nullable|date',
+            'registration_type' => 'nullable|in:individual,team_only,individual_or_team',
+            'allow_team_creation' => 'nullable|boolean',
+            'allow_team_invites' => 'nullable|boolean',
+            'allow_team_requests' => 'nullable|boolean',
+            'allow_org_team_management' => 'nullable|boolean',
+            'team_formation_deadline' => 'nullable|date',
+            'team_management_deadline' => 'nullable|date',
+            'min_team_members' => 'sometimes|integer|min:1',
+            'max_team_members' => 'sometimes|integer|gte:min_team_members',
+            'max_teams' => 'nullable|integer|min:1',
+            'max_participants' => 'nullable|integer|min:1',
+            'rules' => 'nullable|string',
+            'status' => 'nullable|string',
+        ]);
+
+        if (isset($validated['registration_type'])) {
+            $validated['requires_team'] = ($validated['registration_type'] === 'team_only');
+        }
+
         $oldValues = $hackathon->toArray();
-        $hackathon->update($request->all());
+        $hackathon->update($validated);
 
         AuditService::log('hackathon.update', $hackathon, $oldValues, $hackathon->toArray(), $hackathon->organization_id, $hackathon->id);
 

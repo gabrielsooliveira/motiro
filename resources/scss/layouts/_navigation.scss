@@ -1,0 +1,56 @@
+// Layout: Navigation & Navbar
+.custom-navbar {
+  transition: all var(--transition-normal);
+  background-color: #ffffff !important;
+
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+
+  .dropdown-menu {
+    border-radius: var(--radius-lg, 0.75rem);
+    min-width: 180px;
+  }
+}
+
+.mobile-menu {
+  z-index: 1050 !important;
+}
+
+@media (min-width: 992px) {
+  .mobile-menu {
+    display: none !important;
+  }
+}
+
+// Vue Transitions for Navigation
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all var(--transition-normal);
+  overflow: hidden;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.slide-fade-enter-to,
+.slide-fade-leave-from {
+  opacity: 1;
+  max-height: 500px;
+  transform: translateY(0);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

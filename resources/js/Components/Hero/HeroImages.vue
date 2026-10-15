@@ -51,8 +51,7 @@ import Image2 from '@/assets/images/undraw/undraw_to-the-moon_w1wa.svg';
         <!-- Center main student image -->
         <div class="col-lg-6 mt-8 mt-lg-0">
             <div
-                class=" d-flex justify-content-center rounded-4 position-relative"
-                style="padding-bottom: 150px; padding-top: 100px"
+                class="d-flex justify-content-center rounded-4 position-relative hero-image-offset"
             >
                 <img
                     :src="Image2"
@@ -68,8 +67,7 @@ import Image2 from '@/assets/images/undraw/undraw_to-the-moon_w1wa.svg';
             class="col-lg-6 d-none d-lg-flex flex-column justify-content-end"
         >
             <div
-                class=" d-flex justify-content-center rounded-4 position-relative mx-5"
-                style="padding-bottom: 150px; padding-top: 100px"
+                class="d-flex justify-content-center rounded-4 position-relative mx-5 hero-image-offset"
             >
                 <img
                     :src="Image1"

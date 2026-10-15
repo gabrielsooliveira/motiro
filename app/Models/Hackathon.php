@@ -29,6 +29,13 @@ class Hackathon extends Model
         'min_team_members',
         'max_team_members',
         'requires_team',
+        'registration_type',
+        'allow_team_creation',
+        'allow_team_invites',
+        'allow_team_requests',
+        'allow_org_team_management',
+        'team_formation_deadline',
+        'team_management_deadline',
         'auto_approve_registrations',
         'registration_start_date',
         'registration_end_date',
@@ -55,7 +62,13 @@ class Hackathon extends Model
             'registration_end_date' => 'datetime',
             'submission_start_date' => 'datetime',
             'submission_end_date' => 'datetime',
+            'team_formation_deadline' => 'datetime',
+            'team_management_deadline' => 'datetime',
             'requires_team' => 'boolean',
+            'allow_team_creation' => 'boolean',
+            'allow_team_invites' => 'boolean',
+            'allow_team_requests' => 'boolean',
+            'allow_org_team_management' => 'boolean',
             'auto_approve_registrations' => 'boolean',
             'submissions_reopened' => 'boolean',
             'results_published' => 'boolean',
@@ -75,6 +88,56 @@ class Hackathon extends Model
     public function registrations()
     {
         return $this->hasMany(HackathonRegistration::class);
+    }
+
+    public function teams()
+    {
+        return $this->hasMany(Team::class);
+    }
+
+    public function allowsIndividualRegistration(): bool
+    {
+        return $this->registration_type !== 'team_only';
+    }
+
+    public function allowsTeamRegistration(): bool
+    {
+        return $this->registration_type !== 'individual';
+    }
+
+    public function requiresTeam(): bool
+    {
+        if ($this->registration_type) {
+            return $this->registration_type === 'team_only';
+        }
+
+        return (bool) $this->requires_team;
+    }
+
+    public function isTeamFormationOpen(): bool
+    {
+        if (!$this->allowsTeamRegistration()) {
+            return false;
+        }
+
+        if ($this->team_formation_deadline && now()->gt($this->team_formation_deadline)) {
+            return false;
+        }
+
+        if ($this->registration_end_date && now()->gt($this->registration_end_date)) {
+            return false;
+        }
+
+        return in_array($this->status, ['published', 'registration']);
+    }
+
+    public function isTeamManagementOpen(): bool
+    {
+        if ($this->team_management_deadline && now()->gt($this->team_management_deadline)) {
+            return false;
+        }
+
+        return $this->isTeamFormationOpen();
     }
 
     public function projects()

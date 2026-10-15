@@ -1,0 +1,23 @@
+// Base Resets
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bs-body-bg, #f8fafc);
+  color: var(--bs-body-color, #020617);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+svg {
+  vertical-align: middle;
+}

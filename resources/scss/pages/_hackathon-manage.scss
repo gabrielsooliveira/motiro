@@ -1,0 +1,21 @@
+// Page: Hackathon Manage (Organization Dashboard)
+.avatar-initials {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+}
+
+.team-progress-bar {
+  height: 6px;
+  width: 100px;
+}
+
+.status-select {
+  width: 140px;
+  font-size: 0.8rem;
+}
+
+.scrollable-box {
+  max-height: 180px;
+  overflow-y: auto;
+}

@@ -2,7 +2,6 @@
 import { Head, Link } from "@inertiajs/vue3";
 import AnimateText from "@/js/Components/AnimateText.vue";
 import HeroImages from "@/js/Components/Hero/HeroImages.vue";
-import Footer from "@/js/Components/Footer.vue";
 
 const animatedWords = ["pessoas", "ideias", "projetos"];
 
@@ -83,8 +82,7 @@ const steps = [
         <title>Home</title>
     </Head>
 
-    <!-- 1. Hero Section -->
-    <section class="container landing-hero pt-5">
+    <section class="container landing-hero">
         <div class="row align-items-center g-5">
             <div class="col-lg-5 col-12">
                 <blockquote class="blockquote mb-3">
@@ -111,19 +109,19 @@ const steps = [
                 <!-- Dual Clear CTAs: Competitor vs Organization -->
                 <div class="d-flex flex-column flex-sm-row gap-3">
                     <Link
-                        :href="route('register', { type: 'competitor' })"
+                        :href="route('participant.login')"
                         class="btn btn-primary btn-lg fw-bold shadow-sm"
                     >
                         <font-awesome-icon :icon="['fas', 'user-astronaut']" class="me-2" />
-                        Quero Participar
+                        Participar de Hackathons
                     </Link>
 
                     <Link
-                        :href="route('register', { type: 'organization' })"
+                        :href="route('organization.login')"
                         class="btn btn-outline-dark btn-lg fw-bold"
                     >
                         <font-awesome-icon :icon="['fas', 'building']" class="me-2" />
-                        Quero Organizar um Hackathon
+                        Gerenciar Hackathons
                     </Link>
                 </div>
 
@@ -199,7 +197,7 @@ const steps = [
                         </ul>
 
                         <Link
-                            :href="route('register', { type: 'competitor' })"
+                            :href="route('participant.login')"
                             class="btn btn-success btn-lg fw-bold text-white w-100 shadow-sm"
                         >
                             Quero Competir &rarr;
@@ -229,7 +227,7 @@ const steps = [
                         </ul>
 
                         <Link
-                            :href="route('register', { type: 'organization' })"
+                            :href="route('organization.login')"
                             class="btn btn-primary btn-lg fw-bold text-white w-100 shadow-sm"
                         >
                             Quero Criar um Hackathon &rarr;
@@ -266,7 +264,6 @@ const steps = [
         </div>
     </section>
 
-    <!-- 5. CTA Footer Banner -->
     <section class="py-5 text-center text-white background-img">
         <div class="container py-4">
             <h2 class="fw-bold mb-3">Pronto para dar vida a novas ideias?</h2>
@@ -275,14 +272,13 @@ const steps = [
                 o Motirõ é o seu ponto de encontro.
             </p>
             <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <Link :href="route('hackathon.index')" class="btn btn-outline-light btn-lg fw-semibold">
+                <Link :href="route('hackathon.list')" class="btn btn-outline-light btn-lg fw-semibold">
                     Explorar Hackathons
                 </Link>
-                <Link :href="route('register')" class="btn btn-primary btn-lg fw-semibold">
+                <Link :href="route('select.login')" class="btn btn-primary btn-lg fw-semibold">
                     Começar Gratuitamente
                 </Link>
             </div>
         </div>
     </section>
-    <Footer />
 </template>

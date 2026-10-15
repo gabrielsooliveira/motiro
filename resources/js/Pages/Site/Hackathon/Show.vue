@@ -11,12 +11,20 @@ const props = defineProps({
         type: Number,
         default: 0,
     },
+    participantsCount: {
+        type: Number,
+        default: 0,
+    },
     userTeams: {
         type: Array,
         default: () => [],
     },
     userRegisteredTeamId: {
         type: String,
+        default: null,
+    },
+    userRegistration: {
+        type: Object,
         default: null,
     },
 });
@@ -26,12 +34,16 @@ const user = computed(() => page.props.user);
 const activeTab = ref("overview");
 const showRegisterModal = ref(false);
 
+const allowsIndividual = computed(() => props.hackathon.registration_type !== 'team_only');
+const allowsTeam = computed(() => props.hackathon.registration_type !== 'individual');
+
 const registrationForm = useForm({
     hackathon_id: props.hackathon.id,
+    participation_type: props.hackathon.registration_type === 'individual' ? 'individual' : (props.hackathon.registration_type === 'team_only' ? 'team' : 'individual'),
     team_id: props.userTeams?.[0]?.id || "",
 });
 
-const isUserRegistered = computed(() => !!props.userRegisteredTeamId);
+const isUserRegistered = computed(() => !!props.userRegistration || !!props.userRegisteredTeamId);
 
 const submitRegistration = () => {
     registrationForm.post(route("registration.store"), {
@@ -39,6 +51,18 @@ const submitRegistration = () => {
             showRegisterModal.value = false;
         },
     });
+};
+
+const submitDirectIndividual = () => {
+    registrationForm.participation_type = 'individual';
+    registrationForm.team_id = '';
+    submitRegistration();
+};
+
+const getModalityLabel = (type) => {
+    if (type === 'individual') return 'Inscrição Individual';
+    if (type === 'team_only') return 'Obrigatoriamente por Equipe';
+    return 'Individual ou por Equipe';
 };
 
 const getStatusBadge = (status) => {
@@ -62,7 +86,7 @@ const getStatusBadge = (status) => {
     <div class="container py-4">
         <!-- Breadcrumb & Back Link -->
         <div class="mb-3">
-            <Link :href="route('hackathon.index')" class="text-decoration-none text-muted fw-semibold">
+            <Link :href="route('hackathon.list')" class="text-decoration-none text-muted fw-semibold">
                 <font-awesome-icon :icon="['fas', 'arrow-left']" class="me-1" />
                 Voltar para lista de Hackathons
             </Link>
@@ -73,9 +97,8 @@ const getStatusBadge = (status) => {
             <div class="position-relative">
                 <img
                     :src="hackathon.banner_url || 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200&auto=format&fit=crop&q=80'"
-                    class="w-100 object-fit-cover"
+                    class="w-100 object-fit-cover hackathon-banner-img"
                     alt="Banner do Hackathon"
-                    style="height: 260px;"
                 />
                 <div class="position-absolute top-0 end-0 p-3">
                     <span class="badge" :class="getStatusBadge(hackathon.status)">
@@ -87,12 +110,16 @@ const getStatusBadge = (status) => {
             <div class="card-body p-4">
                 <div class="row align-items-center">
                     <div class="col-lg-8">
-                        <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                             <span class="badge bg-light text-dark border text-capitalize">
                                 <font-awesome-icon :icon="['fas', 'location-dot']" class="me-1" />
                                 {{ hackathon.modality }}
                             </span>
-                            <span v-if="hackathon.category" class="badge bg-primary bg-opacity-10 text-primary">
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle">
+                                <font-awesome-icon :icon="['fas', 'user-group']" class="me-1" />
+                                {{ getModalityLabel(hackathon.registration_type) }}
+                            </span>
+                            <span v-if="hackathon.category" class="badge bg-secondary bg-opacity-10 text-secondary">
                                 {{ hackathon.category }}
                             </span>
                         </div>
@@ -107,9 +134,9 @@ const getStatusBadge = (status) => {
                             </div>
                             <div>
                                 <font-awesome-icon :icon="['fas', 'users']" class="me-1" />
-                                <strong>Equipes Aprovadas:</strong> {{ teamsCount }}
+                                <strong>Inscritos:</strong> {{ participantsCount || teamsCount }}
                             </div>
-                            <div>
+                            <div v-if="allowsTeam">
                                 <font-awesome-icon :icon="['fas', 'user-group']" class="me-1" />
                                 <strong>Integrantes por equipe:</strong> {{ hackathon.min_team_members }} a {{ hackathon.max_team_members }}
                             </div>
@@ -127,25 +154,42 @@ const getStatusBadge = (status) => {
 
                         <template v-else-if="isUserRegistered">
                             <div class="alert alert-success d-inline-block text-start mb-0 py-2 px-3">
-                                <font-awesome-icon :icon="['fas', 'circle-check']" class="me-1" />
-                                <strong>Sua equipe já está inscrita!</strong>
+                                <div class="d-flex align-items-center gap-2">
+                                    <font-awesome-icon :icon="['fas', 'circle-check']" class="fs-5 text-success" />
+                                    <div>
+                                        <strong>Inscrição Confirmada!</strong>
+                                        <div class="small text-muted" v-if="userRegistration?.team_id">
+                                            Participando na equipe <strong>{{ userRegistration.team?.name || 'Equipe' }}</strong>.
+                                        </div>
+                                        <div class="small text-muted" v-else>
+                                            Participando individualmente.
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </template>
 
                         <template v-else>
+                            <!-- Inscrição direta individual para eventos estritamente individuais -->
                             <button
-                                v-if="userTeams.length > 0"
+                                v-if="hackathon.registration_type === 'individual'"
+                                class="btn btn-primary btn-lg shadow-sm"
+                                :disabled="registrationForm.processing"
+                                @click="submitDirectIndividual"
+                            >
+                                <font-awesome-icon :icon="['fas', 'user-check']" class="me-2" />
+                                Inscrever-se Individualmente
+                            </button>
+
+                            <!-- Inscrição para eventos com equipe ou mistos -->
+                            <button
+                                v-else
                                 class="btn btn-primary btn-lg shadow-sm"
                                 @click="showRegisterModal = true"
                             >
                                 <font-awesome-icon :icon="['fas', 'user-plus']" class="me-2" />
-                                Inscrever Minha Equipe
+                                Realizar Inscrição
                             </button>
-                            <div v-else class="text-lg-end">
-                                <Link :href="route('dashboard.index')" class="btn btn-primary shadow-sm">
-                                    Criar Equipe no Dashboard para Inscrever
-                                </Link>
-                            </div>
                         </template>
                     </div>
                 </div>
@@ -196,7 +240,7 @@ const getStatusBadge = (status) => {
         <div v-if="activeTab === 'overview'" class="card shadow-sm border-0">
             <div class="card-body p-4">
                 <h4 class="fw-bold mb-3">Regulamento e Diretrizes</h4>
-                <div v-if="hackathon.rules" class="text-secondary lh-lg mb-4" style="white-space: pre-line;">
+                <div v-if="hackathon.rules" class="text-secondary lh-lg mb-4 text-pre-line">
                     {{ hackathon.rules }}
                 </div>
                 <div v-else class="text-muted">
@@ -291,33 +335,93 @@ const getStatusBadge = (status) => {
             </div>
         </div>
 
-        <!-- Modal Team Registration -->
+        <!-- Modal Registration (Individual & Team) -->
         <div v-if="showRegisterModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
             <div class="modal-dialog">
-                <div class="modal-content">
+                <div class="modal-content border-0 shadow rounded-4">
                     <form @submit.prevent="submitRegistration">
-                        <div class="modal-header">
-                            <h5 class="modal-title fw-bold">Inscrever Equipe</h5>
+                        <div class="modal-header border-bottom">
+                            <h5 class="modal-title fw-bold">Inscrição no Hackathon</h5>
                             <button type="button" class="btn-close" @click="showRegisterModal = false"></button>
                         </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Selecione sua Equipe</label>
-                                <select v-model="registrationForm.team_id" class="form-select" required>
-                                    <option v-for="team in userTeams" :key="team.id" :value="team.id">
-                                        {{ team.name }} ({{ team.members ? team.members.length : 1 }} integrante(s))
-                                    </option>
-                                </select>
-                                <small class="text-muted">Apenas equipes das quais você é líder são elegíveis.</small>
+                        <div class="modal-body p-4">
+                            <!-- Escolha da modalidade se o hackathon aceitar ambas -->
+                            <div v-if="allowsIndividual && allowsTeam" class="mb-4">
+                                <label class="form-label fw-semibold mb-2">Como você deseja se inscrever?</label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <div
+                                            class="border rounded-3 p-3 text-center cursor-pointer h-100"
+                                            :class="{ 'border-primary bg-primary bg-opacity-10 text-primary fw-bold': registrationForm.participation_type === 'individual', 'bg-light': registrationForm.participation_type !== 'individual' }"
+                                            @click="registrationForm.participation_type = 'individual'"
+                                        >
+                                            <font-awesome-icon :icon="['fas', 'user']" class="fs-4 mb-2 d-block mx-auto" />
+                                            <span>Individualmente</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div
+                                            class="border rounded-3 p-3 text-center cursor-pointer h-100"
+                                            :class="{ 'border-primary bg-primary bg-opacity-10 text-primary fw-bold': registrationForm.participation_type === 'team', 'bg-light': registrationForm.participation_type !== 'team' }"
+                                            @click="registrationForm.participation_type = 'team'"
+                                        >
+                                            <font-awesome-icon :icon="['fas', 'users']" class="fs-4 mb-2 d-block mx-auto" />
+                                            <span>Com Equipe</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Caso escolha Individual -->
+                            <div v-if="registrationForm.participation_type === 'individual'" class="alert alert-info py-2 px-3 small mb-3">
+                                <font-awesome-icon :icon="['fas', 'circle-info']" class="me-1" />
+                                Você será inscrito individualmente. 
+                                <span v-if="allowsTeam">Caso deseje, poderá integrar ou criar uma equipe posteriormente.</span>
+                            </div>
+
+                            <!-- Caso escolha Equipe -->
+                            <div v-if="registrationForm.participation_type === 'team'" class="mb-3">
+                                <template v-if="userTeams.length > 0">
+                                    <label class="form-label fw-semibold">Selecione sua Equipe *</label>
+                                    <select v-model="registrationForm.team_id" class="form-select" required>
+                                        <option value="" disabled>Selecione uma equipe...</option>
+                                        <option v-for="team in userTeams" :key="team.id" :value="team.id">
+                                            {{ team.name }} ({{ team.members ? team.members.length : 1 }} integrante(s))
+                                        </option>
+                                    </select>
+                                    <small class="text-muted d-block mt-1">
+                                        A equipe deve cumprir entre {{ hackathon.min_team_members }} e {{ hackathon.max_team_members }} integrantes.
+                                    </small>
+                                </template>
+                                <template v-else>
+                                    <div class="alert alert-warning py-2 small mb-2">
+                                        Você ainda não integra nenhuma equipe. Você pode criar uma equipe agora ou inscrever-se individualmente para aguardar alocação.
+                                    </div>
+                                    <Link :href="route('dashboard.index')" class="btn btn-sm btn-outline-primary w-100 mb-2">
+                                        Criar Nova Equipe no Dashboard
+                                    </Link>
+                                    <button
+                                        v-if="allowsIndividual"
+                                        type="button"
+                                        class="btn btn-sm btn-secondary w-100"
+                                        @click="registrationForm.participation_type = 'individual'"
+                                    >
+                                        Mudar para Inscrição Individual
+                                    </button>
+                                </template>
                             </div>
 
                             <div v-if="registrationForm.errors.registration" class="alert alert-danger py-2 small">
                                 {{ registrationForm.errors.registration }}
                             </div>
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer border-top bg-light rounded-bottom-4">
                             <button type="button" class="btn btn-secondary" @click="showRegisterModal = false">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" :disabled="registrationForm.processing">
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                :disabled="registrationForm.processing || (registrationForm.participation_type === 'team' && userTeams.length === 0)"
+                            >
                                 Confirmar Inscrição
                             </button>
                         </div>

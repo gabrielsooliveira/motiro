@@ -63,10 +63,9 @@ defineProps({
                             >
                                 <img
                                     :src="img"
-                                    class="rounded-circle border"
+                                    class="rounded-circle border object-fit-cover"
                                     width="34"
                                     height="34"
-                                    style="object-fit: cover"
                                 />
                             </div>
                         </div>

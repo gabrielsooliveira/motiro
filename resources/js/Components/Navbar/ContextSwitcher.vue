@@ -66,16 +66,16 @@ const getRoleLabel = (role) => {
                     />
                 </div>
                 <div class="d-flex flex-column overflow-hidden">
-                    <span class="context-label small text-muted text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                    <span class="context-label small text-muted text-uppercase fw-semibold context-switcher__label">
                         {{ isOrgContext ? 'Instituição' : 'Modo' }}
                     </span>
-                    <span class="context-name fw-bold text-truncate" style="font-size: 0.88rem;">
+                    <span class="context-name fw-bold text-truncate context-switcher__name">
                         {{ isOrgContext ? activeOrg.name : 'Competidor' }}
                     </span>
                 </div>
             </div>
             <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                <span v-if="isOrgContext && context.role_in_organization" class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle d-none d-xl-inline" style="font-size: 0.65rem;">
+                <span v-if="isOrgContext && context.role_in_organization" class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle d-none d-xl-inline context-switcher__badge">
                     {{ getRoleLabel(context.role_in_organization) }}
                 </span>
                 <font-awesome-icon :icon="['fas', 'chevron-down']" class="text-muted small ms-1" />
@@ -87,9 +87,8 @@ const getRoleLabel = (role) => {
             <div
                 v-if="isOpen"
                 class="context-dropdown shadow-lg rounded-3 border bg-white position-absolute start-0 top-100 mt-2 w-100 z-3 p-2"
-                style="min-width: 260px;"
             >
-                <div class="px-2 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">
+                <div class="px-2 py-1 text-muted small fw-bold text-uppercase context-switcher__header">
                     Instituições
                 </div>
 
@@ -105,8 +104,8 @@ const getRoleLabel = (role) => {
                         <div class="d-flex align-items-center gap-2 text-truncate me-2">
                             <font-awesome-icon :icon="['fas', 'building']" class="opacity-75 flex-shrink-0" />
                             <div class="d-flex flex-column text-truncate">
-                                <span class="fw-semibold text-truncate" style="font-size: 0.85rem;">{{ org.name }}</span>
-                                <span class="small opacity-75" style="font-size: 0.72rem;">{{ getRoleLabel(org.role) }}</span>
+                                <span class="fw-semibold text-truncate context-switcher__org-name">{{ org.name }}</span>
+                                <span class="small opacity-75 context-switcher__org-role">{{ getRoleLabel(org.role) }}</span>
                             </div>
                         </div>
                         <font-awesome-icon
@@ -123,7 +122,7 @@ const getRoleLabel = (role) => {
                 <hr class="my-1 border-secondary-subtle" />
 
                 <!-- Competitor Option -->
-                <div class="px-2 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">
+                <div class="px-2 py-1 text-muted small fw-bold text-uppercase context-switcher__header">
                     Participação
                 </div>
                 <button
@@ -135,8 +134,8 @@ const getRoleLabel = (role) => {
                     <div class="d-flex align-items-center gap-2">
                         <font-awesome-icon :icon="['fas', 'trophy']" class="opacity-75 flex-shrink-0" />
                         <div class="d-flex flex-column">
-                            <span class="fw-semibold" style="font-size: 0.85rem;">Área do Competidor</span>
-                            <span class="small opacity-75" style="font-size: 0.72rem;">Hackathons, equipes e projetos</span>
+                            <span class="fw-semibold context-switcher__item-title">Área do Competidor</span>
+                            <span class="small opacity-75 context-switcher__item-desc">Hackathons, equipes e projetos</span>
                         </div>
                     </div>
                     <font-awesome-icon v-if="!isOrgContext" :icon="['fas', 'check']" class="flex-shrink-0" />
@@ -145,38 +144,3 @@ const getRoleLabel = (role) => {
         </transition>
     </div>
 </template>
-
-<style scoped>
-.context-switcher-btn {
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: #f8f9fa;
-    transition: all 0.2s ease-in-out;
-}
-.context-switcher-btn:hover {
-    background-color: #f1f3f5;
-    border-color: rgba(0, 0, 0, 0.18);
-}
-.context-switcher--org {
-    border-left: 4px solid #0d6efd;
-}
-.context-switcher--competitor {
-    border-left: 4px solid #ffc107;
-}
-.context-icon {
-    width: 32px;
-    height: 32px;
-    background: rgba(13, 110, 253, 0.1);
-    color: #0d6efd;
-}
-.context-switcher--competitor .context-icon {
-    background: rgba(255, 193, 7, 0.15);
-    color: #b28900;
-}
-.context-dropdown {
-    animation: fadeIn 0.15s ease-out;
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-</style>

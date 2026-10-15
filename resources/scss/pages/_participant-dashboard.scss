@@ -1,0 +1,12 @@
+// Page: Participant Dashboard
+.timeline-container {
+  position: relative;
+  padding: 0.5rem 0;
+}
+
+.competitor-summary-card {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 1.25rem;
+}

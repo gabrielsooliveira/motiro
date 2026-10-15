@@ -63,7 +63,7 @@ test('user can be linked to multiple organizations and switch context', function
     $respComp = $this->post(route('context.switch'), [
         'type' => 'competitor',
     ]);
-    $respComp->assertRedirect(route('dashboard.index'));
+    $respComp->assertRedirect(route('participant.dashboard'));
     expect(session('current_context'))->toBe('competitor');
     expect(session('active_organization_id'))->toBeNull();
 });
@@ -114,7 +114,7 @@ test('organization dashboard isolates hackathons per institution', function () {
     $response = $this->get(route('organization.dashboard'));
     $response->assertOk();
     $response->assertInertia(fn ($page) =>
-        $page->component('Dashboard/Organization/Dashboard')
+        $page->component('Organization/Dashboard/Organization/Dashboard')
             ->where('organization.id', $org1->id)
             ->where('kpis.total_hackathons', 1)
     );

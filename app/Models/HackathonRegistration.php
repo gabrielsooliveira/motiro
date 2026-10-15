@@ -13,7 +13,9 @@ class HackathonRegistration extends Model
         'hackathon_id',
         'team_id',
         'user_id',
+        'participation_type',
         'status',
+        'is_eligible',
         'rejection_reason',
         'notes',
         'custom_answers',
@@ -25,10 +27,21 @@ class HackathonRegistration extends Model
     protected function casts(): array
     {
         return [
+            'is_eligible' => 'boolean',
             'custom_answers' => 'array',
             'submitted_documents' => 'array',
             'approved_at' => 'datetime',
         ];
+    }
+
+    public function isIndividual(): bool
+    {
+        return $this->participation_type === 'individual' || empty($this->team_id);
+    }
+
+    public function hasTeam(): bool
+    {
+        return !empty($this->team_id);
     }
 
     public function hackathon()

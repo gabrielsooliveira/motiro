@@ -81,7 +81,7 @@ const navbarClass = computed(() => {
                 <font-awesome-icon :icon="['fas', 'bars']" size="lg" />
             </button>
 
-            <div class="flex-grow-1 mx-3" style="max-width: 240px;">
+            <div class="flex-grow-1 mx-3">
                 <ContextSwitcher />
             </div>
 
@@ -106,7 +106,7 @@ const navbarClass = computed(() => {
                 <!-- ORGANIZATION CONTEXT MENU (Section 15) -->
                 <div v-if="isOrgContext" class="d-flex flex-column gap-3">
                     <div>
-                        <div class="nav-section-title px-2 mb-1 text-muted text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">
+                        <div class="nav-section-title px-2 mb-1 text-muted text-uppercase fw-bold">
                             Geral
                         </div>
                         <ul class="nav flex-column gap-1">
@@ -134,7 +134,7 @@ const navbarClass = computed(() => {
                     </div>
 
                     <div>
-                        <div class="nav-section-title px-2 mb-1 text-muted text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">
+                        <div class="nav-section-title px-2 mb-1 text-muted text-uppercase fw-bold">
                             Gestão Institucional
                         </div>
                         <ul class="nav flex-column gap-1">
@@ -142,24 +142,34 @@ const navbarClass = computed(() => {
                                 <Link
                                     class="nav-link-custom d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none"
                                     :href="route('organization.users.index')"
-                                    :class="{ active: $page.url.startsWith('/organization/users') }"
+                                    :class="{ active: $page.url.startsWith('/organization/users') || $page.url.startsWith('/organizacao/users') }"
                                 >
                                     <font-awesome-icon :icon="['fas', 'users-gear']" class="nav-icon" />
                                     <span>Usuários da Instituição</span>
+                                </Link>
+                            </li>
+                            <li class="nav-item">
+                                <Link
+                                    class="nav-link-custom d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none"
+                                    :href="route('organization.select')"
+                                    :class="{ active: $page.url.includes('selecionar') }"
+                                >
+                                    <font-awesome-icon :icon="['fas', 'arrow-right-arrow-left']" class="nav-icon" />
+                                    <span>Trocar Organização</span>
                                 </Link>
                             </li>
                         </ul>
                     </div>
 
                     <div>
-                        <div class="nav-section-title px-2 mb-1 text-muted text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">
+                        <div class="nav-section-title px-2 mb-1 text-muted text-uppercase fw-bold">
                             Explorar
                         </div>
                         <ul class="nav flex-column gap-1">
                             <li class="nav-item">
                                 <Link
                                     class="nav-link-custom d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none"
-                                    :href="route('hackathon.index')"
+                                    :href="route('hackathon.list')"
                                 >
                                     <font-awesome-icon :icon="['fas', 'globe']" class="nav-icon" />
                                     <span>Explorar Hackathons</span>
@@ -170,17 +180,14 @@ const navbarClass = computed(() => {
                 </div>
 
                 <!-- COMPETITOR CONTEXT MENU (Section 1.1) -->
-                <div v-else class="d-flex flex-column gap-3">
+                <div v-else class="d-flex flex-column gap-2">
                     <div>
-                        <div class="nav-section-title px-2 mb-1 text-muted text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">
-                            Área do Participante
-                        </div>
                         <ul class="nav flex-column gap-1">
                             <li class="nav-item">
                                 <Link
                                     class="nav-link-custom d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none"
-                                    :href="route('dashboard.index')"
-                                    :class="{ active: $page.url === '/dashboard' || $page.url === '/' }"
+                                    :href="route('participant.dashboard')"
+                                    :class="{ active: $page.url === '/participante' || $page.url === '/participante/dashboard' || $page.url === '/dashboard' }"
                                 >
                                     <font-awesome-icon :icon="['fas', 'house']" class="nav-icon" />
                                     <span>Meu Painel</span>
@@ -189,10 +196,11 @@ const navbarClass = computed(() => {
                             <li class="nav-item">
                                 <Link
                                     class="nav-link-custom d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none"
-                                    :href="route('hackathon.index')"
+                                    :href="route('participant.hackathons')"
+                                    :class="{ active: $page.url.startsWith('/participante/hackathons') || $page.url.startsWith('/dashboard/hackathons') }"
                                 >
                                     <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="nav-icon" />
-                                    <span>Buscar Hackathons</span>
+                                    <span>Explorar Hackathons</span>
                                 </Link>
                             </li>
                         </ul>
@@ -204,12 +212,9 @@ const navbarClass = computed(() => {
         <!-- User Profile & Action Menu -->
         <div class="sidebar-footer p-3 border-top bg-light bg-opacity-25">
             <div v-if="user" class="d-flex align-items-center gap-2 mb-3 px-1">
-                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.85rem;">
-                    {{ user.name?.charAt(0).toUpperCase() }}
-                </div>
                 <div class="d-flex flex-column text-truncate">
-                    <span class="fw-semibold text-dark text-truncate" style="font-size: 0.85rem;">{{ user.name }}</span>
-                    <span class="text-muted text-truncate" style="font-size: 0.72rem;">{{ user.email }}</span>
+                    <span class="fw-semibold text-dark text-truncate fs-7">{{ user.name }}</span>
+                    <span class="text-muted text-truncate fs-8">{{ user.email }}</span>
                 </div>
             </div>
 
@@ -258,10 +263,20 @@ const navbarClass = computed(() => {
                         Usuários da Instituição
                     </Link>
                 </li>
+                <li v-if="isOrgContext" class="nav-item">
+                    <Link
+                        class="nav-link py-2"
+                        :href="route('organization.select')"
+                        @click="closeMenu"
+                    >
+                        <font-awesome-icon :icon="['fas', 'arrow-right-arrow-left']" class="me-2" />
+                        Trocar Organização
+                    </Link>
+                </li>
                 <li v-if="!isOrgContext" class="nav-item">
                     <Link
                         class="nav-link py-2"
-                        :href="route('dashboard.index')"
+                        :href="route('participant.dashboard')"
                         @click="closeMenu"
                     >
                         <font-awesome-icon :icon="['fas', 'house']" class="me-2" />
@@ -271,7 +286,7 @@ const navbarClass = computed(() => {
                 <li class="nav-item">
                     <Link
                         class="nav-link py-2"
-                        :href="route('hackathon.index')"
+                        :href="!isOrgContext ? route('participant.hackathons') : route('hackathon.list')"
                         @click="closeMenu"
                     >
                         <font-awesome-icon :icon="['fas', 'globe']" class="me-2" />
@@ -294,27 +309,3 @@ const navbarClass = computed(() => {
         </div>
     </transition>
 </template>
-
-<style scoped>
-.nav-link-custom {
-    color: #495057;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.15s ease-in-out;
-}
-.nav-link-custom:hover {
-    background-color: #f1f3f5;
-    color: #0d6efd;
-}
-.nav-link-custom.active {
-    background-color: #0d6efd;
-    color: #ffffff !important;
-}
-.nav-link-custom.active .nav-icon {
-    color: #ffffff;
-}
-.nav-icon {
-    width: 18px;
-    color: #6c757d;
-}
-</style>

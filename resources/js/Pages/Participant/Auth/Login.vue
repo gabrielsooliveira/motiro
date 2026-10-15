@@ -7,6 +7,7 @@ const isView = ref(false);
 const form = useForm({
     email: "",
     password: "",
+    remember: false,
 });
 
 const toggleView = () => {
@@ -16,106 +17,126 @@ const toggleView = () => {
 
 <template>
     <Head>
-        <title>Login</title>
+        <title>Área do Participante | Login</title>
     </Head>
 
-    <form @submit.prevent="form.post(route('login.store'))">
+    <div class="mb-4 text-center">
+        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 rounded-pill small mb-2">
+            <font-awesome-icon :icon="['fas', 'user-astronaut']" class="me-1" />
+            Portal do Participante
+        </span>
+        <h2 class="h3 fw-bold text-white mb-1">Entrar como Participante</h2>
+        <p class="text-secondary small mb-0">
+            Acesse para encontrar hackathons, montar equipes e submeter seus projetos.
+        </p>
+    </div>
+
+    <!-- Error Alert -->
+    <div v-if="form.errors.email || $page.props.flash?.error" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" role="alert">
+        {{ form.errors.email || $page.props.flash?.error }}
+    </div>
+
+    <form @submit.prevent="form.post(route('participant.login.store'))">
         <div class="mb-3">
-            <label class="form-label fw-semibold" for="email">Email</label>
+            <label class="form-label fw-semibold text-white small" for="email">E-mail</label>
             <input
                 type="email"
                 id="email"
                 v-model="form.email"
                 class="form-control"
+                :class="{ 'is-invalid': form.errors.email }"
+                placeholder="seu.email@exemplo.com"
                 required
                 autocomplete="email"
             />
         </div>
 
         <div class="mb-3">
-            <label class="form-label fw-semibold" for="password">Senha</label>
+            <label class="form-label fw-semibold text-white small" for="password">Senha</label>
             <div class="input-group">
                 <input
                     :type="isView ? 'text' : 'password'"
                     id="password"
                     v-model="form.password"
                     class="form-control"
+                    :class="{ 'is-invalid': form.errors.password }"
+                    placeholder="Sua senha secreta"
                     required
+                    autocomplete="current-password"
                 />
                 <button
                     type="button"
-                    class="btn btn-primary text-white"
+                    class="btn btn-outline-secondary text-white"
                     @click="toggleView"
                 >
                     <font-awesome-icon
-                        :icon="
-                            isView ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'
-                        "
+                        :icon="isView ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"
                     />
                 </button>
+            </div>
+            <div v-if="form.errors.password" class="text-danger small mt-1">
+                {{ form.errors.password }}
             </div>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <Link class="text-decoration-none link-thirdary small" href="#"
-                >Esqueceu sua senha?</Link
+            <div class="form-check">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="remember"
+                    v-model="form.remember"
+                />
+                <label class="form-check-label text-secondary small" for="remember">
+                    Lembrar de mim
+                </label>
+            </div>
+            <Link
+                class="text-decoration-none text-warning small fw-semibold"
+                :href="route('participant.password.request')"
             >
+                Esqueceu sua senha?
+            </Link>
         </div>
 
-        <div class="d-grid mb-2">
+        <div class="d-grid mb-3">
             <button
                 type="submit"
                 class="btn btn-primary fw-semibold py-2"
                 :disabled="form.processing"
             >
-                Entrar
+                <span v-if="form.processing">Entrando...</span>
+                <span v-else>Entrar no Portal do Participante</span>
             </button>
         </div>
-
-        <p class="text-center small mb-4">
-            Ao fazer login você concorda com os
-            <a href="#" class="text-thirdary" target="_blank">Termos de Uso</a>
-            e
-            <a href="#" class="text-thirdary" target="_blank"
-                >Política de Privacidade</a
-            >.
-        </p>
     </form>
 
-    <div class="d-flex align-items-center my-3">
-        <hr class="flex-grow-1" />
-        <span class="mx-2 small">ou continue com</span>
-        <hr class="flex-grow-1" />
-    </div>
+    <div class="text-center pt-2 border-top border-secondary-subtle">
+        <p class="small text-secondary mb-2">
+            Ainda não tem conta de participante?
+            <Link
+                :href="route('participant.register')"
+                class="text-decoration-none fw-semibold text-warning"
+            >
+                Criar conta gratuita
+            </Link>
+        </p>
+        <p class="small text-secondary mb-3">
+            É gestor ou representa uma instituição?
+            <Link
+                :href="route('organization.login')"
+                class="text-decoration-none fw-semibold text-info"
+            >
+                Ir para Área da Organização &rarr;
+            </Link>
+        </p>
 
-    <div class="d-flex justify-content-center gap-3 mb-4">
-        <a
-            href="/auth/google/redirect"
-            class="btn btn-light border d-flex align-items-center gap-2 px-3 py-2 shadow-sm disabled"
-        >
-            <font-awesome-icon
-                icon="fa-brands fa-google"
-                class="text-danger fs-5"
-            />
-            <span class="fw-semibold d-none d-sm-inline text-dark">Google</span>
-        </a>
-    </div>
-
-    <div class="text-center">
-        <Link
-            :href="route('register')"
-            class="text-decoration-none fw-semibold link-light"
-        >
-            Ainda não possui uma conta?
-            <span class="text-thirdary">Registre-se</span>
-        </Link>
-        <br />
         <Link
             :href="route('home')"
-            class="text-decoration-none fw-semibold link-light"
+            class="text-decoration-none text-muted small"
         >
-            <font-awesome-icon icon="fa-solid fa-door-open" class="me-1" />
-            Voltar para a Home
+            <font-awesome-icon icon="fa-solid fa-arrow-left" class="me-1" />
+            Voltar para a página inicial
         </Link>
     </div>
 </template>

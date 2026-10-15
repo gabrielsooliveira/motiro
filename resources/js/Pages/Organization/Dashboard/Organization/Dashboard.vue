@@ -137,7 +137,7 @@ const formatDate = (dateStr) => {
                     <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="text-muted small text-uppercase fw-semibold" style="font-size: 0.72rem;">Total de Hackathons</span>
+                                <span class="text-muted small text-uppercase fw-semibold kpi-caption">Total de Hackathons</span>
                                 <h2 class="h3 fw-bold mb-0 mt-1">{{ kpis.total_hackathons }}</h2>
                             </div>
                             <div class="kpi-icon bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center">
@@ -151,7 +151,7 @@ const formatDate = (dateStr) => {
                     <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="text-muted small text-uppercase fw-semibold" style="font-size: 0.72rem;">Hackathons Ativos</span>
+                                <span class="text-muted small text-uppercase fw-semibold kpi-caption">Hackathons Ativos</span>
                                 <h2 class="h3 fw-bold mb-0 mt-1 text-success">{{ kpis.active_hackathons }}</h2>
                             </div>
                             <div class="kpi-icon bg-success-subtle text-success rounded-3 d-flex align-items-center justify-content-center">
@@ -165,7 +165,7 @@ const formatDate = (dateStr) => {
                     <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="text-muted small text-uppercase fw-semibold" style="font-size: 0.72rem;">Encerrados</span>
+                                <span class="text-muted small text-uppercase fw-semibold kpi-caption">Encerrados</span>
                                 <h2 class="h3 fw-bold mb-0 mt-1 text-secondary">{{ kpis.finished_hackathons }}</h2>
                             </div>
                             <div class="kpi-icon bg-light text-secondary rounded-3 d-flex align-items-center justify-content-center border">
@@ -179,7 +179,7 @@ const formatDate = (dateStr) => {
                     <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="text-muted small text-uppercase fw-semibold" style="font-size: 0.72rem;">Membros da Equipe</span>
+                                <span class="text-muted small text-uppercase fw-semibold kpi-caption">Membros da Equipe</span>
                                 <h2 class="h3 fw-bold mb-0 mt-1 text-info">{{ kpis.total_members }}</h2>
                             </div>
                             <div class="kpi-icon bg-info-subtle text-info rounded-3 d-flex align-items-center justify-content-center">
@@ -193,7 +193,7 @@ const formatDate = (dateStr) => {
                     <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="text-muted small text-uppercase fw-semibold" style="font-size: 0.72rem;">Participantes</span>
+                                <span class="text-muted small text-uppercase fw-semibold kpi-caption">Participantes</span>
                                 <h2 class="h3 fw-bold mb-0 mt-1">{{ kpis.total_participants }}</h2>
                             </div>
                             <div class="kpi-icon bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center">
@@ -207,7 +207,7 @@ const formatDate = (dateStr) => {
                     <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="text-muted small text-uppercase fw-semibold" style="font-size: 0.72rem;">Equipes</span>
+                                <span class="text-muted small text-uppercase fw-semibold kpi-caption">Equipes</span>
                                 <h2 class="h3 fw-bold mb-0 mt-1">{{ kpis.total_teams }}</h2>
                             </div>
                             <div class="kpi-icon bg-warning-subtle text-warning-emphasis rounded-3 d-flex align-items-center justify-content-center">
@@ -221,7 +221,7 @@ const formatDate = (dateStr) => {
                     <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="text-muted small text-uppercase fw-semibold" style="font-size: 0.72rem;">Inscrições</span>
+                                <span class="text-muted small text-uppercase fw-semibold kpi-caption">Inscrições</span>
                                 <h2 class="h3 fw-bold mb-0 mt-1">{{ kpis.total_registrations }}</h2>
                             </div>
                             <div class="kpi-icon bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center">
@@ -235,7 +235,7 @@ const formatDate = (dateStr) => {
                     <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="text-muted small text-uppercase fw-semibold" style="font-size: 0.72rem;">Submissões</span>
+                                <span class="text-muted small text-uppercase fw-semibold kpi-caption">Submissões</span>
                                 <h2 class="h3 fw-bold mb-0 mt-1">{{ kpis.total_submissions }}</h2>
                             </div>
                             <div class="kpi-icon bg-success-subtle text-success rounded-3 d-flex align-items-center justify-content-center">
@@ -308,7 +308,7 @@ const formatDate = (dateStr) => {
                             <tr v-for="hackathon in filteredHackathons" :key="hackathon.id">
                                 <td class="ps-3">
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="hackathon-thumb bg-light border rounded-2 d-flex align-items-center justify-content-center text-primary fw-bold" style="width: 40px; height: 40px;">
+                                        <div class="hackathon-thumb bg-light border rounded-2 d-flex align-items-center justify-content-center text-primary fw-bold">
                                             <font-awesome-icon :icon="['fas', 'laptop-code']" />
                                         </div>
                                         <div>
@@ -371,7 +371,7 @@ const formatDate = (dateStr) => {
                 </div>
 
                 <div v-else class="text-center py-5">
-                    <div class="icon-circle bg-light text-muted mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <div class="icon-circle bg-light text-muted mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center">
                         <font-awesome-icon :icon="['fas', 'calendar-xmark']" class="fs-3" />
                     </div>
                     <h3 class="h5 fw-bold text-dark">Nenhum hackathon encontrado</h3>
@@ -485,12 +485,3 @@ const formatDate = (dateStr) => {
         </div>
 </template>
 
-<style scoped>
-.kpi-icon {
-    width: 44px;
-    height: 44px;
-}
-.hover-primary:hover {
-    color: #0d6efd !important;
-}
-</style>

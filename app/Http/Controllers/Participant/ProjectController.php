@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Participant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Hackathon;
+use App\Models\HackathonRegistration;
 use App\Models\Project;
 use App\Models\ProjectSubmission;
 use App\Models\Team;
@@ -25,23 +26,27 @@ class ProjectController extends Controller
      */
     public function show(string $id): Response
     {
-        $project = Project::with(['hackathon', 'team.members', 'submissions.submitter'])->findOrFail($id);
+        $project = Project::with(['hackathon', 'team.members', 'user', 'submissions.submitter'])->findOrFail($id);
+        $user = Auth::user();
+
+        $isAuthor = ($project->team && $project->team->members->contains('id', $user->id)) ||
+            ($project->user_id === $user->id);
 
         return Inertia::render('Organization/Dashboard/Project/Show', [
             'project' => $project,
-            'isTeamMember' => $project->team->members->contains('id', Auth::id()),
+            'isTeamMember' => $isAuthor,
             'isSubmissionOpen' => $this->isSubmissionOpen($project->hackathon),
         ]);
     }
 
     /**
-     * Create or update project submission by team
+     * Create or update project submission by team or individual
      */
     public function submit(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'hackathon_id' => 'required|uuid|exists:hackathons,id',
-            'team_id' => 'required|uuid|exists:teams,id',
+            'team_id' => 'nullable|uuid|exists:teams,id',
             'title' => 'required|string|max:255',
             'short_description' => 'nullable|string|max:500',
             'problem_statement' => 'nullable|string',
@@ -56,12 +61,28 @@ class ProjectController extends Controller
         ]);
 
         $hackathon = Hackathon::findOrFail($validated['hackathon_id']);
-        $team = Team::findOrFail($validated['team_id']);
         $user = Auth::user();
+        $team = !empty($validated['team_id']) ? Team::findOrFail($validated['team_id']) : null;
 
-        // 1. Authorize: user must be member of the team
-        if (!$team->members->contains('id', $user->id)) {
-            abort(403, 'Apenas integrantes da equipe podem submeter o projeto.');
+        // 1. Authorize: team submission or individual submission
+        if ($team) {
+            if ($hackathon->registration_type === 'individual') {
+                return redirect()->back()->withErrors(['project' => 'Este Hackathon aceita apenas submissões individuais.']);
+            }
+            if (!$team->members->contains('id', $user->id)) {
+                abort(403, 'Apenas integrantes da equipe podem submeter o projeto.');
+            }
+        } else {
+            if ($hackathon->requiresTeam()) {
+                return redirect()->back()->withErrors(['project' => 'Este Hackathon exige submissão vinculada a uma equipe.']);
+            }
+            $userRegistration = HackathonRegistration::where('hackathon_id', $hackathon->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$userRegistration) {
+                abort(403, 'Você precisa estar inscrito no Hackathon para submeter um projeto.');
+            }
         }
 
         // 2. Check submission window
@@ -79,11 +100,19 @@ class ProjectController extends Controller
             $validated['slug'] = $slug;
             $validated['status'] = 'submitted';
             $validated['submitted_at'] = Carbon::now();
+            $validated['user_id'] = $user->id;
 
-            $project = Project::updateOrCreate(
-                ['hackathon_id' => $hackathon->id, 'team_id' => $team->id],
-                $validated
-            );
+            if ($team) {
+                $project = Project::updateOrCreate(
+                    ['hackathon_id' => $hackathon->id, 'team_id' => $team->id],
+                    $validated
+                );
+            } else {
+                $project = Project::updateOrCreate(
+                    ['hackathon_id' => $hackathon->id, 'user_id' => $user->id, 'team_id' => null],
+                    $validated
+                );
+            }
 
             // Record immutable version snapshot
             ProjectSubmission::create([
@@ -95,12 +124,21 @@ class ProjectController extends Controller
 
             AuditService::log('project.submitted', $project, null, $project->toArray(), $hackathon->organization_id, $hackathon->id);
 
-            NotificationService::notifyTeam(
-                $team,
-                'project_submitted',
-                'Projeto Submetido',
-                "O projeto '{$project->title}' foi submetido com sucesso no Hackathon '{$hackathon->title}'."
-            );
+            if ($team) {
+                NotificationService::notifyTeam(
+                    $team,
+                    'project_submitted',
+                    'Projeto Submetido',
+                    "O projeto '{$project->title}' foi submetido com sucesso no Hackathon '{$hackathon->title}'."
+                );
+            } else {
+                NotificationService::notify(
+                    $user,
+                    'project_submitted',
+                    'Projeto Submetido',
+                    "Seu projeto '{$project->title}' foi submetido com sucesso no Hackathon '{$hackathon->title}'."
+                );
+            }
 
             return $project;
         });

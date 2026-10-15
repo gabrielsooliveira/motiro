@@ -1,0 +1,31 @@
+// Layout: Authentication
+.auth-panel {
+  min-width: 320px;
+  width: 100%;
+
+  &--login {
+    max-width: 520px;
+  }
+
+  &--register {
+    max-width: 640px;
+  }
+}
+
+.auth-illustration {
+  max-width: 440px;
+}
+
+.auth-subtitle {
+  max-width: 480px;
+}
+
+.auth-card {
+  max-width: 440px;
+  width: 100%;
+}
+
+.auth-register-container {
+  max-width: 460px;
+  margin: 0 auto;
+}

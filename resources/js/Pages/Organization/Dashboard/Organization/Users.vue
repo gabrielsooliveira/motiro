@@ -174,13 +174,13 @@ const getRoleBadge = (role) => {
                             <tr v-for="member in members" :key="member.id" :class="{ 'opacity-50': !member.is_active }">
                                 <td class="ps-3">
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="user-avatar bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px;">
+                                        <div class="user-avatar bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold">
                                             {{ member.name.charAt(0).toUpperCase() }}
                                         </div>
                                         <div>
                                             <div class="fw-bold text-dark d-flex align-items-center gap-1">
                                                 <span>{{ member.name }}</span>
-                                                <span v-if="member.is_owner" class="badge bg-warning text-dark small" style="font-size: 0.65rem;">
+                                                <span v-if="member.is_owner" class="badge bg-warning text-dark small badge-owner">
                                                     Proprietário
                                                 </span>
                                             </div>
@@ -307,7 +307,7 @@ const getRoleBadge = (role) => {
                 </div>
 
                 <div v-else class="text-center py-5">
-                    <div class="icon-circle bg-light text-muted mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <div class="icon-circle icon-circle--md bg-light text-muted mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center">
                         <font-awesome-icon :icon="['fas', 'envelope-circle-check']" class="fs-4" />
                     </div>
                     <h3 class="h6 fw-bold text-dark">Nenhum convite pendente</h3>

@@ -15,8 +15,19 @@ class TeamInvitation extends Model
         'invitee_id',
         'email',
         'status',
+        'type',
         'token',
     ];
+
+    public function isInvite(): bool
+    {
+        return $this->type === 'invite';
+    }
+
+    public function isRequest(): bool
+    {
+        return $this->type === 'request';
+    }
 
     public function team()
     {

@@ -45,8 +45,7 @@ const unreadCount = computed(
                     class="dropdown-item d-flex gap-2 align-items-start border-bottom py-2"
                 >
                     <i
-                        class="bi bi-circle-fill text-primary mt-1"
-                        style="font-size: 8px"
+                        class="bi bi-circle-fill text-primary mt-1 notification-badge"
                     ></i>
                     <div>
                         <div class="fw-semibold">{{ n.title }}</div>
