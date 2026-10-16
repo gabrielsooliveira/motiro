@@ -1,20 +1,12 @@
 // Page: Landing Page
 .landing-hero {
-  padding-top: 4rem;
+  padding-top: 2rem;
   padding-bottom: 4rem;
-}
 
-.hero-background-base {
-  background-image:
-    linear-gradient(
-      rgba(198, 107, 61, 0.5),
-      rgba(198, 107, 61, 0.8)
-    ),
-    var(--hero-bg-url);
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  padding-top: env(safe-area-inset-top);
+  @media (min-width: 992px) {
+    padding-top: 3.5rem;
+    padding-bottom: 5rem;
+  }
 }
 
 .hero-image-offset {

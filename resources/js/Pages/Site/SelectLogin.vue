@@ -3,9 +3,11 @@ import { Head, Link } from '@inertiajs/vue3';
 </script>
 
 <template>
-    <Head title="Acesso à Plataforma | Motirõ" />
+    <Head>
+        <title>Acesso à Plataforma</title>
+    </Head>
 
-    <div class="min-vh-100 d-flex flex-column justify-content-center align-items-center py-5 bg-light">
+    <div class="d-flex flex-column justify-content-center align-items-center pt-5">
         <div class="container select-login-container">
             <div class="text-center mb-5">
                 <Link :href="route('home')" class="text-decoration-none">
@@ -85,13 +87,6 @@ import { Head, Link } from '@inertiajs/vue3';
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="text-center mt-5">
-                <Link :href="route('home')" class="text-decoration-none text-muted small">
-                    <font-awesome-icon icon="fa-solid fa-door-open" class="me-1" />
-                    Voltar para a Home
-                </Link>
             </div>
         </div>
     </div>

@@ -1,20 +1,42 @@
 <script setup>
 import { Link, usePage } from "@inertiajs/vue3";
-import { ref, onUnmounted, onMounted, onBeforeUnmount, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, watch } from "vue";
 
 const page = usePage();
-const user = computed(() => page.props.user);
+const user = computed(() => page.props.user || page.props.auth?.user);
 
 const isMenuOpen = ref(false);
 const isScrolled = ref(false);
-const isMdUp = ref(window.innerWidth >= 992);
+const isMdUp = ref(typeof window !== "undefined" ? window.innerWidth >= 992 : true);
+
+// Dynamic reactive path from Inertia (stripping query strings and trailing slashes)
+const currentPath = computed(() => {
+    const rawUrl = page.url || "";
+    const cleanUrl = rawUrl.split("?")[0].split("#")[0];
+    return cleanUrl.length > 1 ? cleanUrl.replace(/\/+$/, "") : cleanUrl;
+});
+
+const isHomeActive = computed(() => {
+    return currentPath.value === "" || currentPath.value === "/";
+});
+
+const isHackathonsActive = computed(() => {
+    return currentPath.value.startsWith("/hackathons");
+});
 
 const handleScroll = () => {
-    isScrolled.value = window.scrollY > 5;
+    if (typeof window !== "undefined") {
+        isScrolled.value = window.scrollY > 8;
+    }
 };
 
 const handleResize = () => {
-    isMdUp.value = window.innerWidth >= 992;
+    if (typeof window !== "undefined") {
+        isMdUp.value = window.innerWidth >= 992;
+        if (isMdUp.value && isMenuOpen.value) {
+            closeMenu();
+        }
+    }
 };
 
 const toggleMenu = () => {
@@ -25,6 +47,21 @@ const closeMenu = () => {
     isMenuOpen.value = false;
 };
 
+const handleMobileNavClick = () => {
+    setTimeout(() => {
+        closeMenu();
+    }, 50);
+};
+
+// Automatically close mobile menu and sync scroll state whenever Inertia navigation completes
+watch(
+    () => page.url,
+    () => {
+        closeMenu();
+        handleScroll();
+    }
+);
+
 const handleClickOutside = (event) => {
     const modalMenu = document.querySelector(".mobile-menu");
     const toggler = document.querySelector(".navbar-toggler");
@@ -33,175 +70,218 @@ const handleClickOutside = (event) => {
         isMenuOpen.value &&
         modalMenu &&
         !modalMenu.contains(event.target) &&
+        toggler &&
         !toggler.contains(event.target)
     ) {
         closeMenu();
     }
 };
 
-onMounted(() => {
-    document.addEventListener("click", handleClickOutside);
-    window.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleResize);
+// Lock body scroll when mobile drawer is open
+watch(isMenuOpen, (isOpen) => {
+    if (typeof document !== "undefined") {
+        document.body.style.overflow = isOpen ? "hidden" : "";
+    }
 });
 
-onUnmounted(() => {
-    window.removeEventListener("scroll", handleScroll);
-    window.removeEventListener("resize", handleResize);
+onMounted(() => {
+    handleScroll();
+    handleResize();
+    document.addEventListener("click", handleClickOutside);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
 });
 
 onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside);
+    window.removeEventListener("scroll", handleScroll);
+    window.removeEventListener("resize", handleResize);
+    if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+    }
 });
 
 const navbarClass = computed(() => {
-    const baseClasses = "navbar navbar-expand-lg fixed-top z-1 px-2";
-    const bgClass =
-        !isMdUp.value || isScrolled.value
-            ? "bg-light shadow-sm"
-            : "bg-transparent";
-
-    return `${baseClasses} ${bgClass}`;
+    return [
+        "navbar navbar-expand-lg fixed-top z-3 navbar-site",
+        { "navbar-site-scrolled": !isMdUp.value || isScrolled.value },
+    ];
 });
 </script>
 
 <template>
     <nav :class="navbarClass">
-        <div class="container-fluid">
+        <div class="container d-flex align-items-center justify-content-between">
+            <!-- Brand / Logo -->
             <Link
-                class="navbar-brand fw-bold fs-4 title-page"
+                class="navbar-brand fw-bold fs-4 title-page brand-logo text-decoration-none py-0"
                 :href="route('home')"
             >
                 Motirõ
             </Link>
 
-            <button
-                class="btn d-lg-none border-0"
-                type="button"
-                @click="toggleMenu"
-                aria-label="Abrir Menu"
-            >
-                <font-awesome-icon icon="fas fa-bars" size="lg" />
-            </button>
-
             <!-- Desktop Menu -->
             <div
-                class="collapse navbar-collapse d-none d-lg-flex align-items-center justify-content-between"
+                class="collapse navbar-collapse d-none d-lg-flex align-items-center justify-content-between ms-lg-4"
             >
-                <ul class="nav justify-content-center fw-semibold">
-                    <li class="nav-item">
+                <!-- Clean Desktop Navigation Links -->
+                <ul class="site-nav-clean mx-auto">
+                    <li>
+                        <Link
+                            :href="route('home')"
+                            class="site-nav-clean-link"
+                            :class="{ active: isHomeActive }"
+                            :aria-current="isHomeActive ? 'page' : undefined"
+                        >
+                            Início
+                        </Link>
+                    </li>
+                    <li>
                         <Link
                             :href="route('hackathon.list')"
-                            class="nav-link link-dark"
+                            class="site-nav-clean-link"
+                            :class="{ active: isHackathonsActive }"
+                            :aria-current="isHackathonsActive ? 'page' : undefined"
                         >
                             Hackathons
                         </Link>
                     </li>
                 </ul>
 
-                <template v-if="user">
-                    <div class="d-flex align-items-center gap-3">
+                <!-- Desktop Action Buttons -->
+                <div class="d-flex align-items-center gap-2">
+                    <template v-if="user">
                         <Link
                             :href="route('dashboard.index')"
-                            class="btn btn-primary fw-semibold"
+                            class="btn btn-primary fw-semibold btn-sm px-3 py-2 d-flex align-items-center gap-2 rounded-3 shadow-sm"
                         >
-                            <span class="me-2">Meu Dashboard</span>
-                            <font-awesome-icon icon="fa-solid fa-right-to-bracket" />
+                            <span>Meu Dashboard</span>
+                            <font-awesome-icon :icon="['fas', 'right-to-bracket']" />
                         </Link>
-                    </div>
-                </template>
+                    </template>
 
-                <template v-else>
-                    <div class="d-flex align-items-center gap-2">
+                    <template v-else>
                         <Link
                             :href="route('select.login')"
-                            class="btn btn-link link-dark fw-semibold text-decoration-none"
+                            class="btn btn-link link-secondary text-decoration-none fw-semibold px-3 py-2"
                         >
                             Entrar
                         </Link>
                         <Link
                             :href="route('participant.login')"
-                            class="btn btn-outline-primary fw-semibold btn-sm"
+                            class="btn btn-outline-primary fw-semibold btn-sm px-3 py-2 rounded-3"
                         >
                             Quero Participar
                         </Link>
                         <Link
                             :href="route('organization.login')"
-                            class="btn btn-primary fw-semibold btn-sm"
+                            class="btn btn-primary fw-semibold btn-sm px-3 py-2 rounded-3 shadow-sm"
                         >
                             Organizar Hackathon
                         </Link>
-                    </div>
-                </template>
+                    </template>
+                </div>
             </div>
+
+            <!-- Mobile Hamburger Button -->
+            <button
+                class="btn d-lg-none border-0 navbar-toggler p-2 text-dark"
+                type="button"
+                @click="toggleMenu"
+                aria-label="Abrir Menu"
+            >
+                <font-awesome-icon :icon="['fas', 'bars']" size="lg" />
+            </button>
         </div>
     </nav>
 
-    <!-- Responsive Mobile Menu -->
-    <transition name="fade">
+    <!-- Clean Responsive Mobile Drawer -->
+    <transition name="mobile-drawer">
         <div
             v-if="isMenuOpen"
-            class="position-fixed top-0 start-0 w-100 h-100 bg-body d-flex flex-column p-4 z-3 overflow-y-auto mobile-menu"
+            class="mobile-menu site-mobile-drawer position-fixed top-0 start-0 w-100 h-100 d-flex flex-column p-4 z-3 overflow-y-auto"
         >
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="text-dark fw-bold mb-0">Menu</h4>
-                <button class="btn btn-link link-dark fs-4" @click="closeMenu">
-                    <font-awesome-icon icon="fas fa-xmark" />
+            <!-- Drawer Header -->
+            <div class="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom border-light-subtle">
+                <Link
+                    class="navbar-brand fw-bold fs-4 title-page brand-logo text-decoration-none"
+                    :href="route('home')"
+                    @click="handleMobileNavClick"
+                >
+                    Motirõ
+                </Link>
+                <button
+                    class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center text-secondary"
+                    style="width: 36px; height: 36px;"
+                    @click="closeMenu"
+                    aria-label="Fechar Menu"
+                >
+                    <font-awesome-icon :icon="['fas', 'xmark']" class="fs-5" />
                 </button>
             </div>
 
-            <ul class="nav flex-column fw-semibold fs-5 gap-2 mb-4">
-                <li class="nav-item">
-                    <Link
-                        :href="route('home')"
-                        class="nav-link link-dark"
-                        @click="closeMenu"
-                    >
-                        Início
-                    </Link>
-                </li>
-                <li class="nav-item">
-                    <Link
-                        :href="route('hackathon.list')"
-                        class="nav-link link-dark"
-                        @click="closeMenu"
-                    >
-                        Hackathons
-                    </Link>
-                </li>
-            </ul>
+            <!-- Clean Mobile Nav List -->
+            <nav class="site-mobile-nav-list mb-4">
+                <Link
+                    :href="route('home')"
+                    class="site-mobile-nav-link"
+                    :class="{ active: isHomeActive }"
+                    :aria-current="isHomeActive ? 'page' : undefined"
+                    @click="handleMobileNavClick"
+                >
+                    <span>Início</span>
+                    <span v-if="isHomeActive" class="site-mobile-nav-dot" aria-hidden="true"></span>
+                </Link>
 
-            <div class="mt-auto d-grid gap-2">
+                <Link
+                    :href="route('hackathon.list')"
+                    class="site-mobile-nav-link"
+                    :class="{ active: isHackathonsActive }"
+                    :aria-current="isHackathonsActive ? 'page' : undefined"
+                    @click="handleMobileNavClick"
+                >
+                    <span>Hackathons</span>
+                    <span v-if="isHackathonsActive" class="site-mobile-nav-dot" aria-hidden="true"></span>
+                </Link>
+            </nav>
+
+            <!-- Drawer Bottom Actions -->
+            <div class="mt-auto pt-3 border-top border-light-subtle d-grid gap-2">
                 <template v-if="user">
+                    <div class="text-muted small mb-1 px-1">
+                        Conectado como <strong class="text-dark">{{ user.name }}</strong>
+                    </div>
                     <Link
                         :href="route('dashboard.index')"
-                        class="btn btn-primary btn-lg fw-semibold"
-                        @click="closeMenu"
+                        class="btn btn-primary btn-lg fw-semibold d-flex align-items-center justify-content-center gap-2 rounded-3 shadow-sm"
+                        @click="handleMobileNavClick"
                     >
-                        Meu Dashboard
+                        <span>Meu Dashboard</span>
+                        <font-awesome-icon :icon="['fas', 'right-to-bracket']" />
                     </Link>
                 </template>
+
                 <template v-else>
                     <Link
                         :href="route('select.login')"
-                        class="btn btn-outline-secondary btn-lg fw-semibold"
-                        @click="closeMenu"
+                        class="btn btn-outline-secondary btn-lg fw-semibold rounded-3"
+                        @click="handleMobileNavClick"
                     >
                         Entrar na Conta
                     </Link>
                     <Link
                         :href="route('participant.login')"
-                        class="btn btn-outline-primary btn-lg fw-semibold"
-                        @click="closeMenu"
+                        class="btn btn-outline-primary btn-lg fw-semibold rounded-3"
+                        @click="handleMobileNavClick"
                     >
-                        Quero Participar (Participante)
+                        Quero Participar
                     </Link>
                     <Link
                         :href="route('organization.login')"
-                        class="btn btn-primary btn-lg fw-semibold"
-                        @click="closeMenu"
+                        class="btn btn-primary btn-lg fw-semibold rounded-3 shadow-sm"
+                        @click="handleMobileNavClick"
                     >
-                        Quero Organizar um Hackathon
+                        Organizar Hackathon
                     </Link>
                 </template>
             </div>

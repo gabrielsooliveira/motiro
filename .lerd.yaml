@@ -9,6 +9,4 @@ services:
   - mailpit
   - redis
 workers:
-  - queue
-  - schedule
   - vite

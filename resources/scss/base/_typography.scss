@@ -15,12 +15,10 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-family-display, "Science Gothic", sans-serif);
 }
 
-// Custom Font Sizes Scale (retaining Motirõ scale)
+// Custom Font Sizes Scale
 $custom-font-sizes: (
   7: 1.17rem,
-  8: 0.75rem,
-  9: 0.55rem,
-  10: 0.5rem
+  8: 0.75rem
 );
 
 @each $size, $val in $custom-font-sizes {
@@ -43,8 +41,5 @@ $custom-font-sizes: (
 }
 
 .text-truncate-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  @include line-clamp(2);
 }

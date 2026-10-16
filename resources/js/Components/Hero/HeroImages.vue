@@ -49,7 +49,7 @@ import Image2 from '@/assets/images/undraw/undraw_to-the-moon_w1wa.svg';
         </div>
 
         <!-- Center main student image -->
-        <div class="col-lg-6 mt-8 mt-lg-0">
+        <div class="col-lg-6 mt-8 mt-lg-0 pt-lg-0 mt-5 pt-5">
             <div
                 class="d-flex justify-content-center rounded-4 position-relative hero-image-offset"
             >
