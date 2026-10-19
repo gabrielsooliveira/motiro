@@ -46,7 +46,7 @@ const submitOrganization = () => {
     </Head>
 
     <div class="p-3 auth-register-container">
-        <!-- Header -->
+        
         <div class="text-center mb-4">
             <Link :href="route('home')" class="text-decoration-none">
                 <h2 class="fw-bold text-white title-page mb-1">Motirõ</h2>
@@ -56,7 +56,7 @@ const submitOrganization = () => {
             </p>
         </div>
 
-        <!-- 1. Selection Step: Choose user type -->
+        
         <div v-if="!selectedType" class="animate__animated animate__fadeIn">
             <h5 class="fw-bold text-white text-center mb-3">Como você deseja utilizar o Motirõ?</h5>
             
@@ -98,7 +98,7 @@ const submitOrganization = () => {
             </div>
         </div>
 
-        <!-- 2. Competitor Form -->
+        
         <div v-else-if="selectedType === 'competitor'">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <button type="button" class="btn btn-link link-light text-decoration-none p-0 small" @click="selectedType = null">
@@ -178,7 +178,7 @@ const submitOrganization = () => {
             </form>
         </div>
 
-        <!-- 3. Organization Form -->
+        
         <div v-else-if="selectedType === 'organization'">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <button type="button" class="btn btn-link link-light text-decoration-none p-0 small" @click="selectedType = null">

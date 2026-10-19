@@ -105,15 +105,16 @@ const getRoleBadge = (role) => {
     <Head :title="`Usuários | ${organization.name}`" />
 
     <div class="py-2">
-            <!-- Header Section -->
+            
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom">
                 <div>
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <Link :href="route('organization.dashboard')" class="text-decoration-none text-muted small">
-                            <font-awesome-icon :icon="['fas', 'arrow-left']" class="me-1" />
-                            Painel da Instituição
-                        </Link>
-                    </div>
+                    <Link
+                        :href="route('organization.dashboard')"
+                        class="btn btn-outline-secondary btn-sm mb-2 d-inline-flex align-items-center gap-2"
+                    >
+                        <font-awesome-icon :icon="['fas', 'arrow-left']" />
+                        <span>Voltar ao Painel</span>
+                    </Link>
                     <h1 class="h2 fw-bold text-dark mb-0">Usuários da Instituição</h1>
                     <p class="text-muted small mb-0 mt-1">
                         Gerencie quem tem autorização para atuar na organização {{ organization.name }} e nos seus hackathons.
@@ -132,7 +133,7 @@ const getRoleBadge = (role) => {
                 </div>
             </div>
 
-            <!-- Tabs -->
+            
             <ul class="nav nav-pills mb-4 gap-2">
                 <li class="nav-item">
                     <button
@@ -156,7 +157,7 @@ const getRoleBadge = (role) => {
                 </li>
             </ul>
 
-            <!-- Tab 1: Members Table -->
+            
             <div v-if="activeTab === 'members'" class="card border-0 shadow-sm rounded-3 bg-white overflow-hidden">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -199,7 +200,7 @@ const getRoleBadge = (role) => {
                                     </span>
                                 </td>
                                 <td>
-                                    <!-- Hackathons Assigned (Section 6 & 9) -->
+                                    
                                     <div v-if="member.assigned_hackathons && member.assigned_hackathons.length > 0" class="d-flex flex-wrap gap-1">
                                         <span
                                             v-for="h in member.assigned_hackathons"
@@ -251,7 +252,7 @@ const getRoleBadge = (role) => {
                 </div>
             </div>
 
-            <!-- Tab 2: Invitations Table -->
+            
             <div v-if="activeTab === 'invitations'" class="card border-0 shadow-sm rounded-3 bg-white overflow-hidden">
                 <div v-if="invitations.length > 0" class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -316,9 +317,9 @@ const getRoleBadge = (role) => {
             </div>
         </div>
 
-        <!-- Modal Invite User (Section 7) -->
+        
         <div v-if="showInviteModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content rounded-4 border-0 shadow">
                     <form @submit.prevent="submitInvite">
                         <div class="modal-header border-bottom">
@@ -352,7 +353,7 @@ const getRoleBadge = (role) => {
                                 </select>
                             </div>
 
-                            <!-- Role description details (Section 8) -->
+                            
                             <div class="p-3 bg-light rounded-3 small text-muted border">
                                 <div v-if="inviteForm.role === 'admin'">
                                     <strong class="text-primary d-block mb-1">Administrador da Instituição:</strong>
@@ -379,9 +380,9 @@ const getRoleBadge = (role) => {
             </div>
         </div>
 
-        <!-- Modal Edit Member Role -->
+        
         <div v-if="editingMember" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content rounded-4 border-0 shadow">
                     <form @submit.prevent="submitUpdateRole">
                         <div class="modal-header border-bottom">

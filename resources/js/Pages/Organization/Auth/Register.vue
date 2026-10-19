@@ -25,28 +25,22 @@ const props = defineProps({
     },
 });
 
-// Usuário autenticado ativo na sessão
 const currentUser = ref(props.authUser || null);
 
-// Etapa atual: se já estiver autenticado, inicia diretamente na Etapa 2
 const currentStep = ref(props.authUser ? 2 : 1);
 
-// Modo na Etapa 1: 'register' (criar conta) ou 'login' (já tenho conta)
 const authMode = ref("register");
 
-// Visualizador de senha
 const showLoginPassword = ref(false);
 const showAccountPassword = ref(false);
 const showAccountConfirmPassword = ref(false);
 
-// Form de Login pessoal (Etapa 1 — Opção A)
 const loginForm = useForm({
     email: "",
     password: "",
     remember: false,
 });
 
-// Form de Criação de conta pessoal (Etapa 1 — Opção B)
 const accountForm = useForm({
     name: "",
     email: "",
@@ -55,7 +49,6 @@ const accountForm = useForm({
     terms: false,
 });
 
-// Form de Dados da Organização (Etapa 2 e 3)
 const orgForm = useForm({
     organization_name: "",
     organization_type: props.categories[0] || "Empresa",
@@ -65,7 +58,6 @@ const orgForm = useForm({
     logo: null,
 });
 
-// Form para aceitação de convite
 const invitationForm = useForm({
     invitation_token: props.invitation?.token || "",
     name: "",
@@ -73,7 +65,6 @@ const invitationForm = useForm({
     password_confirmation: "",
 });
 
-// Preview do logotipo
 const logoPreview = ref(null);
 const logoError = ref("");
 
@@ -99,7 +90,6 @@ const removeLogo = () => {
     logoPreview.value = null;
 };
 
-// Erros locais de validação na Etapa 2
 const step2Errors = ref({});
 
 const validateStep2 = () => {
@@ -134,7 +124,6 @@ const goToStep1 = () => {
     currentStep.value = 1;
 };
 
-// Submissão do Login pessoal (Etapa 1 - Opção A)
 const submitLogin = () => {
     loginForm.post(route("organization.register.login"), {
         preserveScroll: true,
@@ -148,7 +137,6 @@ const submitLogin = () => {
     });
 };
 
-// Submissão da Criação de conta pessoal (Etapa 1 - Opção B)
 const submitAccount = () => {
     accountForm.post(route("organization.register.account"), {
         preserveScroll: true,
@@ -162,7 +150,6 @@ const submitAccount = () => {
     });
 };
 
-// Submissão definitiva da Organização (Etapa 3)
 const submitOrganization = () => {
     orgForm.post(route("organization.register.store"), {
         preserveScroll: true,
@@ -170,7 +157,6 @@ const submitOrganization = () => {
     });
 };
 
-// Submissão de convite
 const submitInvitation = () => {
     invitationForm.post(route("organization.register.store"), {
         preserveScroll: true,
@@ -191,7 +177,7 @@ const logoutCurrentIdentity = () => {
     <Head title="Cadastrar Organização | Motirõ" />
 
     <div class="py-2">
-        <!-- Logo / Marca -->
+        
         <div class="text-center mb-4">
             <Link :href="route('home')" class="text-decoration-none">
                 <h1 class="fw-bold text-white fs-3 mb-1 tracking-tight">Motirõ</h1>
@@ -201,7 +187,7 @@ const logoutCurrentIdentity = () => {
             </p>
         </div>
 
-        <!-- CASO 0: ACEITAÇÃO DE CONVITE INSTITUCIONAL -->
+        
         <div v-if="invitation" class="card bg-dark border-secondary shadow-sm text-white mb-3">
             <div class="card-body p-4">
                 <div class="text-center mb-4">
@@ -283,25 +269,22 @@ const logoutCurrentIdentity = () => {
             </div>
         </div>
 
-        <!-- CASO NORMAL: FLUXO DE CADASTRO DE ORGANIZAÇÃO EM ETAPAS -->
+        
         <div v-else>
-            <!-- Indicador Visual de Progresso das Etapas -->
+            
             <div class="mb-4">
                 <div class="d-flex align-items-center justify-content-between position-relative px-2">
-                    <!-- Linha de conexão de fundo -->
+                    
                     <div
                         class="position-absolute top-50 start-0 end-0 translate-middle-y bg-secondary bg-opacity-25 step-progress-line"
                     ></div>
-                    <!-- Linha de progresso ativa -->
+                    
                     <div
                         class="position-absolute top-50 start-0 translate-middle-y bg-primary step-progress-line"
-                        :style="{
-                            width: currentStep === 1 ? '0%' : currentStep === 2 ? '50%' : '100%',
-                            transition: 'width 0.3s ease'
-                        }"
+                        :class="currentStep === 1 ? 'step-progress-0' : currentStep === 2 ? 'step-progress-50' : 'step-progress-100'"
                     ></div>
 
-                    <!-- Step 1 Indicator -->
+                    
                     <div class="d-flex flex-column align-items-center position-relative step-indicator-wrapper">
                         <div
                             class="rounded-circle d-flex align-items-center justify-content-center fw-bold small step-circle"
@@ -315,7 +298,7 @@ const logoutCurrentIdentity = () => {
                         </span>
                     </div>
 
-                    <!-- Step 2 Indicator -->
+                    
                     <div class="d-flex flex-column align-items-center position-relative step-indicator-wrapper">
                         <div
                             class="rounded-circle d-flex align-items-center justify-content-center fw-bold small step-circle"
@@ -329,7 +312,7 @@ const logoutCurrentIdentity = () => {
                         </span>
                     </div>
 
-                    <!-- Step 3 Indicator -->
+                    
                     <div class="d-flex flex-column align-items-center position-relative step-indicator-wrapper">
                         <div
                             class="rounded-circle d-flex align-items-center justify-content-center fw-bold small step-circle"
@@ -344,7 +327,7 @@ const logoutCurrentIdentity = () => {
                 </div>
             </div>
 
-            <!-- Banner Informativo da Identidade Conectada (se autenticado) -->
+            
             <div
                 v-if="currentUser && currentStep >= 2"
                 class="card bg-dark border-secondary-subtle p-2 px-3 rounded-3 mb-3 d-flex flex-row align-items-center justify-content-between shadow-sm"
@@ -368,9 +351,9 @@ const logoutCurrentIdentity = () => {
                 </button>
             </div>
 
-            <!-- ======================================================== -->
-            <!-- ETAPA 1 — CRIAR OU ACESSAR CONTA PESSOAL                 -->
-            <!-- ======================================================== -->
+            
+            
+            
             <div v-if="currentStep === 1" class="animate__animated animate__fadeIn">
                 <div class="mb-3 text-center">
                     <h2 class="h5 fw-bold text-white mb-1">Identidade Pessoal no Motirõ</h2>
@@ -379,7 +362,7 @@ const logoutCurrentIdentity = () => {
                     </p>
                 </div>
 
-                <!-- Tabs de escolha: Quero criar conta vs Já tenho conta -->
+                
                 <div class="d-flex bg-dark border border-secondary rounded-3 p-1 mb-3">
                     <button
                         type="button"
@@ -399,9 +382,9 @@ const logoutCurrentIdentity = () => {
                     </button>
                 </div>
 
-                <!-- OPÇÃO A: JÁ TENHO UMA CONTA (LOGIN) -->
+                
                 <div v-if="authMode === 'login'">
-                    <!-- Alerta de erro de login -->
+                    
                     <div
                         v-if="loginForm.errors.login_email || loginForm.errors.email"
                         class="alert alert-danger py-2 px-3 small rounded-3 mb-3"
@@ -488,9 +471,9 @@ const logoutCurrentIdentity = () => {
                     </form>
                 </div>
 
-                <!-- OPÇÃO B: QUERO CRIAR MINHA CONTA -->
+                
                 <div v-else>
-                    <!-- Alerta de erro de registro -->
+                    
                     <div
                         v-if="accountForm.errors.email"
                         class="alert alert-warning py-2 px-3 small rounded-3 mb-3 d-flex align-items-start gap-2"
@@ -634,9 +617,9 @@ const logoutCurrentIdentity = () => {
                 </div>
             </div>
 
-            <!-- ======================================================== -->
-            <!-- ETAPA 2 — INFORMAÇÕES DA ORGANIZAÇÃO                      -->
-            <!-- ======================================================== -->
+            
+            
+            
             <div v-else-if="currentStep === 2" class="animate__animated animate__fadeIn">
                 <div class="mb-3 text-center">
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill small mb-2 fw-semibold">
@@ -649,7 +632,7 @@ const logoutCurrentIdentity = () => {
                 </div>
 
                 <form @submit.prevent="goToStep3">
-                    <!-- Nome da Organização -->
+                    
                     <div class="mb-3">
                         <label class="form-label text-white small fw-semibold" for="org_name">
                             Nome da Organização *
@@ -668,7 +651,7 @@ const logoutCurrentIdentity = () => {
                         </span>
                     </div>
 
-                    <!-- Tipo da Organização -->
+                    
                     <div class="mb-3">
                         <label class="form-label text-white small fw-semibold" for="org_type">
                             Tipo de Organização *
@@ -689,7 +672,7 @@ const logoutCurrentIdentity = () => {
                         </span>
                     </div>
 
-                    <!-- E-mail Institucional ou de Contato -->
+                    
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="form-label text-white small fw-semibold mb-0" for="org_email">
@@ -713,7 +696,7 @@ const logoutCurrentIdentity = () => {
                         </span>
                     </div>
 
-                    <!-- Website Oficial -->
+                    
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="form-label text-white small fw-semibold mb-0" for="org_web">
@@ -734,7 +717,7 @@ const logoutCurrentIdentity = () => {
                         </span>
                     </div>
 
-                    <!-- Logotipo -->
+                    
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="form-label text-white small fw-semibold mb-0" for="org_logo">
@@ -756,7 +739,7 @@ const logoutCurrentIdentity = () => {
                             {{ logoError }}
                         </span>
 
-                        <!-- Preview do logotipo -->
+                        
                         <div v-if="logoPreview" class="d-flex align-items-center gap-3 mt-2 p-2 bg-dark border border-secondary rounded-3">
                             <img :src="logoPreview" alt="Prévia do logotipo" class="rounded object-fit-cover logo-preview" />
                             <div class="flex-grow-1 overflow-hidden">
@@ -769,7 +752,7 @@ const logoutCurrentIdentity = () => {
                         </div>
                     </div>
 
-                    <!-- Descrição Institucional -->
+                    
                     <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="form-label text-white small fw-semibold mb-0" for="org_desc">
@@ -786,7 +769,7 @@ const logoutCurrentIdentity = () => {
                         ></textarea>
                     </div>
 
-                    <!-- Botões de navegação -->
+                    
                     <div class="d-flex justify-content-between align-items-center gap-2">
                         <button
                             v-if="!props.authUser"
@@ -809,9 +792,9 @@ const logoutCurrentIdentity = () => {
                 </form>
             </div>
 
-            <!-- ======================================================== -->
-            <!-- ETAPA 3 — REVISAR E CONFIRMAR                            -->
-            <!-- ======================================================== -->
+            
+            
+            
             <div v-else-if="currentStep === 3" class="animate__animated animate__fadeIn">
                 <div class="mb-3 text-center">
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill small mb-2 fw-semibold">
@@ -823,9 +806,9 @@ const logoutCurrentIdentity = () => {
                     </p>
                 </div>
 
-                <!-- Resumo dos dados -->
+                
                 <div class="d-flex flex-column gap-3 mb-4">
-                    <!-- Bloco 1: Sua Conta Pessoal -->
+                    
                     <div class="card bg-dark border-secondary shadow-sm">
                         <div class="card-body p-3">
                             <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-secondary-subtle">
@@ -850,7 +833,7 @@ const logoutCurrentIdentity = () => {
                         </div>
                     </div>
 
-                    <!-- Bloco 2: Sua Organização -->
+                    
                     <div class="card bg-dark border-secondary shadow-sm">
                         <div class="card-body p-3">
                             <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-secondary-subtle">
@@ -895,7 +878,7 @@ const logoutCurrentIdentity = () => {
                     </div>
                 </div>
 
-                <!-- Botões de Confirmação -->
+                
                 <div class="d-flex justify-content-between align-items-center gap-2">
                     <button
                         type="button"
@@ -920,7 +903,7 @@ const logoutCurrentIdentity = () => {
             </div>
         </div>
 
-        <!-- Rodapé simples de navegação -->
+        
         <div class="text-center mt-4 pt-3 border-top border-secondary-subtle">
             <Link :href="route('home')" class="text-secondary text-decoration-none small">
                 <font-awesome-icon :icon="['fas', 'arrow-left']" class="me-1" />

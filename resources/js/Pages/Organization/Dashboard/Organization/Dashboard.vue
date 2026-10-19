@@ -26,34 +26,7 @@ const props = defineProps({
     },
 });
 
-const showCreateModal = ref(false);
 const activeFilter = ref("all");
-
-const form = useForm({
-    organization_id: props.organization.id,
-    title: "",
-    description: "",
-    category: "",
-    modality: "online",
-    location: "",
-    min_team_members: 1,
-    max_team_members: 5,
-    max_teams: 50,
-    start_date: "",
-    end_date: "",
-    registration_start_date: "",
-    registration_end_date: "",
-    rules: "",
-});
-
-const submitHackathon = () => {
-    form.post(route("hackathon.manage.store"), {
-        onSuccess: () => {
-            showCreateModal.value = false;
-            form.reset();
-        },
-    });
-};
 
 const filteredHackathons = computed(() => {
     if (activeFilter.value === "all") return props.recent_hackathons;
@@ -96,7 +69,7 @@ const formatDate = (dateStr) => {
     <Head :title="`Painel da Organização | ${organization.name}`" />
 
     <div class="py-2">
-            <!-- Header Section -->
+            
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom">
                 <div>
                     <div class="d-flex align-items-center gap-2 mb-1">
@@ -119,19 +92,18 @@ const formatDate = (dateStr) => {
                         <font-awesome-icon :icon="['fas', 'users-gear']" />
                         <span>Usuários da Instituição</span>
                     </Link>
-                    <button
+                    <Link
                         v-if="is_org_admin"
-                        type="button"
+                        :href="route('hackathon.manage.create')"
                         class="btn btn-primary d-flex align-items-center gap-2 shadow-sm"
-                        @click="showCreateModal = true"
                     >
                         <font-awesome-icon :icon="['fas', 'plus']" />
                         <span>Novo Hackathon</span>
-                    </button>
+                    </Link>
                 </div>
             </div>
 
-            <!-- KPI Cards Grid (Section 5) -->
+            
             <div class="row g-3 mb-4">
                 <div class="col-6 col-md-4 col-xl-3">
                     <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
@@ -246,7 +218,7 @@ const formatDate = (dateStr) => {
                 </div>
             </div>
 
-            <!-- Hackathons Table / Cards Section (Section 5) -->
+            
             <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white overflow-hidden">
                 <div class="card-header bg-white border-bottom p-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
                     <div>
@@ -254,7 +226,7 @@ const formatDate = (dateStr) => {
                         <span class="text-muted small">Todos os eventos criados no contexto desta organização</span>
                     </div>
 
-                    <!-- Filters -->
+                    
                     <div class="btn-group btn-group-sm" role="group">
                         <button
                             type="button"
@@ -339,7 +311,7 @@ const formatDate = (dateStr) => {
                                     <span class="fw-semibold">{{ hackathon.projects_count || 0 }}</span>
                                 </td>
                                 <td>
-                                    <!-- Responsáveis (Section 9/10) -->
+                                    
                                     <div v-if="hackathon.members && hackathon.members.length > 0" class="d-flex align-items-center gap-1 flex-wrap">
                                         <span
                                             v-for="m in hackathon.members.slice(0, 3)"
@@ -376,110 +348,13 @@ const formatDate = (dateStr) => {
                     </div>
                     <h3 class="h5 fw-bold text-dark">Nenhum hackathon encontrado</h3>
                     <p class="text-muted small">Crie o primeiro hackathon da sua instituição para começar a receber equipes.</p>
-                    <button
+                    <Link
                         v-if="is_org_admin"
-                        type="button"
+                        :href="route('hackathon.manage.create')"
                         class="btn btn-primary btn-sm"
-                        @click="showCreateModal = true"
                     >
                         Criar Hackathon
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal Create Hackathon -->
-        <div v-if="showCreateModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <form @submit.prevent="submitHackathon">
-                        <div class="modal-header border-bottom">
-                            <div>
-                                <h5 class="modal-title fw-bold">Criar Novo Hackathon</h5>
-                                <span class="small text-muted">Instituição: {{ organization.name }}</span>
-                            </div>
-                            <button type="button" class="btn-close" @click="showCreateModal = false"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Título do Hackathon *</label>
-                                <input v-model="form.title" type="text" class="form-control" placeholder="ex: Hackathon de Inovação e IA 2026" required />
-                            </div>
-
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Categoria / Área de Foco</label>
-                                    <input v-model="form.category" type="text" class="form-control" placeholder="ex: Inteligência Artificial, Saúde, Finanças" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Modalidade *</label>
-                                    <select v-model="form.modality" class="form-select" required>
-                                        <option value="online">Online</option>
-                                        <option value="presential">Presencial</option>
-                                        <option value="hybrid">Híbrido</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div v-if="form.modality !== 'online'" class="mb-3">
-                                <label class="form-label fw-semibold">Local Presencial</label>
-                                <input v-model="form.location" type="text" class="form-control" placeholder="Endereço ou campus da instituição" />
-                            </div>
-
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Data de Início do Evento</label>
-                                    <input v-model="form.start_date" type="datetime-local" class="form-control" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Data de Fim do Evento</label>
-                                    <input v-model="form.end_date" type="datetime-local" class="form-control" />
-                                </div>
-                            </div>
-
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Início das Inscrições</label>
-                                    <input v-model="form.registration_start_date" type="datetime-local" class="form-control" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Fim das Inscrições</label>
-                                    <input v-model="form.registration_end_date" type="datetime-local" class="form-control" />
-                                </div>
-                            </div>
-
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Mín. Integrantes / Equipe</label>
-                                    <input v-model="form.min_team_members" type="number" class="form-control" min="1" required />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Máx. Integrantes / Equipe</label>
-                                    <input v-model="form.max_team_members" type="number" class="form-control" min="1" required />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Limite Máx. de Equipes</label>
-                                    <input v-model="form.max_teams" type="number" class="form-control" min="1" />
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Descrição do Evento</label>
-                                <textarea v-model="form.description" class="form-control" rows="3" placeholder="Apresentação do desafio, tema e objetivos gerais..."></textarea>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Regras e Instruções Gerais</label>
-                                <textarea v-model="form.rules" class="form-control" rows="3" placeholder="Critérios de elegibilidade, formato de entrega, etc."></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="showCreateModal = false">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" :disabled="form.processing">
-                                {{ form.processing ? 'Criando...' : 'Criar Hackathon' }}
-                            </button>
-                        </div>
-                    </form>
+                    </Link>
                 </div>
             </div>
         </div>

@@ -15,7 +15,7 @@ class ContextController extends Controller
     /**
      * Show context selection screen with reliable organization data
      */
-    public function select(Request $request): Response|RedirectResponse
+    public function select(): Response|RedirectResponse
     {
         $user = Auth::user();
         if (!$user) {
@@ -39,7 +39,7 @@ class ContextController extends Controller
                 ];
             });
 
-        return Inertia::render('Organization/Auth/SelectContext', [
+        return Inertia::render('Organization/SelectContext', [
             'organizations' => $organizations,
             'user' => [
                 'id' => $user->id,

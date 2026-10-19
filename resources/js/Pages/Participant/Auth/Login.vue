@@ -8,6 +8,7 @@ const form = useForm({
     email: "",
     password: "",
     remember: false,
+    context: "participant",
 });
 
 const toggleView = () => {
@@ -26,12 +27,12 @@ const toggleView = () => {
             Portal do Participante
         </span>
         <h2 class="h3 fw-bold text-white mb-1">Entrar como Participante</h2>
-        <p class="text-secondary small mb-0">
+        <p class="text-white small mb-0">
             Acesse para encontrar hackathons, montar equipes e submeter seus projetos.
         </p>
     </div>
 
-    <!-- Error Alert -->
+    
     <div v-if="form.errors.email || $page.props.flash?.error" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" role="alert">
         {{ form.errors.email || $page.props.flash?.error }}
     </div>
@@ -87,7 +88,7 @@ const toggleView = () => {
                     id="remember"
                     v-model="form.remember"
                 />
-                <label class="form-check-label text-secondary small" for="remember">
+                <label class="form-check-label text-white small" for="remember">
                     Lembrar de mim
                 </label>
             </div>
@@ -112,7 +113,7 @@ const toggleView = () => {
     </form>
 
     <div class="text-center pt-2 border-top border-secondary-subtle">
-        <p class="small text-secondary mb-2">
+        <p class="small text-white mb-2">
             Ainda não tem conta de participante?
             <Link
                 :href="route('participant.register')"
@@ -121,19 +122,19 @@ const toggleView = () => {
                 Criar conta gratuita
             </Link>
         </p>
-        <p class="small text-secondary mb-3">
+        <p class="small text-white mb-3">
             É gestor ou representa uma instituição?
             <Link
                 :href="route('organization.login')"
                 class="text-decoration-none fw-semibold text-info"
             >
-                Ir para Área da Organização &rarr;
+                Ir para Área da Organização
             </Link>
         </p>
 
         <Link
             :href="route('home')"
-            class="text-decoration-none text-muted small"
+            class="text-decoration-none text-white small"
         >
             <font-awesome-icon icon="fa-solid fa-arrow-left" class="me-1" />
             Voltar para a página inicial

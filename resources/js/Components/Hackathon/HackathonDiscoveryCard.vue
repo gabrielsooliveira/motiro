@@ -122,17 +122,6 @@ const registrationDeadlineFormatted = computed(() => {
 
             <!-- Card Footer with Stats & Actions -->
             <div class="hackathon-discovery-card__footer">
-                <div class="hackathon-discovery-card__stats">
-                    <span title="Inscrições registradas">
-                        <font-awesome-icon :icon="['fas', 'users']" class="me-1" />
-                        {{ hackathon.registrations_count || 0 }}
-                    </span>
-                    <span v-if="hackathon.projects_count" title="Projetos submetidos">
-                        <font-awesome-icon :icon="['fas', 'file-arrow-up']" class="me-1" />
-                        {{ hackathon.projects_count }}
-                    </span>
-                </div>
-
                 <div class="hackathon-discovery-card__actions">
                     <Link
                         :href="route('hackathon.show', hackathon.slug)"

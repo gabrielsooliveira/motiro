@@ -20,14 +20,14 @@ class LoginController extends Controller
         return $this->index();
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Auth\LoginContextRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        $validated = $request->validated();
 
-        $credentials = $request->only('email', 'password');
+        $credentials = [
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+        ];
 
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()->withErrors([

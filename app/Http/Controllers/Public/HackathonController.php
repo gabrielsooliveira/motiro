@@ -80,12 +80,26 @@ class HackathonController extends Controller
         if ($user) {
             // Teams the user is leader of or member of
             $userTeams = $user->teams()->with('members')->get();
-            // User's registration in this hackathon
-            $userRegistration = $hackathon->registrations()->where('user_id', $user->id)->first();
-            if ($userRegistration && $userRegistration->team_id) {
+            // User's active registration in this hackathon
+            $userRegistration = $hackathon->registrations()
+                ->with('team')
+                ->where('user_id', $user->id)
+                ->where('status', '!=', 'cancelled')
+                ->first();
+
+            // Fallback to cancelled registration if no active exists
+            if (!$userRegistration) {
+                $userRegistration = $hackathon->registrations()->with('team')->where('user_id', $user->id)->first();
+            }
+
+            if ($userRegistration && $userRegistration->status !== 'cancelled' && $userRegistration->team_id) {
                 $userRegisteredTeamId = $userRegistration->team_id;
             } else {
-                $registeredIds = $hackathon->registrations()->whereNotNull('team_id')->pluck('team_id')->toArray();
+                $registeredIds = $hackathon->registrations()
+                    ->whereNotNull('team_id')
+                    ->where('status', '!=', 'cancelled')
+                    ->pluck('team_id')
+                    ->toArray();
                 $userTeamIds = $user->teams()->pluck('teams.id')->toArray();
                 $intersect = array_intersect($registeredIds, $userTeamIds);
                 $userRegisteredTeamId = !empty($intersect) ? reset($intersect) : null;

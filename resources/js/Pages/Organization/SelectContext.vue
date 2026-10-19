@@ -32,7 +32,7 @@ const getRoleBadge = (role) => {
 <template>
     <Head title="Selecionar Organização | Motirõ" />
 
-    <div class="min-vh-100 d-flex flex-column justify-content-center align-items-center py-5 bg-light">
+    <div class="min-vh-100 d-flex flex-column justify-content-center align-items-center bg-light">
         <div class="container select-context-container">
             <div class="text-center mb-4">
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill fw-semibold mb-2">
@@ -43,7 +43,7 @@ const getRoleBadge = (role) => {
                 <p class="text-muted">Selecione a instituição que deseja administrar neste momento.</p>
             </div>
 
-            <!-- Empty state if no organizations found -->
+            
             <div v-if="organizations.length === 0" class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
                 <div class="icon-bubble icon-bubble--xl bg-secondary-subtle text-secondary mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle">
                     <font-awesome-icon :icon="['fas', 'building-circle-exclamation']" class="fs-2" />
@@ -62,7 +62,7 @@ const getRoleBadge = (role) => {
                 </div>
             </div>
 
-            <!-- Organizations Cards Grid -->
+            
             <div v-else class="row g-4 justify-content-center">
                 <div
                     v-for="org in organizations"
@@ -117,7 +117,7 @@ const getRoleBadge = (role) => {
                 </div>
             </div>
 
-            <!-- Footer / Action bar -->
+            
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-5 pt-3 border-top text-muted small gap-3">
                 <Link :href="route('participant.dashboard')" class="text-secondary text-decoration-none">
                     <font-awesome-icon :icon="['fas', 'trophy']" class="me-1 text-warning" />

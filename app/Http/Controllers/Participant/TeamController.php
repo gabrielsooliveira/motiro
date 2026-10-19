@@ -5,18 +5,20 @@ namespace App\Http\Controllers\Participant;
 use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Models\TeamInvitation;
-use App\Models\User;
-use App\Services\AuditService;
-use App\Services\NotificationService;
+use App\Services\TeamService;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class TeamController extends Controller
 {
+    public function __construct(
+        protected TeamService $teamService
+    ) {}
+
     /**
      * Show a team's management dashboard
      */
@@ -52,58 +54,13 @@ class TeamController extends Controller
             'is_looking_for_members' => 'boolean',
         ]);
 
-        $user = Auth::user();
+        try {
+            $team = $this->teamService->createTeam(Auth::user(), $validated);
 
-        if (!empty($validated['hackathon_id'])) {
-            $hackathon = \App\Models\Hackathon::findOrFail($validated['hackathon_id']);
-            if (!$hackathon->allowsTeamRegistration()) {
-                return redirect()->back()->withErrors(['hackathon_id' => 'Este Hackathon aceita apenas inscrições individuais.']);
-            }
-            if (!$hackathon->allow_team_creation) {
-                return redirect()->back()->withErrors(['hackathon_id' => 'A criação de equipes por participantes está desabilitada para este Hackathon.']);
-            }
-            if (!$hackathon->isTeamFormationOpen()) {
-                return redirect()->back()->withErrors(['hackathon_id' => 'O prazo limite para formação de equipes neste Hackathon foi encerrado.']);
-            }
+            return redirect()->route('team.show', $team->id)->with('success', 'Equipe criada com sucesso!');
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors(['hackathon_id' => $e->getMessage()]);
         }
-
-        $slug = Str::slug($validated['name']);
-        $count = 1;
-        while (Team::where('slug', $slug)->exists()) {
-            $slug = Str::slug($validated['name']) . '-' . $count;
-            $count++;
-        }
-        $validated['slug'] = $slug;
-        $validated['leader_id'] = $user->id;
-
-        $team = Team::create($validated);
-
-        // Add creator as leader member
-        $team->members()->attach($user->id, [
-            'id' => (string) Str::uuid(),
-            'role' => 'leader',
-            'joined_at' => now(),
-        ]);
-
-        // If created for a hackathon, sync creator registration
-        if (!empty($validated['hackathon_id'])) {
-            \App\Models\HackathonRegistration::updateOrCreate(
-                [
-                    'hackathon_id' => $validated['hackathon_id'],
-                    'user_id' => $user->id,
-                ],
-                [
-                    'team_id' => $team->id,
-                    'participation_type' => 'team',
-                    'is_eligible' => true,
-                    'notes' => null,
-                ]
-            );
-        }
-
-        AuditService::log('team.create', $team, null, $team->toArray());
-
-        return redirect()->route('team.show', $team->id)->with('success', 'Equipe criada com sucesso!');
     }
 
     /**
@@ -114,48 +71,17 @@ class TeamController extends Controller
         $team = Team::findOrFail($id);
         $this->authorizeLeader($team);
 
-        if ($team->hackathon && !$team->hackathon->allow_team_invites) {
-            return redirect()->back()->withErrors(['email_or_username' => 'Envio de convites para equipes não é permitido neste Hackathon.']);
-        }
-
-        if ($team->hackathon && !$team->hasAvailableSlots()) {
-            return redirect()->back()->withErrors(['email_or_username' => 'A equipe já atingiu o limite máximo de integrantes.']);
-        }
-
         $request->validate([
             'email_or_username' => 'required|string',
         ]);
 
-        $query = $request->input('email_or_username');
-        $user = User::where('email', $query)->orWhere('username', $query)->first();
+        try {
+            $this->teamService->inviteMember($team, Auth::user(), $request->input('email_or_username'));
 
-        if (!$user) {
-            return redirect()->back()->withErrors(['email_or_username' => 'Usuário não encontrado.']);
+            return redirect()->back()->with('success', 'Convite enviado com sucesso!');
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors(['email_or_username' => $e->getMessage()]);
         }
-
-        if ($team->members()->where('users.id', $user->id)->exists()) {
-            return redirect()->back()->withErrors(['email_or_username' => 'Este usuário já faz parte da equipe.']);
-        }
-
-        $invitation = TeamInvitation::create([
-            'team_id' => $team->id,
-            'inviter_id' => Auth::id(),
-            'invitee_id' => $user->id,
-            'email' => $user->email,
-            'status' => 'pending',
-            'type' => 'invite',
-            'token' => Str::random(40),
-        ]);
-
-        NotificationService::notify(
-            $user,
-            'team_invite',
-            'Convite para Equipe',
-            "Você foi convidado para integrar a equipe '{$team->name}'.",
-            route('dashboard.index')
-        );
-
-        return redirect()->back()->with('success', 'Convite enviado com sucesso!');
     }
 
     /**
@@ -164,48 +90,14 @@ class TeamController extends Controller
     public function requestToJoin(string $id): RedirectResponse
     {
         $team = Team::findOrFail($id);
-        $user = Auth::user();
 
-        if ($team->members()->where('users.id', $user->id)->exists()) {
-            return redirect()->back()->withErrors(['team' => 'Você já é integrante desta equipe.']);
+        try {
+            $this->teamService->requestToJoin($team, Auth::user());
+
+            return redirect()->back()->with('success', 'Solicitação de entrada enviada ao líder da equipe!');
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors(['team' => $e->getMessage()]);
         }
-
-        if ($team->hackathon && !$team->hackathon->allow_team_requests) {
-            return redirect()->back()->withErrors(['team' => 'Solicitações de entrada não são permitidas para este Hackathon.']);
-        }
-
-        if ($team->hackathon && !$team->hasAvailableSlots()) {
-            return redirect()->back()->withErrors(['team' => 'Esta equipe já atingiu o limite de integrantes.']);
-        }
-
-        $existing = TeamInvitation::where('team_id', $team->id)
-            ->where('inviter_id', $user->id)
-            ->where('type', 'request')
-            ->where('status', 'pending')
-            ->first();
-
-        if ($existing) {
-            return redirect()->back()->withErrors(['team' => 'Você já possui uma solicitação pendente para esta equipe.']);
-        }
-
-        TeamInvitation::create([
-            'team_id' => $team->id,
-            'inviter_id' => $user->id,
-            'invitee_id' => $team->leader_id,
-            'email' => $user->email,
-            'status' => 'pending',
-            'type' => 'request',
-            'token' => Str::random(40),
-        ]);
-
-        NotificationService::notify(
-            $team->leader_id,
-            'team_request',
-            'Solicitação para entrar na Equipe',
-            "{$user->name} solicitou entrada na sua equipe '{$team->name}'."
-        );
-
-        return redirect()->back()->with('success', 'Solicitação de entrada enviada ao líder da equipe!');
     }
 
     /**
@@ -219,45 +111,13 @@ class TeamController extends Controller
             ->where('status', 'pending')
             ->firstOrFail();
 
-        $team = $invitation->team;
+        try {
+            $this->teamService->acceptInvitation($invitation, Auth::user());
 
-        if ($team->hackathon && !$team->hasAvailableSlots()) {
-            return redirect()->back()->withErrors(['team' => 'A equipe já atingiu o limite máximo de integrantes.']);
+            return redirect()->back()->with('success', 'Você agora faz parte da equipe!');
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors(['team' => $e->getMessage()]);
         }
-
-        $team->members()->syncWithoutDetaching([
-            Auth::id() => [
-                'id' => (string) Str::uuid(),
-                'role' => 'member',
-                'joined_at' => now(),
-            ]
-        ]);
-
-        if ($team->hackathon_id) {
-            \App\Models\HackathonRegistration::updateOrCreate(
-                [
-                    'hackathon_id' => $team->hackathon_id,
-                    'user_id' => Auth::id(),
-                ],
-                [
-                    'team_id' => $team->id,
-                    'participation_type' => 'team',
-                    'is_eligible' => true,
-                    'notes' => null,
-                ]
-            );
-        }
-
-        $invitation->update(['status' => 'accepted']);
-
-        NotificationService::notify(
-            $team->leader_id,
-            'invite_accepted',
-            'Convite Aceito',
-            Auth::user()->name . " aceitou o convite para a equipe '{$team->name}'."
-        );
-
-        return redirect()->back()->with('success', 'Você agora faz parte da equipe!');
     }
 
     /**
@@ -270,9 +130,13 @@ class TeamController extends Controller
             ->where('status', 'pending')
             ->firstOrFail();
 
-        $invitation->update(['status' => 'declined']);
+        try {
+            $this->teamService->declineInvitation($invitation, Auth::user());
 
-        return redirect()->back()->with('success', 'Convite recusado.');
+            return redirect()->back()->with('success', 'Convite recusado.');
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors(['team' => $e->getMessage()]);
+        }
     }
 
     /**
@@ -288,45 +152,13 @@ class TeamController extends Controller
         $team = $req->team;
         $this->authorizeLeader($team);
 
-        $requestingUser = User::findOrFail($req->inviter_id);
+        try {
+            $this->teamService->acceptRequest($req, Auth::user());
 
-        if ($team->hackathon && !$team->hasAvailableSlots()) {
-            return redirect()->back()->withErrors(['team' => 'A equipe já atingiu o limite de integrantes.']);
+            return redirect()->back()->with('success', 'Solicitação aceita! O participante agora integra sua equipe.');
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors(['team' => $e->getMessage()]);
         }
-
-        $team->members()->syncWithoutDetaching([
-            $requestingUser->id => [
-                'id' => (string) Str::uuid(),
-                'role' => 'member',
-                'joined_at' => now(),
-            ]
-        ]);
-
-        if ($team->hackathon_id) {
-            \App\Models\HackathonRegistration::updateOrCreate(
-                [
-                    'hackathon_id' => $team->hackathon_id,
-                    'user_id' => $requestingUser->id,
-                ],
-                [
-                    'team_id' => $team->id,
-                    'participation_type' => 'team',
-                    'is_eligible' => true,
-                    'notes' => null,
-                ]
-            );
-        }
-
-        $req->update(['status' => 'accepted']);
-
-        NotificationService::notify(
-            $requestingUser,
-            'request_accepted',
-            'Solicitação Aceita',
-            "Sua solicitação para ingressar na equipe '{$team->name}' foi aceita!"
-        );
-
-        return redirect()->back()->with('success', 'Solicitação aceita! O participante agora integra sua equipe.');
     }
 
     /**
@@ -342,9 +174,13 @@ class TeamController extends Controller
         $team = $req->team;
         $this->authorizeLeader($team);
 
-        $req->update(['status' => 'declined']);
+        try {
+            $this->teamService->declineRequest($req, Auth::user());
 
-        return redirect()->back()->with('success', 'Solicitação de entrada recusada.');
+            return redirect()->back()->with('success', 'Solicitação de entrada recusada.');
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors(['team' => $e->getMessage()]);
+        }
     }
 
     private function authorizeLeader(Team $team): void

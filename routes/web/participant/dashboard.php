@@ -29,6 +29,7 @@ Route::middleware(['auth', 'participant.context'])->prefix('participante')->name
     // Inscrições (amigável)
     Route::prefix('inscricoes')->name('registrations.')->group(function () {
         Route::post('/', [RegistrationController::class, 'store'])->name('store');
+        Route::delete('/{id}', [RegistrationController::class, 'cancel'])->name('cancel');
     });
 
     // Projetos (amigável)
@@ -61,6 +62,7 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
     Route::prefix('registrations')->name('registration.')->group(function () {
         Route::post('/', [RegistrationController::class, 'store'])->name('store');
         Route::patch('/{id}/status', [RegistrationController::class, 'updateStatus'])->name('status.update');
+        Route::delete('/{id}', [RegistrationController::class, 'cancel'])->name('cancel');
     });
 
     // Projects

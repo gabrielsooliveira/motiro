@@ -17,7 +17,7 @@ const props = defineProps({
     <Head title="Organização Cadastrada | Motirõ" />
 
     <div class="text-center py-2 animate__animated animate__fadeIn">
-        <!-- Success Icon -->
+        
         <div class="mb-3">
             <div
                 class="rounded-circle bg-success bg-opacity-20 text-success d-inline-flex align-items-center justify-content-center success-icon-bubble"
@@ -34,7 +34,7 @@ const props = defineProps({
             Agora você pode configurar seu espaço institucional, convidar membros da equipe e começar a criar seus hackathons.
         </p>
 
-        <!-- Summary Card -->
+        
         <div class="card bg-dark border-secondary mb-4 text-start shadow-sm">
             <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom border-secondary-subtle">
@@ -74,7 +74,7 @@ const props = defineProps({
             </div>
         </div>
 
-        <!-- Action Buttons -->
+        
         <div class="d-flex flex-column gap-2 mb-4">
             <Link
                 :href="route('organization.dashboard')"

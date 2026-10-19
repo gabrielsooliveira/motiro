@@ -11,23 +11,23 @@
 }
 
 .context-switcher--org {
-  border-left: 4px solid var(--color-primary, #0d6efd);
+  border-left: 4px solid var(--color-primary, #4f46e5);
 }
 
 .context-switcher--competitor {
-  border-left: 4px solid var(--color-warning, #ffc107);
+  border-left: 4px solid var(--color-secondary, #1e293b);
 }
 
 .context-icon {
   width: 32px;
   height: 32px;
-  background: rgba(13, 110, 253, 0.1);
-  color: #0d6efd;
+  background: var(--color-primary-subtle, rgba(79, 70, 229, 0.1));
+  color: var(--color-primary, #4f46e5);
 }
 
 .context-switcher--competitor .context-icon {
-  background: rgba(255, 193, 7, 0.15);
-  color: #b28900;
+  background: rgba(30, 41, 59, 0.08);
+  color: var(--color-secondary, #1e293b);
 }
 
 .context-dropdown {

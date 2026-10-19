@@ -18,11 +18,11 @@ import { Head, Link } from '@inertiajs/vue3';
             </div>
 
             <div class="row g-4 justify-content-center">
-                <!-- Competitor / Participant Portal -->
+                
                 <div class="col-12 col-md-6">
                     <div class="card h-100 border-0 shadow-sm rounded-4 portal-card p-4 d-flex flex-column justify-content-between">
                         <div>
-                            <div class="icon-bubble bg-warning bg-opacity-15 text-warning mb-3 d-flex align-items-center justify-content-center rounded-3">
+                            <div class="icon-bubble bg-warning-subtle bg-opacity-50 text-warning mb-3 d-flex align-items-center justify-content-center rounded-3">
                                 <font-awesome-icon :icon="['fas', 'user-astronaut']" class="fs-3 text-warning" />
                             </div>
                             <span class="badge bg-warning-subtle text-warning-emphasis mb-2">Área do Participante</span>
@@ -53,7 +53,7 @@ import { Head, Link } from '@inertiajs/vue3';
                     </div>
                 </div>
 
-                <!-- Organization Portal -->
+                
                 <div class="col-12 col-md-6">
                     <div class="card h-100 border-0 shadow-sm rounded-4 portal-card p-4 d-flex flex-column justify-content-between">
                         <div>

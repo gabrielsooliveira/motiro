@@ -1,7 +1,10 @@
-// Page: Hackathon Details (Public Show)
 .hackathon-banner-img {
-  height: 260px;
+  height: 180px;
   object-fit: cover;
+
+  @media (min-width: 768px) {
+    height: 260px;
+  }
 }
 
 .evaluation-criteria-box {

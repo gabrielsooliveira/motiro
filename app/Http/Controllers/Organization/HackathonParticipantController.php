@@ -159,7 +159,7 @@ class HackathonParticipantController extends Controller
             abort(401);
         }
 
-        if (!$user->canManageHackathon($hackathon)) {
+        if (!\Illuminate\Support\Facades\Gate::allows('manageParticipants', $hackathon)) {
             abort(403, 'Acesso não autorizado para gerenciar participantes deste Hackathon.');
         }
     }

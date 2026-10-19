@@ -117,7 +117,11 @@ class HackathonMemberController extends Controller
     private function authorizeAdmin(Hackathon $hackathon): void
     {
         $user = Auth::user();
-        if (!$user->canManageHackathon($hackathon)) {
+        if (!$user) {
+            abort(401);
+        }
+
+        if (!\Illuminate\Support\Facades\Gate::allows('manageStaff', $hackathon)) {
             abort(403, 'Acesso não autorizado para gerenciar a equipe deste Hackathon.');
         }
     }

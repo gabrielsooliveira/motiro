@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from "@inertiajs/vue3";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import HackathonDiscoveryCard from "@/js/Components/Hackathon/HackathonDiscoveryCard.vue";
 import HackathonFilters from "@/js/Components/Hackathon/HackathonFilters.vue";
 import Pagination from "@/js/Components/Pagination.vue";
@@ -28,6 +28,17 @@ const registrationForm = useForm({
     participation_type: "individual",
     team_id: "",
 });
+
+watch(
+    () => registrationForm.participation_type,
+    (newVal) => {
+        if (newVal === "individual") {
+            registrationForm.team_id = "";
+        } else if (newVal === "team" && !registrationForm.team_id) {
+            registrationForm.team_id = props.userTeams?.[0]?.id || "";
+        }
+    }
+);
 
 const allowsIndividual = computed(() => {
     if (!selectedHackathon.value) return true;
@@ -75,7 +86,7 @@ function submitRegistration() {
     <Head title="Explorar Hackathons" />
 
     <div class="participant-discovery-page py-2">
-        <!-- Page Header -->
+        
         <header class="discovery-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
                 <h1 class="discovery-header__title">
@@ -97,13 +108,13 @@ function submitRegistration() {
             </div>
         </header>
 
-        <!-- Filters Bar -->
+        
         <HackathonFilters
             :filters="filters"
             :total-count="hackathons.total"
         />
 
-        <!-- Hackathons Grid -->
+        
         <section v-if="hackathons.data && hackathons.data.length > 0" aria-label="Lista de Hackathons">
             <div class="row g-4">
                 <div
@@ -118,13 +129,13 @@ function submitRegistration() {
                 </div>
             </div>
 
-            <!-- Pagination -->
+            
             <div class="mt-5 d-flex justify-content-center">
                 <Pagination :links="hackathons.links" />
             </div>
         </section>
 
-        <!-- Empty State -->
+        
         <section v-else class="empty-state py-5 text-center bg-surface border rounded-4 p-5" aria-label="Nenhum hackathon encontrado">
             <div class="empty-state__icon-wrapper mb-3">
                 <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="display-4 text-muted" />
@@ -141,7 +152,7 @@ function submitRegistration() {
             </div>
         </section>
 
-        <!-- Registration Modal -->
+        
         <div
             v-if="showRegisterModal && selectedHackathon"
             class="modal-backdrop fade show"
@@ -156,7 +167,7 @@ function submitRegistration() {
             aria-modal="true"
             aria-labelledby="registerModalTitle"
         >
-            <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
                 <div class="modal-content border-0 shadow-lg rounded-4">
                     <div class="modal-header border-bottom-0 pb-0">
                         <div>
@@ -177,7 +188,7 @@ function submitRegistration() {
 
                     <form @submit.prevent="submitRegistration">
                         <div class="modal-body py-4">
-                            <!-- Registration type selection -->
+                            
                             <div class="mb-4">
                                 <label class="form-label fw-semibold text-dark">
                                     Como deseja participar?
@@ -214,7 +225,7 @@ function submitRegistration() {
                                 </div>
                             </div>
 
-                            <!-- Team selector when team participation is chosen -->
+                            
                             <div v-if="registrationForm.participation_type === 'team'" class="mb-3">
                                 <label class="form-label fw-semibold text-dark" for="teamSelector">
                                     Selecione a sua equipe
@@ -253,6 +264,11 @@ function submitRegistration() {
 
                             <div v-if="registrationForm.errors.hackathon_id" class="text-danger small mt-1">
                                 {{ registrationForm.errors.hackathon_id }}
+                            </div>
+
+                            <div v-if="registrationForm.errors.registration" class="alert alert-danger py-2 small mt-2">
+                                <font-awesome-icon :icon="['fas', 'circle-exclamation']" class="me-1" />
+                                {{ registrationForm.errors.registration }}
                             </div>
                         </div>
 

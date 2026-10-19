@@ -16,7 +16,6 @@ const props = defineProps({
     },
 });
 
-// Build initial score values
 const initialScores = props.criteria.map((crit) => {
     const existing = props.evaluation?.scores?.find((s) => s.criteria_id === crit.id);
     return {
@@ -50,7 +49,7 @@ const submitEvaluation = (status) => {
             &larr; Voltar para Painel do Juiz
         </Link>
 
-        <!-- Project Details Summary -->
+        
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -59,7 +58,7 @@ const submitEvaluation = (status) => {
                 </div>
                 <p class="text-muted">{{ project.short_description || 'Sem descrição resumida.' }}</p>
 
-                <div class="d-flex gap-3 mt-3">
+                <div class="d-flex flex-wrap gap-2 mt-3">
                     <a v-if="project.github_repository_url" :href="project.github_repository_url" target="_blank" class="btn btn-sm btn-outline-dark">
                         <font-awesome-icon :icon="['fab', 'github']" class="me-1" /> Repositório GitHub
                     </a>
@@ -73,7 +72,7 @@ const submitEvaluation = (status) => {
             </div>
         </div>
 
-        <!-- Evaluation Form -->
+        
         <div class="card shadow-sm border-0">
             <div class="card-header bg-transparent py-3">
                 <h5 class="card-title mb-0 fw-bold">Critérios de Avaliação Ponderada</h5>
@@ -81,12 +80,12 @@ const submitEvaluation = (status) => {
             <div class="card-body">
                 <form @submit.prevent="submitEvaluation('submitted')">
                     <div v-for="(crit, index) in criteria" :key="crit.id" class="evaluation-criteria-box">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-2">
                             <div>
                                 <h6 class="fw-bold mb-0">{{ crit.name }}</h6>
                                 <small class="text-muted">{{ crit.description }}</small>
                             </div>
-                            <span class="badge bg-primary">Peso: {{ (crit.weight * 100).toFixed(0) }}%</span>
+                            <span class="badge bg-primary text-white">Peso: {{ (crit.weight * 100).toFixed(0) }}%</span>
                         </div>
 
                         <div class="row g-3 align-items-center">
@@ -114,7 +113,7 @@ const submitEvaluation = (status) => {
                         </div>
                     </div>
 
-                    <!-- General Feedbacks -->
+                    
                     <div class="mb-3 mt-4">
                         <label class="form-label fw-bold">Pontos Fortes (Feedback Positivo)</label>
                         <textarea v-model="form.feedback_positive" class="form-control" rows="2" placeholder="O que mais chamou atenção de forma positiva na solução?"></textarea>
@@ -130,7 +129,7 @@ const submitEvaluation = (status) => {
                         <textarea v-model="form.private_admin_notes" class="form-control" rows="2" placeholder="Notas visíveis apenas para os administradores do hackathon..."></textarea>
                     </div>
 
-                    <div class="d-flex justify-content-end gap-2">
+                    <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
                         <button type="button" class="btn btn-outline-secondary" @click="submitEvaluation('draft')" :disabled="form.processing">
                             Salvar como Rascunho
                         </button>

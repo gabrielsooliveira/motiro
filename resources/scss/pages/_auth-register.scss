@@ -1,7 +1,19 @@
-// Page: Organization Auth Register & Success
 .step-progress-line {
   height: 3px;
   z-index: 0;
+  transition: width 0.3s ease;
+}
+
+.step-progress-0 {
+  width: 0%;
+}
+
+.step-progress-50 {
+  width: 50%;
+}
+
+.step-progress-100 {
+  width: 100%;
 }
 
 .step-indicator-wrapper {

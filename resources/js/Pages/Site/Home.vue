@@ -106,7 +106,7 @@ const steps = [
                     desde a formação de equipes até a avaliação transparente e publicação oficial de resultados.
                 </p>
 
-                <!-- Dual Clear CTAs: Competitor vs Organization -->
+                
                 <div class="d-flex flex-column flex-sm-row gap-3">
                     <Link
                         :href="route('participant.login')"
@@ -125,7 +125,7 @@ const steps = [
                     </Link>
                 </div>
 
-                <div class="mt-4 pt-2 d-flex align-items-center gap-3 text-muted small">
+                <div class="mt-4 pt-2 d-flex flex-wrap align-items-center gap-3 text-muted small">
                     <span><font-awesome-icon :icon="['fas', 'check']" class="text-success me-1" /> 100% Gratuito para participantes</span>
                     <span><font-awesome-icon :icon="['fas', 'check']" class="text-success me-1" /> Multi-Hackathon & Seguro</span>
                 </div>
@@ -175,7 +175,7 @@ const steps = [
             </div>
 
             <div class="row g-4">
-                <!-- Competitor Card -->
+                
                 <div class="col-lg-6">
                     <div class="role-highlight-card role-competitor shadow-sm d-flex flex-column">
                         <div class="d-flex align-items-center gap-3 mb-3">
@@ -205,7 +205,7 @@ const steps = [
                     </div>
                 </div>
 
-                <!-- Organization Card -->
+                
                 <div class="col-lg-6">
                     <div class="role-highlight-card role-organization shadow-sm d-flex flex-column">
                         <div class="d-flex align-items-center gap-3 mb-3">

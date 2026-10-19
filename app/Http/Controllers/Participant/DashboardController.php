@@ -109,7 +109,7 @@ class DashboardController extends Controller
         }
 
         // Base query: only published, non-draft hackathons
-        $query = Hackathon::with(['organization', 'stages'])
+        $query = Hackathon::with('organization')
             ->whereIn('status', ['published', 'registration', 'submission', 'voting', 'finished']);
 
         // 1. Search (title, description, category, organization)

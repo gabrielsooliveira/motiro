@@ -183,6 +183,33 @@ class User extends Authenticatable
         return $query->wherePivot('role', 'admin')->exists();
     }
 
+    public function isOrganizationOwner(Organization|string $organization): bool
+    {
+        if ($organization instanceof Organization) {
+            return $organization->owner_id === $this->id;
+        }
+
+        return Organization::where('id', $organization)->where('owner_id', $this->id)->exists();
+    }
+
+    public function isOrganizationManager(string $organizationId): bool
+    {
+        return $this->organizations()
+            ->where('organizations.id', $organizationId)
+            ->wherePivot('is_active', true)
+            ->wherePivot('role', 'manager')
+            ->exists();
+    }
+
+    public function isOrganizationCollaborator(string $organizationId): bool
+    {
+        return $this->organizations()
+            ->where('organizations.id', $organizationId)
+            ->wherePivot('is_active', true)
+            ->wherePivot('role', 'collaborator')
+            ->exists();
+    }
+
     public function getOrganizationRole(string $organizationId): ?string
     {
         $org = $this->organizations()->where('organizations.id', $organizationId)->first();

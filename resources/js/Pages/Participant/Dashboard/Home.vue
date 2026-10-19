@@ -8,35 +8,6 @@ import JudgeDashboard from "@/js/Components/Judge/JudgeDashboard.vue";
 const page = usePage();
 const { user, competitor, judge } = page.props;
 
-// Competitor summary cards
-const items = [
-    {
-        title: "Hackathons Inscritos",
-        value: competitor?.registrations?.length || 0,
-        type: "number",
-        icon: ["fas", "trophy"],
-    },
-    {
-        title: "Minhas Equipes",
-        value: competitor?.teams?.length || 0,
-        type: "number",
-        icon: ["fas", "users"],
-    },
-    {
-        title: "Projetos Enviados",
-        value: competitor?.projects?.length || 0,
-        type: "number",
-        icon: ["fas", "file-arrow-up"],
-    },
-    {
-        title: "Convites de Equipe",
-        value: competitor?.invitations?.length || 0,
-        type: "number",
-        icon: ["fas", "envelope-open-text"],
-    },
-];
-
-// Modals State
 const showCreateTeamModal = ref(false);
 
 const teamForm = useForm({
@@ -69,7 +40,7 @@ const handleDeclineInvite = (id) => {
     </Head>
 
     <section class="pt-2">
-            <!-- Top Greeting Section (Competitor) -->
+            
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-2 border-bottom">
                 <div>
                     <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 rounded-pill small mb-1">
@@ -95,20 +66,7 @@ const handleDeclineInvite = (id) => {
                     </button>
                 </div>
             </div>
-
-            <!-- KPI Cards Grid -->
-            <div class="row g-3 mb-4">
-                <div class="col-6 col-md-3" v-for="(item, index) in items" :key="index">
-                    <CardSimple
-                        :title="item.title"
-                        :value="item.value"
-                        :type="item.type"
-                        :icon="item.icon"
-                    />
-                </div>
-            </div>
-
-            <!-- Available Hackathons Banner (Section 1.1) -->
+            
             <div v-if="competitor?.available_hackathons && competitor.available_hackathons.length > 0" class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div>
@@ -145,7 +103,7 @@ const handleDeclineInvite = (id) => {
                 </div>
             </div>
 
-            <!-- Competitor Dashboard (Teams, Registrations, Invitations, Projects) -->
+            
             <CompetitorDashboard
                 :teams="competitor?.teams || []"
                 :registrations="competitor?.registrations || []"
@@ -156,7 +114,7 @@ const handleDeclineInvite = (id) => {
                 @decline-invite="handleDeclineInvite"
             />
 
-            <!-- Judge Panel (only when user has assignments) -->
+            
             <div v-if="judge?.assignments?.length > 0" class="dashboard-role-panel dashboard-role-panel--judge mt-4">
                 <div class="dashboard-role-panel__header">
                     <font-awesome-icon :icon="['fas', 'gavel']" />
@@ -169,9 +127,9 @@ const handleDeclineInvite = (id) => {
                 />
             </div>
 
-            <!-- Modal Create Team -->
+            
             <div v-if="showCreateTeamModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                     <div class="modal-content rounded-4 border-0 shadow">
                         <form @submit.prevent="submitTeam">
                             <div class="modal-header border-bottom">

@@ -19,7 +19,10 @@ const props = defineProps({
 
 const activeTab = ref("registrations");
 
-// Modals
+const getTeamProgressClass = (count, max) => {
+    return 'progress-w-' + Math.min(100, Math.max(0, Math.round(((count || 0) / (max || 1)) * 100)));
+};
+
 const showAddMemberModal = ref(false);
 const showAddChallengeModal = ref(false);
 const showAssignModal = ref(false);
@@ -89,7 +92,6 @@ const handlePublishResults = () => {
     }
 };
 
-// Staff management
 const submitAddMember = () => {
     memberForm.post(route("organization.hackathon.members.store", props.hackathon.id), {
         onSuccess: () => {
@@ -111,7 +113,6 @@ const updateStaffRole = (memberId, newRole) => {
     });
 };
 
-// Challenge management
 const submitAddChallenge = () => {
     challengeForm.post(route("organization.hackathon.challenges.store", props.hackathon.id), {
         onSuccess: () => {
@@ -127,7 +128,6 @@ const deleteChallenge = (challengeId, title) => {
     }
 };
 
-// Participant & Team Management (Prompt Master Section 8)
 const openAssignModal = (reg) => {
     selectedRegistration.value = reg;
     assignForm.registration_id = reg.id;
@@ -188,7 +188,6 @@ const submitUpdateFormat = () => {
     });
 };
 
-// Computed Stats & Filtering
 const individualRegistrations = computed(() => {
     return (props.hackathon.registrations || []).filter(r => !r.team_id);
 });
@@ -220,7 +219,6 @@ const incompleteTeamsCount = computed(() => {
     return hackathonTeams.value.filter(t => (t.members?.length || 0) < props.hackathon.min_team_members).length;
 });
 
-// Organization members available to be added as staff
 const availableOrgUsers = computed(() => {
     const orgUsers = props.hackathon.organization?.users || [];
     const currentMemberIds = (props.hackathon.members || []).map(m => m.user_id);
@@ -241,6 +239,115 @@ const getModalityLabel = (type) => {
     if (type === "team_only") return "Obrigatoriamente por Equipe";
     return "Individual ou por Equipe";
 };
+
+const showAddStageForm = ref(false);
+const editingStageId = ref(null);
+const stageForm = useForm({
+    name: "",
+    description: "",
+    start_date: "",
+    end_date: "",
+    order: 1,
+});
+
+const submitStage = () => {
+    if (editingStageId.value) {
+        stageForm.put(route("hackathon.manage.stage.update", [props.hackathon.id, editingStageId.value]), {
+            onSuccess: () => {
+                editingStageId.value = null;
+                showAddStageForm.value = false;
+                stageForm.reset();
+            },
+        });
+    } else {
+        stageForm.post(route("hackathon.manage.stage.store", props.hackathon.id), {
+            onSuccess: () => {
+                showAddStageForm.value = false;
+                stageForm.reset();
+            },
+        });
+    }
+};
+
+const editStage = (stage) => {
+    editingStageId.value = stage.id;
+    stageForm.name = stage.name;
+    stageForm.description = stage.description || "";
+    stageForm.start_date = stage.start_date ? stage.start_date.substring(0, 16) : "";
+    stageForm.end_date = stage.end_date ? stage.end_date.substring(0, 16) : "";
+    stageForm.order = stage.order || 1;
+    showAddStageForm.value = true;
+};
+
+const cancelStageForm = () => {
+    editingStageId.value = null;
+    showAddStageForm.value = false;
+    stageForm.reset();
+};
+
+const deleteStage = (stageId) => {
+    if (confirm("Deseja realmente remover esta etapa do cronograma?")) {
+        router.delete(route("hackathon.manage.stage.destroy", [props.hackathon.id, stageId]));
+    }
+};
+
+const showAddCriterionForm = ref(false);
+const editingCriterionId = ref(null);
+const criterionForm = useForm({
+    name: "",
+    description: "",
+    weight: 10,
+    min_score: 0,
+    max_score: 10,
+    order: 1,
+});
+
+const totalCriteriaWeight = computed(() => {
+    const list = props.hackathon.evaluation_criteria || [];
+    return list.reduce((acc, c) => acc + (c.weight > 1 ? c.weight : c.weight * 100), 0);
+});
+
+const submitCriterion = () => {
+    if (editingCriterionId.value) {
+        criterionForm.put(route("hackathon.manage.criterion.update", [props.hackathon.id, editingCriterionId.value]), {
+            onSuccess: () => {
+                editingCriterionId.value = null;
+                showAddCriterionForm.value = false;
+                criterionForm.reset();
+            },
+        });
+    } else {
+        criterionForm.post(route("hackathon.manage.criterion.store", props.hackathon.id), {
+            onSuccess: () => {
+                showAddCriterionForm.value = false;
+                criterionForm.reset();
+            },
+        });
+    }
+};
+
+const editCriterion = (crit) => {
+    editingCriterionId.value = crit.id;
+    criterionForm.name = crit.name;
+    criterionForm.description = crit.description || "";
+    criterionForm.weight = crit.weight > 1 ? crit.weight : (crit.weight * 100);
+    criterionForm.min_score = crit.min_score || 0;
+    criterionForm.max_score = crit.max_score || 10;
+    criterionForm.order = crit.order || 1;
+    showAddCriterionForm.value = true;
+};
+
+const cancelCriterionForm = () => {
+    editingCriterionId.value = null;
+    showAddCriterionForm.value = false;
+    criterionForm.reset();
+};
+
+const deleteCriterion = (critId) => {
+    if (confirm("Deseja realmente remover este critério de entrega?")) {
+        router.delete(route("hackathon.manage.criterion.destroy", [props.hackathon.id, critId]));
+    }
+};
 </script>
 
 <template>
@@ -249,7 +356,7 @@ const getModalityLabel = (type) => {
     </Head>
 
     <div class="py-2">
-            <!-- Hackathon Header (Section 11) -->
+            
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom">
                 <div>
                     <Link :href="route('organization.dashboard')" class="text-decoration-none text-muted small d-inline-block mb-1">
@@ -277,8 +384,8 @@ const getModalityLabel = (type) => {
                 </div>
             </div>
 
-            <!-- Navigation Tabs -->
-            <ul class="nav nav-tabs mb-4 flex-nowrap overflow-x-auto">
+            
+            <ul class="nav nav-tabs mb-4 flex-nowrap">
                 <li class="nav-item">
                     <button class="nav-link" :class="{ active: activeTab === 'registrations' }" @click="activeTab = 'registrations'">
                         Inscrições ({{ hackathon.registrations?.length || 0 }})
@@ -293,12 +400,6 @@ const getModalityLabel = (type) => {
                     <button class="nav-link" :class="{ active: activeTab === 'staff' }" @click="activeTab = 'staff'">
                         <font-awesome-icon :icon="['fas', 'user-shield']" class="me-1" />
                         Equipe do Hackathon ({{ hackathon.members?.length || 0 }})
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" :class="{ active: activeTab === 'registrations' }" @click="activeTab = 'registrations'">
-                        <font-awesome-icon :icon="['fas', 'users-gear']" class="me-1" />
-                        Inscrições & Equipes ({{ hackathon.registrations?.length || 0 }})
                     </button>
                 </li>
                 <li class="nav-item">
@@ -341,9 +442,9 @@ const getModalityLabel = (type) => {
                 </li>
             </ul>
 
-            <!-- Tab 1: Registrations & Teams Management (Prompt Master Section 8) -->
+            
             <div v-if="activeTab === 'registrations'" class="d-flex flex-column gap-4">
-                <!-- KPI Indicators -->
+                
                 <div class="row g-3">
                     <div class="col-12 col-sm-6 col-lg-3">
                         <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
@@ -383,7 +484,7 @@ const getModalityLabel = (type) => {
                     </div>
                 </div>
 
-                <!-- Participants Table Card -->
+                
                 <div class="card border-0 shadow-sm rounded-3 bg-white">
                     <div class="card-header bg-white border-bottom p-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
                         <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -494,7 +595,7 @@ const getModalityLabel = (type) => {
                                         </td>
                                         <td class="text-end pe-3">
                                             <div class="d-flex justify-content-end align-items-center gap-1 flex-wrap">
-                                                <!-- Team Actions (if org management allowed and hackathon allows teams) -->
+                                                
                                                 <template v-if="hackathon.registration_type !== 'individual' && hackathon.allow_org_team_management">
                                                     <button
                                                         v-if="!reg.team && availableTeamsForAssignment.length > 0"
@@ -524,7 +625,7 @@ const getModalityLabel = (type) => {
                                                     </button>
                                                 </template>
 
-                                                <!-- Status update dropdown / buttons -->
+                                                
                                                 <button v-if="reg.status !== 'approved'" class="btn btn-sm btn-success" @click="handleStatusUpdate(reg.id, 'approved')">
                                                     Aprovar
                                                 </button>
@@ -543,7 +644,7 @@ const getModalityLabel = (type) => {
                     </div>
                 </div>
 
-                <!-- Teams Overview Section -->
+                
                 <div v-if="hackathon.registration_type !== 'individual'" class="card border-0 shadow-sm rounded-3 bg-white">
                     <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
                         <div>
@@ -586,8 +687,10 @@ const getModalityLabel = (type) => {
                                             <div class="progress mt-1 team-progress-bar">
                                                 <div
                                                     class="progress-bar"
-                                                    :class="(team.members?.length || 0) < hackathon.min_team_members ? 'bg-warning' : 'bg-success'"
-                                                    :style="{ width: `${Math.min(100, (((team.members?.length || 0) / hackathon.max_team_members) * 100))}%` }"
+                                                    :class="[
+                                                        (team.members?.length || 0) < hackathon.min_team_members ? 'bg-warning' : 'bg-success',
+                                                        getTeamProgressClass(team.members?.length, hackathon.max_team_members)
+                                                    ]"
                                                 ></div>
                                             </div>
                                         </td>
@@ -621,7 +724,7 @@ const getModalityLabel = (type) => {
                 </div>
             </div>
 
-            <!-- Tab: Formato de Participação (Prompt Master Section 5) -->
+            
             <div v-if="activeTab === 'format'" class="card border-0 shadow-sm rounded-3 bg-white">
                 <div class="card-header bg-white border-bottom p-3">
                     <h2 class="h6 fw-bold mb-0 text-dark">Configurações de Formato de Participação & Equipes</h2>
@@ -629,7 +732,7 @@ const getModalityLabel = (type) => {
                 </div>
                 <div class="card-body p-4">
                     <form @submit.prevent="submitUpdateFormat">
-                        <!-- Modality -->
+                        
                         <div class="mb-4">
                             <label class="form-label fw-bold text-dark">Modalidade de Participação *</label>
                             <div class="row g-3">
@@ -708,7 +811,7 @@ const getModalityLabel = (type) => {
                             </div>
                         </div>
 
-                        <!-- Team Limits & Permissions (only if teams are supported) -->
+                        
                         <div v-if="formatForm.registration_type !== 'individual'" class="border-top pt-4 mt-4">
                             <h3 class="h6 fw-bold text-dark mb-3">Parâmetros de Equipe</h3>
 
@@ -838,7 +941,7 @@ const getModalityLabel = (type) => {
                 </div>
             </div>
 
-            <!-- Tab 2: Projects -->
+            
             <div v-if="activeTab === 'projects'" class="card border-0 shadow-sm rounded-3 bg-white">
                 <div class="card-body">
                     <div v-if="!hackathon.projects || hackathon.projects.length === 0" class="text-center py-5 text-muted">
@@ -871,7 +974,7 @@ const getModalityLabel = (type) => {
                 </div>
             </div>
 
-            <!-- Tab 3: Equipe do Hackathon (Sections 9 & 10) -->
+            
             <div v-if="activeTab === 'staff'" class="card border-0 shadow-sm rounded-3 bg-white">
                 <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
                     <div>
@@ -956,7 +1059,7 @@ const getModalityLabel = (type) => {
                 </div>
             </div>
 
-            <!-- Tab 4: Desafios (Challenges) -->
+            
             <div v-if="activeTab === 'challenges'" class="card border-0 shadow-sm rounded-3 bg-white">
                 <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
                     <div>
@@ -1011,38 +1114,232 @@ const getModalityLabel = (type) => {
                 </div>
             </div>
 
-            <!-- Tab 5: Stages -->
-            <div v-if="activeTab === 'stages'" class="card border-0 shadow-sm rounded-3 bg-white">
+            
+            <div v-if="activeTab === 'stages'" class="card border-0 shadow-sm rounded-4 bg-white">
                 <div class="card-body p-4">
-                    <div v-for="stage in hackathon.stages" :key="stage.id" class="timeline-stage-item mb-3 pb-3 border-bottom">
-                        <h6 class="fw-bold mb-1">{{ stage.name }}</h6>
-                        <small class="text-muted d-block mb-1">
-                            {{ new Date(stage.start_date).toLocaleDateString('pt-BR') }} até {{ new Date(stage.end_date).toLocaleDateString('pt-BR') }}
-                        </small>
-                        <p class="mb-0 text-secondary">{{ stage.description || 'Sem descrição adicional.' }}</p>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4 pb-3 border-bottom">
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1">Cronograma e Prazos das Etapas</h5>
+                            <p class="text-muted small mb-0">Defina os prazos limites de início e encerramento para cada fase do hackathon.</p>
+                        </div>
+                        <button
+                            v-if="!showAddStageForm"
+                            type="button"
+                            class="btn btn-primary btn-sm d-flex align-items-center gap-2"
+                            @click="showAddStageForm = true"
+                        >
+                            <font-awesome-icon :icon="['fas', 'plus']" />
+                            <span>Adicionar Etapa / Prazo</span>
+                        </button>
                     </div>
-                </div>
-            </div>
 
-            <!-- Tab 6: Evaluation Criteria -->
-            <div v-if="activeTab === 'criteria'" class="card border-0 shadow-sm rounded-3 bg-white">
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div v-for="crit in hackathon.evaluation_criteria" :key="crit.id" class="col-md-6">
-                            <div class="border rounded-3 p-3 bg-light bg-opacity-25 h-100">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <h6 class="fw-bold mb-0">{{ crit.name }}</h6>
-                                    <span class="badge bg-info text-dark">Peso: {{ (crit.weight * 100).toFixed(0) }}%</span>
+                    
+                    <div v-if="showAddStageForm" class="card border border-primary-subtle rounded-3 p-4 mb-4 bg-light bg-opacity-50">
+                        <h6 class="fw-bold text-dark mb-3">
+                            {{ editingStageId ? 'Editar Prazos da Etapa' : 'Cadastrar Nova Etapa com Prazos' }}
+                        </h6>
+                        <form @submit.prevent="submitStage">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small">Nome da Etapa *</label>
+                                    <input v-model="stageForm.name" type="text" class="form-control" placeholder="ex: Desenvolvimento & Mentorias" required />
                                 </div>
-                                <small class="text-muted">Notas de {{ crit.min_score }} até {{ crit.max_score }}</small>
-                                <p class="mb-0 mt-2 text-secondary">{{ crit.description || 'Critério padrão de avaliação.' }}</p>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold small">Prazo de Início *</label>
+                                    <input v-model="stageForm.start_date" type="datetime-local" class="form-control" required />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold small">Prazo Limite / Término *</label>
+                                    <input v-model="stageForm.end_date" type="datetime-local" class="form-control" required />
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Descrição e Instruções aos Participantes</label>
+                                <textarea v-model="stageForm.description" class="form-control" rows="2" placeholder="Orientações do que deve ser feito nesta etapa..."></textarea>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-secondary btn-sm" @click="cancelStageForm">Cancelar</button>
+                                <button type="submit" class="btn btn-primary btn-sm" :disabled="stageForm.processing">
+                                    {{ stageForm.processing ? 'Salvando...' : 'Salvar Etapa' }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    
+                    <div v-if="hackathon.stages?.length > 0" class="d-flex flex-column gap-3">
+                        <div
+                            v-for="(stage, idx) in hackathon.stages"
+                            :key="stage.id"
+                            class="border rounded-3 p-3 bg-white d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3"
+                        >
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="badge bg-primary text-white rounded-circle p-2 d-flex align-items-center justify-content-center stage-order-badge">
+                                    {{ idx + 1 }}
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-dark">{{ stage.name }}</h6>
+                                    <div class="text-muted small">
+                                        <font-awesome-icon :icon="['fas', 'calendar-days']" class="me-1 text-primary" />
+                                        {{ new Date(stage.start_date).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) }}
+                                        &rarr;
+                                        {{ new Date(stage.end_date).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) }}
+                                    </div>
+                                    <p v-if="stage.description" class="text-secondary small mb-0 mt-1">
+                                        {{ stage.description }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    @click="editStage(stage)"
+                                    title="Editar prazos"
+                                >
+                                    <font-awesome-icon :icon="['fas', 'pen-to-square']" class="me-1" />
+                                    <span>Editar</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-danger btn-sm"
+                                    @click="deleteStage(stage.id)"
+                                    title="Remover etapa"
+                                >
+                                    <font-awesome-icon :icon="['fas', 'trash-can']" />
+                                </button>
                             </div>
                         </div>
                     </div>
+                    <div v-else class="text-center py-4 text-muted">
+                        Nenhuma etapa cadastrada para este hackathon.
+                    </div>
                 </div>
             </div>
 
-            <!-- Tab 7: Official Rankings -->
+            
+            <div v-if="activeTab === 'criteria'" class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3 pb-3 border-bottom">
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1">Pesos de Cada Entrega & Critérios de Avaliação</h5>
+                            <p class="text-muted small mb-0">Defina o peso percentual de cada entrega para o cálculo da nota final dos juízes.</p>
+                        </div>
+                        <button
+                            v-if="!showAddCriterionForm"
+                            type="button"
+                            class="btn btn-primary btn-sm d-flex align-items-center gap-2"
+                            @click="showAddCriterionForm = true"
+                        >
+                            <font-awesome-icon :icon="['fas', 'plus']" />
+                            <span>Adicionar Critério / Entrega</span>
+                        </button>
+                    </div>
+
+                    
+                    <div class="p-3 rounded-3 mb-4 border" :class="Math.abs(totalCriteriaWeight - 100) < 0.1 ? 'bg-success-subtle border-success-subtle text-success-emphasis' : 'bg-warning-subtle border-warning-subtle text-warning-emphasis'">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold small">
+                                <font-awesome-icon :icon="Math.abs(totalCriteriaWeight - 100) < 0.1 ? ['fas', 'circle-check'] : ['fas', 'triangle-exclamation']" class="me-1" />
+                                Soma Total dos Pesos das Entregas
+                            </span>
+                            <span class="fw-bold">{{ totalCriteriaWeight.toFixed(1) }}% de 100%</span>
+                        </div>
+                        <div class="progress progress-xs">
+                            <div
+                                class="progress-bar"
+                                :class="[
+                                    Math.abs(totalCriteriaWeight - 100) < 0.1 ? 'bg-success' : 'bg-warning',
+                                    'progress-w-' + Math.min(100, Math.max(0, Math.round(totalCriteriaWeight)))
+                                ]"
+                            ></div>
+                        </div>
+                    </div>
+
+                    
+                    <div v-if="showAddCriterionForm" class="card border border-primary-subtle rounded-3 p-4 mb-4 bg-light bg-opacity-50">
+                        <h6 class="fw-bold text-dark mb-3">
+                            {{ editingCriterionId ? 'Editar Critério / Peso da Entrega' : 'Cadastrar Novo Critério / Peso' }}
+                        </h6>
+                        <form @submit.prevent="submitCriterion">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small">Nome do Critério / Entrega *</label>
+                                    <input v-model="criterionForm.name" type="text" class="form-control" placeholder="ex: Inovação e Viabilidade Técnica" required />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold small">Peso (%) *</label>
+                                    <div class="input-group">
+                                        <input v-model.number="criterionForm.weight" type="number" step="0.5" min="0" max="100" class="form-control" required />
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold small">Nota Mínima</label>
+                                    <input v-model.number="criterionForm.min_score" type="number" step="0.5" class="form-control" />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold small">Nota Máxima</label>
+                                    <input v-model.number="criterionForm.max_score" type="number" step="0.5" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Descrição & Orientações para a Banca de Juízes</label>
+                                <textarea v-model="criterionForm.description" class="form-control" rows="2" placeholder="O que o juiz deve analisar nesta entrega..."></textarea>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-secondary btn-sm" @click="cancelCriterionForm">Cancelar</button>
+                                <button type="submit" class="btn btn-primary btn-sm" :disabled="criterionForm.processing">
+                                    {{ criterionForm.processing ? 'Salvando...' : 'Salvar Critério' }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    
+                    <div v-if="hackathon.evaluation_criteria?.length > 0" class="row g-3">
+                        <div v-for="crit in hackathon.evaluation_criteria" :key="crit.id" class="col-md-6">
+                            <div class="card border rounded-3 p-3 bg-white h-100 shadow-sm d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-bold mb-0 text-dark">{{ crit.name }}</h6>
+                                        <span class="badge bg-primary text-white fw-semibold">
+                                            Peso: {{ (crit.weight > 1 ? crit.weight : crit.weight * 100).toFixed(0) }}%
+                                        </span>
+                                    </div>
+                                    <small class="text-muted d-block mb-2">Notas permitidas: {{ crit.min_score }} até {{ crit.max_score }}</small>
+                                    <p class="text-secondary small mb-3">{{ crit.description || 'Critério oficial de avaliação do hackathon.' }}</p>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-secondary btn-sm"
+                                        @click="editCriterion(crit)"
+                                        title="Editar critério"
+                                    >
+                                        <font-awesome-icon :icon="['fas', 'pen-to-square']" class="me-1" />
+                                        <span>Editar</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-danger btn-sm"
+                                        @click="deleteCriterion(crit.id)"
+                                        title="Remover critério"
+                                    >
+                                        <font-awesome-icon :icon="['fas', 'trash-can']" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="text-center py-4 text-muted">
+                        Nenhum critério ou peso de entrega cadastrado.
+                    </div>
+                </div>
+            </div>
+
+            
             <div v-if="activeTab === 'rankings' && rankings" class="card border-0 shadow-sm rounded-3 bg-white">
                 <div class="card-body">
                     <div class="table-responsive">
@@ -1071,9 +1368,9 @@ const getModalityLabel = (type) => {
             </div>
         </div>
 
-        <!-- Modal Add Staff Member (Sections 9 & 10) -->
+        
         <div v-if="showAddMemberModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content rounded-4 border-0 shadow">
                     <form @submit.prevent="submitAddMember">
                         <div class="modal-header border-bottom">
@@ -1121,9 +1418,9 @@ const getModalityLabel = (type) => {
             </div>
         </div>
 
-        <!-- Modal Add Challenge -->
+        
         <div v-if="showAddChallengeModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content rounded-4 border-0 shadow">
                     <form @submit.prevent="submitAddChallenge">
                         <div class="modal-header border-bottom">
@@ -1171,9 +1468,9 @@ const getModalityLabel = (type) => {
             </div>
         </div>
 
-        <!-- Modal 1: Alocar Participante em Equipe (Prompt Master Section 8) -->
+        
         <div v-if="showAssignModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content rounded-4 border-0 shadow">
                     <form @submit.prevent="submitAssign">
                         <div class="modal-header border-bottom">
@@ -1217,9 +1514,9 @@ const getModalityLabel = (type) => {
             </div>
         </div>
 
-        <!-- Modal 2: Transferir Participante entre Equipes -->
+        
         <div v-if="showTransferModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content rounded-4 border-0 shadow">
                     <form @submit.prevent="submitTransfer">
                         <div class="modal-header border-bottom">
@@ -1264,9 +1561,9 @@ const getModalityLabel = (type) => {
             </div>
         </div>
 
-        <!-- Modal 3: Criar Equipe Administrativamente (Organização) -->
+        
         <div v-if="showCreateTeamOrgModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
                 <div class="modal-content rounded-4 border-0 shadow">
                     <form @submit.prevent="submitCreateTeamOrg">
                         <div class="modal-header border-bottom">

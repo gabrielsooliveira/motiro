@@ -333,7 +333,7 @@ const getStageStatus = (stage) => {
                             Encontre um Hackathon disponível, inscreva-se individualmente ou monte sua equipe com outros talentos para começar a competir.
                         </p>
                         <div class="d-flex justify-content-center gap-2">
-                            <Link :href="route('hackathon.list')" class="btn btn-outline-primary btn-sm fw-semibold">
+                            <Link :href="route('participant.hackathons')" class="btn btn-outline-primary btn-sm fw-semibold">
                                 Explorar Hackathons
                             </Link>
                             <button class="btn btn-primary btn-sm fw-semibold" @click="$emit('create-team')">
@@ -379,7 +379,7 @@ const getStageStatus = (stage) => {
                             </div>
                             <div v-else class="text-muted small mt-1">
                                 Esta equipe ainda não está inscrita em nenhum hackathon ativo.
-                                <Link :href="route('hackathon.list')" class="d-block mt-1 text-primary fw-semibold">
+                                <Link :href="route('participant.hackathons')" class="d-block mt-1 text-primary fw-semibold">
                                     Encontrar um Hackathon para Inscrever &rarr;
                                 </Link>
                             </div>
@@ -432,7 +432,7 @@ const getStageStatus = (stage) => {
                             Explore as competições abertas, verifique as datas e inscreva sua equipe para desbloquear a timeline de etapas.
                         </p>
                         <div>
-                            <Link :href="route('hackathon.list')" class="btn btn-primary btn-sm fw-semibold">
+                            <Link :href="route('participant.hackathons')" class="btn btn-primary btn-sm fw-semibold">
                                 Explorar Hackathons Abertos
                             </Link>
                         </div>

@@ -42,15 +42,18 @@ const submitProject = () => {
     </Head>
 
     <div class="py-4">
-        <Link :href="route('dashboard.index')" class="text-decoration-none text-muted mb-2 d-inline-block">
-            &larr; Voltar para o Dashboard
+        <Link :href="route('participant.dashboard')" class="text-decoration-none text-muted mb-2 d-inline-flex align-items-center gap-1">
+            <font-awesome-icon :icon="['fas', 'arrow-left']" class="small" />
+            <span>Voltar para o Dashboard</span>
         </Link>
 
-        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4 pb-3 border-bottom">
             <div>
-                <h1 class="fw-bold mb-1">{{ project.title }}</h1>
-                <span class="badge bg-primary">Equipe: {{ project.team ? project.team.name : '-' }}</span>
-                <span class="badge bg-secondary ms-2">Status: {{ project.status }}</span>
+                <h1 class="fw-bold mb-2">{{ project.title }}</h1>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="badge bg-primary">Equipe: {{ project.team ? project.team.name : '-' }}</span>
+                    <span class="badge bg-secondary">Status: {{ project.status }}</span>
+                </div>
             </div>
             <div v-if="!isSubmissionOpen" class="badge bg-danger p-2 fs-6">
                 Submissões Encerradas
@@ -123,7 +126,7 @@ const submitProject = () => {
                 </div>
             </div>
 
-            <!-- Version History / Submissions Snapshot -->
+            
             <div class="col-lg-4">
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-transparent py-3">

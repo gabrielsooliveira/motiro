@@ -8,6 +8,7 @@ const form = useForm({
     email: "",
     password: "",
     remember: false,
+    context: "organization",
 });
 
 const toggleView = () => {
@@ -26,12 +27,12 @@ const toggleView = () => {
             Portal Institucional
         </span>
         <h2 class="h3 fw-bold text-white mb-1">Entrar como Organização</h2>
-        <p class="text-secondary small mb-0">
+        <p class="text-secondary small text-white mb-0">
             Acesse para criar e administrar hackathons, colaboradores, etapas e resultados.
         </p>
     </div>
 
-    <!-- Error Alert -->
+    
     <div v-if="form.errors.email || $page.props.flash?.error" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" role="alert">
         {{ form.errors.email || $page.props.flash?.error }}
     </div>
@@ -87,12 +88,12 @@ const toggleView = () => {
                     id="remember"
                     v-model="form.remember"
                 />
-                <label class="form-check-label text-secondary small" for="remember">
+                <label class="form-check-label text-white small" for="remember">
                     Lembrar de mim
                 </label>
             </div>
             <Link
-                class="text-decoration-none text-info small fw-semibold"
+                class="text-decoration-none text-warning small fw-semibold"
                 :href="route('organization.password.request')"
             >
                 Esqueceu sua senha?
@@ -112,7 +113,7 @@ const toggleView = () => {
     </form>
 
     <div class="text-center pt-2 border-top border-secondary-subtle">
-        <p class="small text-secondary mb-2">
+        <p class="small text-white mb-2">
             Deseja cadastrar uma nova organização?
             <Link
                 :href="route('organization.register')"
@@ -121,19 +122,19 @@ const toggleView = () => {
                 Cadastrar organização
             </Link>
         </p>
-        <p class="small text-secondary mb-3">
+        <p class="small text-white mb-3">
             Deseja participar de hackathons como competidor?
             <Link
                 :href="route('participant.login')"
                 class="text-decoration-none fw-semibold text-warning"
             >
-                Ir para Área do Participante &rarr;
+                Ir para Área do Participante
             </Link>
         </p>
 
         <Link
             :href="route('home')"
-            class="text-decoration-none text-muted small"
+            class="text-decoration-none text-white small"
         >
             <font-awesome-icon icon="fa-solid fa-arrow-left" class="me-1" />
             Voltar para a página inicial

@@ -4,6 +4,39 @@ import { ref, onMounted, onBeforeUnmount, computed, watch } from "vue";
 
 const page = usePage();
 const user = computed(() => page.props.user || page.props.auth?.user);
+const context = computed(() => page.props.context || {});
+const activeOrg = computed(() => context.value.active_organization);
+const userOrgs = computed(() => context.value.user_organizations || []);
+
+const dashboardDestination = computed(() => {
+    if (context.value.type === "organization") {
+        if (activeOrg.value) {
+            return {
+                url: route("organization.dashboard"),
+                label: `Painel: ${activeOrg.value.name}`,
+                icon: "building",
+            };
+        }
+        if (userOrgs.value.length === 1) {
+            return {
+                url: route("organization.dashboard"),
+                label: "Painel da Organização",
+                icon: "building",
+            };
+        }
+        return {
+            url: route("organization.select"),
+            label: "Selecionar Organização",
+            icon: "building",
+        };
+    }
+
+    return {
+        url: route("participant.dashboard"),
+        label: "Meu Painel",
+        icon: "user-astronaut",
+    };
+});
 
 const isMenuOpen = ref(false);
 const isScrolled = ref(false);
@@ -53,7 +86,6 @@ const handleMobileNavClick = () => {
     }, 50);
 };
 
-// Automatically close mobile menu and sync scroll state whenever Inertia navigation completes
 watch(
     () => page.url,
     () => {
@@ -77,7 +109,6 @@ const handleClickOutside = (event) => {
     }
 };
 
-// Lock body scroll when mobile drawer is open
 watch(isMenuOpen, (isOpen) => {
     if (typeof document !== "undefined") {
         document.body.style.overflow = isOpen ? "hidden" : "";
@@ -146,17 +177,47 @@ const navbarClass = computed(() => {
                             Hackathons
                         </Link>
                     </li>
+                    <li>
+                        <Link
+                            href="#"
+                            class="site-nav-clean-link"
+                            :class="{ active: isTeamsActive }"
+                            :aria-current="isTeamsActive ? 'page' : undefined"
+                            disabled
+                        >
+                            Equipes
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            href="#"
+                            class="site-nav-clean-link"
+                            :class="{ active: isNewsActive }"
+                            :aria-current="isNewsActive ? 'page' : undefined"
+                            disabled
+                        >
+                            Notícias
+                        </Link>
+                    </li>
                 </ul>
 
                 <!-- Desktop Action Buttons -->
                 <div class="d-flex align-items-center gap-2">
                     <template v-if="user">
                         <Link
-                            :href="route('dashboard.index')"
+                            :href="dashboardDestination.url"
                             class="btn btn-primary fw-semibold btn-sm px-3 py-2 d-flex align-items-center gap-2 rounded-3 shadow-sm"
                         >
-                            <span>Meu Dashboard</span>
-                            <font-awesome-icon :icon="['fas', 'right-to-bracket']" />
+                            <span>{{ dashboardDestination.label }}</span>
+                            <font-awesome-icon :icon="['fas', dashboardDestination.icon]" />
+                        </Link>
+                        <Link
+                            v-if="userOrgs.length > 0"
+                            :href="route('context.select')"
+                            class="btn btn-outline-secondary fw-semibold btn-sm px-2 py-2 rounded-3"
+                            title="Alternar Contexto"
+                        >
+                            <font-awesome-icon :icon="['fas', 'rotate']" />
                         </Link>
                     </template>
 
@@ -211,8 +272,7 @@ const navbarClass = computed(() => {
                     Motirõ
                 </Link>
                 <button
-                    class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center text-secondary"
-                    style="width: 36px; height: 36px;"
+                    class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center text-secondary site-mobile-close-btn"
                     @click="closeMenu"
                     aria-label="Fechar Menu"
                 >
@@ -252,12 +312,21 @@ const navbarClass = computed(() => {
                         Conectado como <strong class="text-dark">{{ user.name }}</strong>
                     </div>
                     <Link
-                        :href="route('dashboard.index')"
+                        :href="dashboardDestination.url"
                         class="btn btn-primary btn-lg fw-semibold d-flex align-items-center justify-content-center gap-2 rounded-3 shadow-sm"
                         @click="handleMobileNavClick"
                     >
-                        <span>Meu Dashboard</span>
-                        <font-awesome-icon :icon="['fas', 'right-to-bracket']" />
+                        <span>{{ dashboardDestination.label }}</span>
+                        <font-awesome-icon :icon="['fas', dashboardDestination.icon]" />
+                    </Link>
+                    <Link
+                        v-if="userOrgs.length > 0"
+                        :href="route('context.select')"
+                        class="btn btn-outline-secondary btn-lg fw-semibold d-flex align-items-center justify-content-center gap-2 rounded-3"
+                        @click="handleMobileNavClick"
+                    >
+                        <span>Alternar Contexto</span>
+                        <font-awesome-icon :icon="['fas', 'rotate']" />
                     </Link>
                 </template>
 

@@ -30,20 +30,21 @@ const submitInvite = () => {
     </Head>
 
     <div class="py-4">
-        <Link :href="route('dashboard.index')" class="text-decoration-none text-muted mb-2 d-inline-block">
-            &larr; Voltar para o Dashboard
+        <Link :href="route('participant.dashboard')" class="text-decoration-none text-muted mb-2 d-inline-flex align-items-center gap-1">
+            <font-awesome-icon :icon="['fas', 'arrow-left']" class="small" />
+            <span>Voltar para o Dashboard</span>
         </Link>
 
-        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
             <div>
                 <h1 class="fw-bold mb-1">{{ team.name }}</h1>
                 <p class="text-muted mb-0">{{ team.description || 'Sem descrição cadastrada.' }}</p>
             </div>
-            <span v-if="isLeader" class="badge bg-primary">Você é o Líder</span>
+            <span v-if="isLeader" class="badge bg-primary px-3 py-2">Você é o Líder</span>
         </div>
 
         <div class="row g-4">
-            <!-- Members List -->
+            
             <div class="col-lg-7">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-transparent py-3">
@@ -67,7 +68,7 @@ const submitInvite = () => {
                     </div>
                 </div>
 
-                <!-- Team Registrations -->
+                
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-transparent py-3">
                         <h5 class="card-title mb-0 fw-bold">
@@ -94,7 +95,7 @@ const submitInvite = () => {
                 </div>
             </div>
 
-            <!-- Invite New Members (Leader only) -->
+            
             <div class="col-lg-5">
                 <div v-if="isLeader" class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-transparent py-3">
@@ -119,7 +120,7 @@ const submitInvite = () => {
                     </div>
                 </div>
 
-                <!-- Pending Invitations -->
+                
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-transparent py-3">
                         <h6 class="card-title mb-0 fw-bold text-muted">Convites Enviados</h6>

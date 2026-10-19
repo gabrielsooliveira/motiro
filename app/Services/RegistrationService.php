@@ -25,13 +25,25 @@ class RegistrationService
         // e não permitir pré-cadastro
         $isTeamOnly = $hackathon->requiresTeam();
 
-        // 3. Verifica se o usuário já possui inscrição no hackathon
+        // 3. Verifica se o usuário já possui inscrição ativa no hackathon
         $existing = HackathonRegistration::where('hackathon_id', $hackathon->id)
             ->where('user_id', $user->id)
             ->first();
 
-        if ($existing) {
+        if ($existing && $existing->status !== 'cancelled') {
             throw new Exception('Você já está inscrito neste Hackathon.');
+        }
+
+        $userInRegisteredTeam = DB::table('hackathon_registrations')
+            ->join('teams', 'hackathon_registrations.team_id', '=', 'teams.id')
+            ->join('team_members', 'teams.id', '=', 'team_members.team_id')
+            ->where('hackathon_registrations.hackathon_id', $hackathon->id)
+            ->whereIn('hackathon_registrations.status', ['pending', 'under_review', 'approved'])
+            ->where('team_members.user_id', $user->id)
+            ->exists();
+
+        if ($userInRegisteredTeam) {
+            throw new Exception('Você já está inscrito neste Hackathon através de uma equipe.');
         }
 
         // 4. Limite de participantes individuais
@@ -51,19 +63,23 @@ class RegistrationService
         $notes = $isTeamOnly ? 'Inscrição registrada. Aguardando formação ou ingresso em equipe válida.' : null;
 
         return DB::transaction(function () use ($hackathon, $user, $initialStatus, $isEligible, $notes, $answers, $documents) {
-            $registration = HackathonRegistration::create([
-                'hackathon_id' => $hackathon->id,
-                'user_id' => $user->id,
-                'team_id' => null,
-                'participation_type' => 'individual',
-                'status' => $initialStatus,
-                'is_eligible' => $isEligible,
-                'notes' => $notes,
-                'custom_answers' => $answers,
-                'submitted_documents' => $documents,
-                'approved_at' => $initialStatus === 'approved' ? Carbon::now() : null,
-                'approved_by' => $initialStatus === 'approved' ? $user->id : null,
-            ]);
+            $registration = HackathonRegistration::updateOrCreate(
+                [
+                    'hackathon_id' => $hackathon->id,
+                    'user_id' => $user->id,
+                ],
+                [
+                    'team_id' => null,
+                    'participation_type' => 'individual',
+                    'status' => $initialStatus,
+                    'is_eligible' => $isEligible,
+                    'notes' => $notes,
+                    'custom_answers' => $answers,
+                    'submitted_documents' => $documents,
+                    'approved_at' => $initialStatus === 'approved' ? Carbon::now() : null,
+                    'approved_by' => $initialStatus === 'approved' ? $user->id : null,
+                ]
+            );
 
             AuditService::log('registration.individual_created', $registration, null, $registration->toArray(), $hackathon->organization_id, $hackathon->id);
 
@@ -492,6 +508,39 @@ class RegistrationService
         }
 
         return $registration;
+    }
+
+    /**
+     * Cancel an existing registration
+     */
+    public function cancelRegistration(HackathonRegistration $registration, User $user): HackathonRegistration
+    {
+        if (in_array($registration->status, ['cancelled', 'disqualified'])) {
+            throw new Exception('Esta inscrição já está cancelada ou desclassificada.');
+        }
+
+        $hackathon = $registration->hackathon;
+        if ($hackathon->registration_end_date && Carbon::now()->gt($hackathon->registration_end_date)) {
+            throw new Exception('O prazo de inscrições deste Hackathon já foi encerrado e não permite mais cancelamento.');
+        }
+
+        return DB::transaction(function () use ($registration, $user, $hackathon) {
+            $registration->update([
+                'status' => 'cancelled',
+                'notes' => 'Inscrição cancelada a pedido do participante em ' . Carbon::now()->format('d/m/Y H:i'),
+            ]);
+
+            AuditService::log('registration.cancelled', $registration, null, $registration->toArray(), $hackathon->organization_id, $hackathon->id);
+
+            NotificationService::notify(
+                $user,
+                'registration_cancelled',
+                'Inscrição Cancelada',
+                "Sua inscrição no Hackathon '{$hackathon->title}' foi cancelada com sucesso."
+            );
+
+            return $registration;
+        });
     }
 
     private function validateRegistrationWindow(Hackathon $hackathon): void

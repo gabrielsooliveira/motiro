@@ -24,11 +24,22 @@ Route::middleware(['auth'])->group(function () {
 
             // Gestão Administrativa de Hackathons
             Route::prefix('hackathons')->name('hackathon.manage.')->group(function () {
+                Route::get('/create', [HackathonController::class, 'create'])->name('create');
                 Route::get('/{id}/manage', [HackathonController::class, 'manage'])->name('index');
                 Route::post('/', [HackathonController::class, 'store'])->name('store');
                 Route::put('/{id}', [HackathonController::class, 'update'])->name('update');
                 Route::post('/{id}/distribute-judging', [HackathonController::class, 'distributeJudging'])->name('distribute');
                 Route::post('/{id}/publish-results', [HackathonController::class, 'publishResults'])->name('publish');
+
+                // Gestão de Etapas do Hackathon
+                Route::post('/{id}/stages', [HackathonController::class, 'storeStage'])->name('stage.store');
+                Route::put('/{id}/stages/{stageId}', [HackathonController::class, 'updateStage'])->name('stage.update');
+                Route::delete('/{id}/stages/{stageId}', [HackathonController::class, 'destroyStage'])->name('stage.destroy');
+
+                // Gestão de Critérios e Pesos de Entrega
+                Route::post('/{id}/criteria', [HackathonController::class, 'storeCriterion'])->name('criterion.store');
+                Route::put('/{id}/criteria/{criterionId}', [HackathonController::class, 'updateCriterion'])->name('criterion.update');
+                Route::delete('/{id}/criteria/{criterionId}', [HackathonController::class, 'destroyCriterion'])->name('criterion.destroy');
             });
 
             // Rotas institucionais

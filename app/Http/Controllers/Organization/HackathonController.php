@@ -17,18 +17,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use App\Services\HackathonService;
 use Inertia\Response;
 
 class HackathonController extends Controller
 {
-    protected RegistrationService $registrationService;
-    protected EvaluationService $evaluationService;
-
-    public function __construct(RegistrationService $registrationService, EvaluationService $evaluationService)
-    {
-        $this->registrationService = $registrationService;
-        $this->evaluationService = $evaluationService;
-    }
+    public function __construct(
+        protected RegistrationService $registrationService,
+        protected EvaluationService $evaluationService,
+        protected HackathonService $hackathonService
+    ) {}
 
     /**
      * Public discovery of hackathons
@@ -129,7 +127,41 @@ class HackathonController extends Controller
         return Inertia::render('Organization/Dashboard/Hackathon/Manage', [
             'hackathon' => $hackathon,
             'rankings' => $hackathon->results_published ? $this->evaluationService->calculateRankings($hackathon) : null,
-            'canManageStaff' => $isOrgAdmin || $isHackathonAdmin,
+            'canManageStaff' => \Illuminate\Support\Facades\Gate::allows('manageStaff', $hackathon),
+            'canManageStages' => \Illuminate\Support\Facades\Gate::allows('manageStages', $hackathon),
+            'canManageParticipants' => \Illuminate\Support\Facades\Gate::allows('manageParticipants', $hackathon),
+            'canUpdate' => \Illuminate\Support\Facades\Gate::allows('update', $hackathon),
+        ]);
+    }
+
+    /**
+     * Show form for creating a new Hackathon with stages and criteria/weights
+     */
+    public function create(Request $request): Response
+    {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
+        $organizations = Organization::where('owner_id', $user->id)
+            ->orWhereHas('users', function ($q) use ($user) {
+                $q->where('users.id', $user->id)
+                  ->where('organization_user.is_active', true)
+                  ->whereIn('organization_user.role', ['admin', 'manager']);
+            })
+            ->get();
+
+        if ($organizations->isEmpty()) {
+            return redirect()->route('organization.select')->with('error', 'Você precisa estar vinculado a uma instituição como administrador para criar um Hackathon.');
+        }
+
+        $activeOrgId = $request->session()->get('active_organization_id');
+        $activeOrganization = $organizations->firstWhere('id', $activeOrgId) ?? $organizations->first();
+
+        return Inertia::render('Organization/Dashboard/Hackathon/Create', [
+            'organizations' => $organizations,
+            'activeOrganization' => $activeOrganization,
         ]);
     }
 
@@ -163,45 +195,194 @@ class HackathonController extends Controller
             'max_teams' => 'nullable|integer|min:1',
             'max_participants' => 'nullable|integer|min:1',
             'rules' => 'nullable|string',
+            'stages' => 'nullable|array',
+            'stages.*.name' => 'required|string|max:255',
+            'stages.*.description' => 'nullable|string',
+            'stages.*.start_date' => 'required|date',
+            'stages.*.end_date' => 'required|date',
+            'stages.*.order' => 'nullable|integer',
+            'stages.*.allowed_actions' => 'nullable|array',
+            'criteria' => 'nullable|array',
+            'criteria.*.name' => 'required|string|max:255',
+            'criteria.*.description' => 'nullable|string',
+            'criteria.*.weight' => 'required|numeric|min:0|max:100',
+            'criteria.*.min_score' => 'nullable|numeric',
+            'criteria.*.max_score' => 'nullable|numeric',
+            'criteria.*.order' => 'nullable|integer',
         ]);
 
-        // Check user permission on organization
-        $isOrgAdmin = $user->isOrganizationAdmin($validated['organization_id']) || Organization::where('id', $validated['organization_id'])->where('owner_id', $user->id)->exists();
-        if (!$isOrgAdmin) {
-            abort(403, 'Apenas administradores da instituição podem criar hackathons.');
+        $organization = Organization::findOrFail($validated['organization_id']);
+        if (!\Illuminate\Support\Facades\Gate::allows('createHackathon', $organization)) {
+            abort(403, 'Acesso não autorizado para criar hackathons nesta instituição.');
         }
 
-        $regType = $validated['registration_type'] ?? 'individual_or_team';
-        $validated['registration_type'] = $regType;
-        $validated['requires_team'] = ($regType === 'team_only');
+        try {
+            $hackathon = $this->hackathonService->createHackathon($user, $validated);
 
-        $slug = Str::slug($validated['title']);
-        $count = 1;
-        while (Hackathon::where('slug', $slug)->exists()) {
-            $slug = Str::slug($validated['title']) . '-' . $count;
-            $count++;
+            return redirect()->route('hackathon.manage.index', $hackathon->id)
+                ->with('success', 'Hackathon criado com sucesso com etapas e pesos de entrega configurados!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['title' => $e->getMessage()]);
         }
-        $validated['slug'] = $slug;
-        $validated['status'] = 'draft';
+    }
 
-        $hackathon = Hackathon::create($validated);
+    /**
+     * Store a new stage for an existing hackathon
+     */
+    public function storeStage(Request $request, string $id): RedirectResponse
+    {
+        $hackathon = Hackathon::findOrFail($id);
+        if (!\Illuminate\Support\Facades\Gate::allows('manageStages', $hackathon)) {
+            abort(403, 'Acesso não autorizado para alterar etapas ou critérios deste Hackathon.');
+        }
 
-        // Assign creator as admin in hackathon_members
-        \App\Models\HackathonMember::create([
-            'hackathon_id' => $hackathon->id,
-            'user_id' => $user->id,
-            'role' => 'admin',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'order' => 'nullable|integer',
+            'allowed_actions' => 'nullable|array',
         ]);
 
-        // Create default stages
-        $this->createDefaultStages($hackathon);
+        try {
+            $this->hackathonService->storeStage($hackathon, $validated, Auth::user());
 
-        // Create default evaluation criteria
-        $this->createDefaultCriteria($hackathon);
+            return redirect()->back()->with('success', 'Etapa criada com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['name' => $e->getMessage()]);
+        }
+    }
 
-        AuditService::log('hackathon.create', $hackathon, null, $hackathon->toArray(), $hackathon->organization_id, $hackathon->id);
+    /**
+     * Update an existing stage
+     */
+    public function updateStage(Request $request, string $id, string $stageId): RedirectResponse
+    {
+        $hackathon = Hackathon::findOrFail($id);
+        if (!\Illuminate\Support\Facades\Gate::allows('manageStages', $hackathon)) {
+            abort(403, 'Acesso não autorizado para alterar etapas ou critérios deste Hackathon.');
+        }
 
-        return redirect()->back()->with('success', 'Hackathon criado com sucesso!');
+        $stage = HackathonStage::where('hackathon_id', $hackathon->id)->findOrFail($stageId);
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'start_date' => 'sometimes|date',
+            'end_date' => 'sometimes|date',
+            'order' => 'nullable|integer',
+            'allowed_actions' => 'nullable|array',
+            'status' => 'nullable|string',
+        ]);
+
+        try {
+            $this->hackathonService->updateStage($stage, $validated, Auth::user());
+
+            return redirect()->back()->with('success', 'Etapa atualizada com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['name' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Delete an existing stage
+     */
+    public function destroyStage(string $id, string $stageId): RedirectResponse
+    {
+        $hackathon = Hackathon::findOrFail($id);
+        if (!\Illuminate\Support\Facades\Gate::allows('manageStages', $hackathon)) {
+            abort(403, 'Acesso não autorizado para alterar etapas deste Hackathon.');
+        }
+
+        $stage = HackathonStage::where('hackathon_id', $hackathon->id)->findOrFail($stageId);
+
+        try {
+            $this->hackathonService->deleteStage($stage, Auth::user());
+
+            return redirect()->back()->with('success', 'Etapa removida com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['stage' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Store a new criterion / delivery weight
+     */
+    public function storeCriterion(Request $request, string $id): RedirectResponse
+    {
+        $hackathon = Hackathon::findOrFail($id);
+        if (!\Illuminate\Support\Facades\Gate::allows('manageStages', $hackathon)) {
+            abort(403, 'Acesso não autorizado para configurar critérios de avaliação.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'weight' => 'required|numeric|min:0|max:100',
+            'min_score' => 'nullable|numeric|min:0',
+            'max_score' => 'nullable|numeric',
+            'order' => 'nullable|integer',
+        ]);
+
+        try {
+            $this->hackathonService->storeCriterion($hackathon, $validated, Auth::user());
+
+            return redirect()->back()->with('success', 'Critério / Entrega criado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['name' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Update an existing criterion
+     */
+    public function updateCriterion(Request $request, string $id, string $criterionId): RedirectResponse
+    {
+        $hackathon = Hackathon::findOrFail($id);
+        if (!\Illuminate\Support\Facades\Gate::allows('manageStages', $hackathon)) {
+            abort(403, 'Acesso não autorizado para alterar critérios de avaliação.');
+        }
+
+        $criterion = EvaluationCriterion::where('hackathon_id', $hackathon->id)->findOrFail($criterionId);
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'weight' => 'sometimes|numeric|min:0|max:100',
+            'min_score' => 'nullable|numeric|min:0',
+            'max_score' => 'nullable|numeric',
+            'order' => 'nullable|integer',
+        ]);
+
+        try {
+            $this->hackathonService->updateCriterion($criterion, $validated, Auth::user());
+
+            return redirect()->back()->with('success', 'Critério / Entrega atualizado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['name' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Delete an existing criterion
+     */
+    public function destroyCriterion(string $id, string $criterionId): RedirectResponse
+    {
+        $hackathon = Hackathon::findOrFail($id);
+        if (!\Illuminate\Support\Facades\Gate::allows('manageStages', $hackathon)) {
+            abort(403, 'Acesso não autorizado para remover critérios de avaliação.');
+        }
+
+        $criterion = EvaluationCriterion::where('hackathon_id', $hackathon->id)->findOrFail($criterionId);
+
+        try {
+            $this->hackathonService->deleteCriterion($criterion, Auth::user());
+
+            return redirect()->back()->with('success', 'Critério / Entrega removido com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['criterion' => $e->getMessage()]);
+        }
     }
 
     /**
@@ -210,7 +391,9 @@ class HackathonController extends Controller
     public function update(Request $request, string $id): RedirectResponse
     {
         $hackathon = Hackathon::findOrFail($id);
-        $this->authorizeAdmin($hackathon);
+        if (!\Illuminate\Support\Facades\Gate::allows('update', $hackathon)) {
+            abort(403, 'Acesso não autorizado para editar as configurações deste Hackathon.');
+        }
 
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
@@ -237,16 +420,13 @@ class HackathonController extends Controller
             'status' => 'nullable|string',
         ]);
 
-        if (isset($validated['registration_type'])) {
-            $validated['requires_team'] = ($validated['registration_type'] === 'team_only');
+        try {
+            $this->hackathonService->updateHackathon($hackathon, $validated, Auth::user());
+
+            return redirect()->back()->with('success', 'Hackathon atualizado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['title' => $e->getMessage()]);
         }
-
-        $oldValues = $hackathon->toArray();
-        $hackathon->update($validated);
-
-        AuditService::log('hackathon.update', $hackathon, $oldValues, $hackathon->toArray(), $hackathon->organization_id, $hackathon->id);
-
-        return redirect()->back()->with('success', 'Hackathon atualizado com sucesso!');
     }
 
     /**
@@ -255,7 +435,9 @@ class HackathonController extends Controller
     public function distributeJudging(string $id): RedirectResponse
     {
         $hackathon = Hackathon::findOrFail($id);
-        $this->authorizeAdmin($hackathon);
+        if (!\Illuminate\Support\Facades\Gate::allows('manageStaff', $hackathon)) {
+            abort(403, 'Acesso não autorizado para gerenciar ou distribuir projetos para jurados.');
+        }
 
         $this->evaluationService->distributeProjects($hackathon);
         AuditService::log('hackathon.distribute_judging', $hackathon, null, null, $hackathon->organization_id, $hackathon->id);
@@ -269,12 +451,17 @@ class HackathonController extends Controller
     public function publishResults(string $id): RedirectResponse
     {
         $hackathon = Hackathon::findOrFail($id);
-        $this->authorizeAdmin($hackathon);
+        if (!\Illuminate\Support\Facades\Gate::allows('publishResults', $hackathon)) {
+            abort(403, 'Acesso não autorizado para publicar resultados deste Hackathon.');
+        }
 
-        $hackathon->update(['results_published' => true, 'status' => 'finished']);
-        AuditService::log('hackathon.publish_results', $hackathon, null, ['results_published' => true], $hackathon->organization_id, $hackathon->id);
+        try {
+            $this->hackathonService->publishResults($hackathon, Auth::user());
 
-        return redirect()->back()->with('success', 'Resultados publicados oficialmente!');
+            return redirect()->back()->with('success', 'Resultados publicados oficialmente!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['hackathon' => $e->getMessage()]);
+        }
     }
 
     private function authorizeAdmin(Hackathon $hackathon): void
@@ -284,7 +471,7 @@ class HackathonController extends Controller
             abort(401);
         }
 
-        if (!$user->canManageHackathon($hackathon)) {
+        if (!\Illuminate\Support\Facades\Gate::allows('manage', $hackathon)) {
             abort(403, 'Acesso não autorizado para gerenciar este Hackathon.');
         }
     }
