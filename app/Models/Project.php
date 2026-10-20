@@ -11,6 +11,7 @@ class Project extends Model
 
     protected $fillable = [
         'hackathon_id',
+        'hackathon_group_id',
         'team_id',
         'user_id',
         'title',
@@ -50,6 +51,11 @@ class Project extends Model
     public function team()
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(HackathonGroup::class, 'hackathon_group_id');
     }
 
     public function user()

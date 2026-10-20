@@ -37,6 +37,8 @@ class TeamController extends Controller
         return Inertia::render('Organization/Dashboard/Team/Show', [
             'team' => $team,
             'isLeader' => $team->leader_id === Auth::id(),
+            'hasLeader' => !empty($team->leader_id),
+            'canElectLeader' => $team->members()->where('users.id', Auth::id())->exists(),
         ]);
     }
 
@@ -52,6 +54,9 @@ class TeamController extends Controller
             'area_of_focus' => 'nullable|string|max:255',
             'technologies' => 'nullable|array',
             'is_looking_for_members' => 'boolean',
+            'set_as_leader' => 'nullable|boolean',
+            'leader_id' => 'nullable|uuid|exists:users,id',
+            'invite_emails' => 'nullable',
         ]);
 
         try {
@@ -64,12 +69,35 @@ class TeamController extends Controller
     }
 
     /**
+     * Elect or change team leader
+     */
+    public function electLeader(Request $request, string $id): RedirectResponse
+    {
+        $team = Team::findOrFail($id);
+        $this->authorizeMember($team);
+
+        $validated = $request->validate([
+            'leader_id' => 'required|uuid|exists:users,id',
+        ]);
+
+        $newLeader = User::findOrFail($validated['leader_id']);
+
+        try {
+            $this->teamService->electLeader($team, $newLeader, Auth::user());
+
+            return redirect()->back()->with('success', "{$newLeader->name} foi definido como líder da equipe!");
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors(['leader' => $e->getMessage()]);
+        }
+    }
+
+    /**
      * Invite a user to join the team
      */
     public function invite(Request $request, string $id): RedirectResponse
     {
         $team = Team::findOrFail($id);
-        $this->authorizeLeader($team);
+        $this->authorizeLeaderOrMember($team);
 
         $request->validate([
             'email_or_username' => 'required|string',
@@ -150,7 +178,7 @@ class TeamController extends Controller
             ->firstOrFail();
 
         $team = $req->team;
-        $this->authorizeLeader($team);
+        $this->authorizeLeaderOrMember($team);
 
         try {
             $this->teamService->acceptRequest($req, Auth::user());
@@ -172,7 +200,7 @@ class TeamController extends Controller
             ->firstOrFail();
 
         $team = $req->team;
-        $this->authorizeLeader($team);
+        $this->authorizeLeaderOrMember($team);
 
         try {
             $this->teamService->declineRequest($req, Auth::user());
@@ -187,6 +215,20 @@ class TeamController extends Controller
     {
         if ($team->leader_id !== Auth::id()) {
             abort(403, 'Apenas o líder da equipe pode executar esta ação.');
+        }
+    }
+
+    private function authorizeLeaderOrMember(Team $team): void
+    {
+        $userId = Auth::id();
+        if ($team->leader_id) {
+            if ($team->leader_id !== $userId && !$team->members()->where('users.id', $userId)->exists()) {
+                abort(403, 'Acesso não autorizado para esta equipe.');
+            }
+        } else {
+            if (!$team->members()->where('users.id', $userId)->exists()) {
+                abort(403, 'Acesso não autorizado para esta equipe.');
+            }
         }
     }
 

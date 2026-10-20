@@ -1,9 +1,13 @@
 <script setup>
 import { Link, usePage } from "@inertiajs/vue3";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 const props = defineProps({
     teams: {
+        type: Array,
+        default: () => [],
+    },
+    groups: {
         type: Array,
         default: () => [],
     },
@@ -25,6 +29,8 @@ defineEmits(["accept-invite", "decline-invite", "create-team", "invite-member"])
 
 const page = usePage();
 const currentUser = computed(() => page.props.user);
+
+const activeSection = ref("overview");
 
 // Primary active registration: from props.registrations or primaryTeam
 const activeRegistration = computed(() => {
@@ -177,8 +183,63 @@ const getStageStatus = (stage) => {
             </div>
         </div>
 
-        <!-- 2. Status da Participação Rápido (Se o competidor possui inscrição ou equipe) -->
-        <div v-if="primaryTeam || activeRegistration" class="card shadow-sm border-0 mb-4 bg-light">
+        <!-- Navegação Conceitual das Seções do Participante -->
+        <ul class="nav nav-pills mb-4 gap-2 border-bottom pb-3 flex-wrap">
+            <li class="nav-item">
+                <button
+                    class="nav-link"
+                    :class="{ active: activeSection === 'overview' }"
+                    @click="activeSection = 'overview'"
+                >
+                    <font-awesome-icon :icon="['fas', 'gauge-high']" class="me-1" />
+                    Visão Geral
+                </button>
+            </li>
+            <li class="nav-item">
+                <button
+                    class="nav-link"
+                    :class="{ active: activeSection === 'teams' }"
+                    @click="activeSection = 'teams'"
+                >
+                    <font-awesome-icon :icon="['fas', 'users-rectangle']" class="me-1" />
+                    Minhas Equipes (Guildas)
+                    <span class="badge ms-1" :class="activeSection === 'teams' ? 'bg-white text-primary' : 'bg-primary-subtle text-primary'">
+                        {{ teams.length }}
+                    </span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button
+                    class="nav-link"
+                    :class="{ active: activeSection === 'groups' }"
+                    @click="activeSection = 'groups'"
+                >
+                    <font-awesome-icon :icon="['fas', 'people-group']" class="me-1" />
+                    Grupos de Participação
+                    <span class="badge ms-1" :class="activeSection === 'groups' ? 'bg-white text-primary' : 'bg-success-subtle text-success'">
+                        {{ groups.length }}
+                    </span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button
+                    class="nav-link"
+                    :class="{ active: activeSection === 'registrations' }"
+                    @click="activeSection = 'registrations'"
+                >
+                    <font-awesome-icon :icon="['fas', 'trophy']" class="me-1" />
+                    Meus Hackathons
+                    <span class="badge ms-1" :class="activeSection === 'registrations' ? 'bg-white text-primary' : 'bg-info-subtle text-info'">
+                        {{ registrations.length }}
+                    </span>
+                </button>
+            </li>
+        </ul>
+
+        <!-- SEÇÃO 1: VISÃO GERAL -->
+        <div v-if="activeSection === 'overview'">
+            <!-- 2. Status da Participação Rápido (Se o competidor possui inscrição ou equipe) -->
+            <div v-if="primaryTeam || activeRegistration" class="card shadow-sm border-0 mb-4 bg-light">
             <div class="card-body p-3">
                 <div class="row g-3 text-center text-md-start align-items-center">
                     <div class="col-md-3 border-end-md">
@@ -362,7 +423,13 @@ const getStageStatus = (stage) => {
                                 <p class="text-secondary small mb-0">{{ primaryTeam.description || 'Sem descrição cadastrada.' }}</p>
                             </div>
                             <span v-if="isLeader" class="badge bg-primary">Você é o Líder</span>
+                            <span v-else-if="!primaryTeam.leader_id" class="badge bg-warning text-dark">Líder Pendente</span>
                             <span v-else class="badge bg-light text-dark border">Integrante</span>
+                        </div>
+
+                        <div v-if="!primaryTeam.leader_id" class="alert alert-warning py-2 px-3 small rounded-3 mb-3 border-0">
+                            <font-awesome-icon :icon="['fas', 'triangle-exclamation']" class="me-1" />
+                            A equipe ainda não possui líder definido. Acesse a página da equipe para eleger um dos integrantes.
                         </div>
 
                         <!-- Hackathon Relacionado -->
@@ -588,6 +655,215 @@ const getStageStatus = (stage) => {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- SEÇÃO 2: MINHAS EQUIPES (GUILDAS PERMANENTES) -->
+        <div v-else-if="activeSection === 'teams'">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
+                    <div>
+                        <h4 class="fw-bold mb-1 text-dark">Minhas Equipes Permanentes (Guildas)</h4>
+                        <p class="text-muted small mb-0">
+                            Equipes permanentes representam suas guildas independentes de hackathons. Você pode reunir membros, convidar participantes por e-mail e organizar equipes sem compromisso com eventos específicos.
+                        </p>
+                    </div>
+                    <button class="btn btn-primary d-flex align-items-center gap-2" @click="$emit('create-team')">
+                        <font-awesome-icon :icon="['fas', 'plus']" />
+                        <span>Nova Guilda</span>
+                    </button>
+                </div>
+
+                <div v-if="teams.length === 0" class="text-center py-5 text-muted">
+                    <font-awesome-icon :icon="['fas', 'users-rectangle']" class="fs-1 mb-3 opacity-50" />
+                    <h5 class="fw-bold text-dark">Você ainda não faz parte de nenhuma equipe permanente.</h5>
+                    <p class="small text-secondary mb-3">Crie sua guilda para convidar amigos e colegas de trabalho!</p>
+                    <button class="btn btn-outline-primary btn-sm" @click="$emit('create-team')">
+                        Criar Minha Primeira Guilda
+                    </button>
+                </div>
+
+                <div v-else class="row g-3">
+                    <div v-for="team in teams" :key="team.id" class="col-md-6 col-lg-4">
+                        <div class="card h-100 border rounded-3 p-3 bg-light bg-opacity-25 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                        {{ team.area_of_focus || 'Geral' }}
+                                    </span>
+                                    <span v-if="team.leader_id === currentUser?.id" class="badge bg-warning text-dark">
+                                        <font-awesome-icon :icon="['fas', 'crown']" class="me-1" /> Líder
+                                    </span>
+                                    <span v-else class="badge bg-light text-secondary border">Membro</span>
+                                </div>
+                                <h5 class="fw-bold text-dark mb-1">{{ team.name }}</h5>
+                                <p class="text-muted small mb-3 text-truncate-2">
+                                    {{ team.description || 'Sem descrição cadastrada.' }}
+                                </p>
+                                <div class="small text-muted mb-2">
+                                    <font-awesome-icon :icon="['fas', 'users']" class="me-1" />
+                                    <strong>{{ team.members?.length || 1 }}</strong> integrante(s)
+                                </div>
+                            </div>
+                            <div class="pt-2 border-top mt-2">
+                                <Link :href="route('team.show', team.id)" class="btn btn-sm btn-outline-primary w-100">
+                                    Gerenciar Guilda &rarr;
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO 3: GRUPOS DE PARTICIPAÇÃO NOS HACKATHONS -->
+        <div v-else-if="activeSection === 'groups'">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
+                    <div>
+                        <h4 class="fw-bold mb-1 text-dark">Grupos de Participação nos Hackathons</h4>
+                        <p class="text-muted small mb-0">
+                            Grupos de participação representam as equipes competitivas formadas especificamente para cada hackathon. Somente participantes com inscrições válidas podem integrá-los.
+                        </p>
+                    </div>
+                </div>
+
+                <div v-if="groups.length === 0" class="text-center py-5 text-muted">
+                    <font-awesome-icon :icon="['fas', 'people-group']" class="fs-1 mb-3 opacity-50" />
+                    <h5 class="fw-bold text-dark">Você não está em nenhum grupo de participação ativo.</h5>
+                    <p class="small text-secondary mb-3">
+                        Ao se inscrever em um hackathon que exija ou permita equipes, forme um grupo diretamente ou a partir de uma de suas guildas!
+                    </p>
+                    <Link :href="route('participant.hackathons')" class="btn btn-outline-primary btn-sm">
+                        Explorar Hackathons
+                    </Link>
+                </div>
+
+                <div v-else class="row g-3">
+                    <div v-for="group in groups" :key="group.id" class="col-md-6">
+                        <div class="card h-100 border rounded-3 p-3 bg-light bg-opacity-25 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-dark text-white">
+                                        {{ group.hackathon?.title || 'Hackathon' }}
+                                    </span>
+                                    <span v-if="group.leader_id === currentUser?.id" class="badge bg-warning text-dark">
+                                        <font-awesome-icon :icon="['fas', 'crown']" class="me-1" /> Líder do Grupo
+                                    </span>
+                                    <span v-else class="badge bg-light text-secondary border">Integrante</span>
+                                </div>
+                                <h5 class="fw-bold text-dark mb-1">{{ group.name }}</h5>
+                                <div v-if="group.origin_team" class="badge bg-info-subtle text-info border border-info-subtle mb-2">
+                                    Originado da guilda: {{ group.origin_team.name }}
+                                </div>
+                                <p class="text-muted small mb-3">
+                                    {{ group.description || 'Grupo competitivo formado para este Hackathon.' }}
+                                </p>
+                                <div class="border rounded-2 p-2 bg-white mb-2">
+                                    <span class="text-muted small fw-semibold d-block mb-1">Integrantes Confirmados:</span>
+                                    <ul class="list-unstyled mb-0 small">
+                                        <li v-for="member in group.members" :key="member.id" class="d-flex justify-content-between py-1 border-bottom-subtle">
+                                            <span>{{ member.name }}</span>
+                                            <span v-if="member.id === group.leader_id" class="text-warning fw-bold">Líder</span>
+                                            <span v-else class="text-muted">Membro</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-top mt-2 d-flex gap-2">
+                                <Link v-if="group.hackathon" :href="route('hackathon.show', group.hackathon.slug)" class="btn btn-sm btn-primary w-100">
+                                    Página do Hackathon
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO 4: MEUS HACKATHONS (INSCRIÇÕES) -->
+        <div v-else-if="activeSection === 'registrations'">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
+                    <div>
+                        <h4 class="fw-bold mb-1 text-dark">Meus Hackathons e Inscrições</h4>
+                        <p class="text-muted small mb-0">
+                            Acompanhe seu status de inscrição, modalidade de participação e elegibilidade em cada competição.
+                        </p>
+                    </div>
+                    <Link :href="route('participant.hackathons')" class="btn btn-outline-primary btn-sm">
+                        Buscar Novos Hackathons
+                    </Link>
+                </div>
+
+                <div v-if="registrations.length === 0" class="text-center py-5 text-muted">
+                    <font-awesome-icon :icon="['fas', 'trophy']" class="fs-1 mb-3 opacity-50" />
+                    <h5 class="fw-bold text-dark">Você ainda não realizou nenhuma inscrição em hackathons.</h5>
+                    <p class="small text-secondary mb-3">Confira o catálogo de eventos abertos e participe!</p>
+                    <Link :href="route('participant.hackathons')" class="btn btn-primary btn-sm">
+                        Explorar Hackathons Abertos
+                    </Link>
+                </div>
+
+                <div v-else class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-muted small text-uppercase">
+                            <tr>
+                                <th scope="col" class="ps-3">Hackathon</th>
+                                <th scope="col">Modalidade / Formação</th>
+                                <th scope="col">Elegibilidade</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-end pe-3">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="reg in registrations" :key="reg.id">
+                                <td class="ps-3">
+                                    <strong class="text-dark d-block">{{ reg.hackathon?.title }}</strong>
+                                    <small class="text-muted">{{ reg.hackathon?.organization?.name || 'Motirõ' }}</small>
+                                </td>
+                                <td>
+                                    <div v-if="reg.group || reg.team">
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                            <font-awesome-icon :icon="['fas', 'people-group']" class="me-1" />
+                                            {{ (reg.group || reg.team).name }}
+                                        </span>
+                                    </div>
+                                    <div v-else>
+                                        <span class="badge bg-secondary-subtle text-secondary">
+                                            <font-awesome-icon :icon="['fas', 'user']" class="me-1" />
+                                            Individual
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span v-if="reg.is_eligible" class="badge bg-success-subtle text-success border border-success-subtle">
+                                        <font-awesome-icon :icon="['fas', 'check']" class="me-1" /> Apto
+                                    </span>
+                                    <span v-else class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                        <font-awesome-icon :icon="['fas', 'clock']" class="me-1" /> Pendente de Grupo
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge" :class="{
+                                        'bg-success': reg.status === 'approved',
+                                        'bg-warning text-dark': reg.status === 'pending',
+                                        'bg-danger': reg.status === 'rejected',
+                                        'bg-secondary': reg.status === 'cancelled'
+                                    }">
+                                        {{ reg.status === 'approved' ? 'Aprovada' : (reg.status === 'pending' ? 'Em Análise' : reg.status) }}
+                                    </span>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <Link v-if="reg.hackathon" :href="route('hackathon.show', reg.hackathon.slug)" class="btn btn-sm btn-outline-primary">
+                                        Acessar &rarr;
+                                    </Link>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

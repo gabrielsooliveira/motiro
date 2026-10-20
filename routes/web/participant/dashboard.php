@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Participant\DashboardController;
+use App\Http\Controllers\Participant\HackathonGroupController;
 use App\Http\Controllers\Participant\ProjectController;
 use App\Http\Controllers\Participant\RegistrationController;
 use App\Http\Controllers\Participant\TeamController;
@@ -18,12 +19,21 @@ Route::middleware(['auth', 'participant.context'])->prefix('participante')->name
     Route::prefix('equipes')->name('teams.')->group(function () {
         Route::post('/', [TeamController::class, 'store'])->name('store');
         Route::get('/{id}', [TeamController::class, 'show'])->name('show');
+        Route::post('/{id}/lider', [TeamController::class, 'electLeader'])->name('leader');
         Route::post('/{id}/convidar', [TeamController::class, 'invite'])->name('invite');
         Route::post('/convites/{id}/aceitar', [TeamController::class, 'acceptInvite'])->name('invite.accept');
         Route::post('/convites/{id}/recusar', [TeamController::class, 'declineInvite'])->name('invite.decline');
         Route::post('/{id}/solicitar', [TeamController::class, 'requestToJoin'])->name('request');
         Route::post('/solicitacoes/{id}/aceitar', [TeamController::class, 'acceptRequest'])->name('request.accept');
         Route::post('/solicitacoes/{id}/recusar', [TeamController::class, 'declineRequest'])->name('request.decline');
+    });
+
+    // Grupos de Participação em Hackathons (específicos do evento)
+    Route::prefix('grupos')->name('groups.')->group(function () {
+        Route::post('/hackathons/{hackathonId}', [HackathonGroupController::class, 'store'])->name('store');
+        Route::post('/hackathons/{hackathonId}/guilda', [HackathonGroupController::class, 'formFromGuild'])->name('form_from_guild');
+        Route::post('/{id}/lider', [HackathonGroupController::class, 'electLeader'])->name('leader');
+        Route::post('/{id}/sair', [HackathonGroupController::class, 'leave'])->name('leave');
     });
 
     // Inscrições (amigável)
@@ -50,12 +60,21 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
     Route::prefix('teams')->name('team.')->group(function () {
         Route::post('/', [TeamController::class, 'store'])->name('store');
         Route::get('/{id}', [TeamController::class, 'show'])->name('show');
+        Route::post('/{id}/leader', [TeamController::class, 'electLeader'])->name('leader');
         Route::post('/{id}/invite', [TeamController::class, 'invite'])->name('invite');
         Route::post('/invitations/{id}/accept', [TeamController::class, 'acceptInvite'])->name('invite.accept');
         Route::post('/invitations/{id}/decline', [TeamController::class, 'declineInvite'])->name('invite.decline');
         Route::post('/{id}/request', [TeamController::class, 'requestToJoin'])->name('request');
         Route::post('/requests/{id}/accept', [TeamController::class, 'acceptRequest'])->name('request.accept');
         Route::post('/requests/{id}/decline', [TeamController::class, 'declineRequest'])->name('request.decline');
+    });
+
+    // Participation Groups
+    Route::prefix('groups')->name('group.')->group(function () {
+        Route::post('/hackathons/{hackathonId}', [HackathonGroupController::class, 'store'])->name('store');
+        Route::post('/hackathons/{hackathonId}/guild', [HackathonGroupController::class, 'formFromGuild'])->name('form_from_guild');
+        Route::post('/{id}/leader', [HackathonGroupController::class, 'electLeader'])->name('leader');
+        Route::post('/{id}/leave', [HackathonGroupController::class, 'leave'])->name('leave');
     });
 
     // Registrations

@@ -14,6 +14,8 @@ const teamForm = useForm({
     name: "",
     description: "",
     area_of_focus: "",
+    invite_emails: "",
+    set_as_leader: true,
 });
 
 const submitTeam = () => {
@@ -62,7 +64,7 @@ const handleDeclineInvite = (id) => {
                         @click="showCreateTeamModal = true"
                     >
                         <font-awesome-icon :icon="['fas', 'plus']" />
-                        <span>Nova Equipe</span>
+                        <span>Nova Equipe (Guilda)</span>
                     </button>
                 </div>
             </div>
@@ -106,6 +108,7 @@ const handleDeclineInvite = (id) => {
             
             <CompetitorDashboard
                 :teams="competitor?.teams || []"
+                :groups="competitor?.groups || []"
                 :registrations="competitor?.registrations || []"
                 :invitations="competitor?.invitations || []"
                 :projects="competitor?.projects || []"
@@ -133,12 +136,19 @@ const handleDeclineInvite = (id) => {
                     <div class="modal-content rounded-4 border-0 shadow">
                         <form @submit.prevent="submitTeam">
                             <div class="modal-header border-bottom">
-                                <h5 class="modal-title fw-bold">Criar Nova Equipe</h5>
+                                <div>
+                                    <h5 class="modal-title fw-bold">Criar Equipe Permanente (Guilda)</h5>
+                                    <span class="small text-muted">Guilda independente de hackathons para reunir participantes</span>
+                                </div>
                                 <button type="button" class="btn-close" @click="showCreateTeamModal = false"></button>
                             </div>
                             <div class="modal-body p-4">
+                                <div class="alert alert-info py-2 small mb-3">
+                                    <font-awesome-icon :icon="['fas', 'circle-info']" class="me-1" />
+                                    Esta equipe é permanente e pertence à sua conta. Ela não inscreve seus integrantes automaticamente em nenhum hackathon.
+                                </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">Nome da Equipe *</label>
+                                    <label class="form-label fw-semibold">Nome da Guilda *</label>
                                     <input v-model="teamForm.name" type="text" class="form-control" placeholder="ex: ByteCraft, InovaTech" required />
                                 </div>
                                 <div class="mb-3">
@@ -148,6 +158,18 @@ const handleDeclineInvite = (id) => {
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Descrição</label>
                                     <textarea v-model="teamForm.description" class="form-control" rows="3" placeholder="Apresentação da equipe e objetivos..."></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Convidar Integrantes por E-mail (opcional)</label>
+                                    <input v-model="teamForm.invite_emails" type="text" class="form-control" placeholder="ex: dev1@email.com, dev2@email.com" />
+                                    <div class="form-text small">E-mails separados por vírgula. Se o convidado ainda não tiver conta, ele receberá o convite para registro.</div>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="set_as_leader" v-model="teamForm.set_as_leader" />
+                                    <label class="form-check-label fw-semibold small" for="set_as_leader">
+                                        Definir-me como líder da equipe
+                                    </label>
+                                    <div class="form-text small">Se desmarcado, a equipe será criada sem líder inicial e os membros poderão eleger o líder livremente.</div>
                                 </div>
                             </div>
                             <div class="modal-footer border-top bg-light rounded-bottom-4">

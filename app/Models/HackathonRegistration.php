@@ -11,6 +11,7 @@ class HackathonRegistration extends Model
 
     protected $fillable = [
         'hackathon_id',
+        'hackathon_group_id',
         'team_id',
         'user_id',
         'participation_type',
@@ -36,12 +37,17 @@ class HackathonRegistration extends Model
 
     public function isIndividual(): bool
     {
-        return $this->participation_type === 'individual' || empty($this->team_id);
+        return $this->participation_type === 'individual' || (empty($this->hackathon_group_id) && empty($this->team_id));
     }
 
     public function hasTeam(): bool
     {
-        return !empty($this->team_id);
+        return !empty($this->hackathon_group_id) || !empty($this->team_id);
+    }
+
+    public function hasGroup(): bool
+    {
+        return !empty($this->hackathon_group_id);
     }
 
     public function hackathon()
@@ -49,6 +55,22 @@ class HackathonRegistration extends Model
         return $this->belongsTo(Hackathon::class);
     }
 
+    /**
+     * Grupo de participação específico do hackathon
+     */
+    public function group()
+    {
+        return $this->belongsTo(HackathonGroup::class, 'hackathon_group_id');
+    }
+
+    public function hackathonGroup()
+    {
+        return $this->belongsTo(HackathonGroup::class, 'hackathon_group_id');
+    }
+
+    /**
+     * Equipe permanente / legada
+     */
     public function team()
     {
         return $this->belongsTo(Team::class);

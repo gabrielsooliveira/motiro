@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/{id}/manage', [HackathonController::class, 'manage'])->name('index');
                 Route::post('/', [HackathonController::class, 'store'])->name('store');
                 Route::put('/{id}', [HackathonController::class, 'update'])->name('update');
+                Route::patch('/{id}/status', [HackathonController::class, 'updateStatus'])->name('status');
                 Route::post('/{id}/distribute-judging', [HackathonController::class, 'distributeJudging'])->name('distribute');
                 Route::post('/{id}/publish-results', [HackathonController::class, 'publishResults'])->name('publish');
 
@@ -88,6 +89,7 @@ Route::middleware(['auth'])->group(function () {
                         Route::post('/transfer-team', [HackathonParticipantController::class, 'transferTeam'])->name('transfer');
                         Route::delete('/{registrationId}/remove-team', [HackathonParticipantController::class, 'removeFromTeam'])->name('remove_team');
                         Route::post('/create-team', [HackathonParticipantController::class, 'createTeam'])->name('create_team');
+                        Route::post('/teams/{teamId}/leader', [HackathonParticipantController::class, 'setLeader'])->name('set_leader');
                     });
                 });
             });

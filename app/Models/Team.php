@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Representa uma Equipe Permanente (Guilda).
+ * Existe independentemente de qualquer hackathon e possui ciclo de vida próprio.
+ */
 class Team extends Model
 {
     use HasUuids;
@@ -31,16 +35,25 @@ class Team extends Model
         ];
     }
 
+    /**
+     * Hackathon de origem (mantido para compatibilidade, equipes permanentes possuem hackathon_id null).
+     */
     public function hackathon()
     {
         return $this->belongsTo(Hackathon::class);
     }
 
+    /**
+     * Líder atual da guilda permanente.
+     */
     public function leader()
     {
         return $this->belongsTo(User::class, 'leader_id');
     }
 
+    /**
+     * Membros da guilda permanente.
+     */
     public function members()
     {
         return $this->belongsToMany(User::class, 'team_members', 'team_id', 'user_id')
@@ -48,9 +61,20 @@ class Team extends Model
             ->withTimestamps();
     }
 
+    /**
+     * Convites enviados ou solicitações recebidas para a guilda.
+     */
     public function invitations()
     {
         return $this->hasMany(TeamInvitation::class);
+    }
+
+    /**
+     * Grupos de participação em hackathons derivados desta guilda.
+     */
+    public function hackathonGroups()
+    {
+        return $this->hasMany(HackathonGroup::class, 'origin_team_id');
     }
 
     public function registrations()

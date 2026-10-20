@@ -34,7 +34,7 @@ class HackathonController extends Controller
     public function index(Request $request): Response
     {
         $query = Hackathon::with('organization')
-            ->whereIn('status', ['published', 'registration', 'submission', 'voting', 'finished', 'draft']);
+            ->whereIn('status', ['published', 'registration', 'submission', 'voting', 'finished']);
 
         if ($request->filled('search')) {
             $search = $request->query('search');
@@ -108,7 +108,10 @@ class HackathonController extends Controller
             'stages',
             'evaluationCriteria',
             'registrations.user:id,name,email,avatar',
+            'registrations.group.members',
             'registrations.team.members',
+            'groups.members',
+            'groups.leader',
             'teams.members',
             'teams.leader',
             'projects.team',
@@ -179,11 +182,14 @@ class HackathonController extends Controller
             'category' => 'nullable|string|max:100',
             'modality' => 'required|in:presential,online,hybrid',
             'location' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:draft,published,registration,submission,voting,finished',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'registration_start_date' => 'nullable|date',
             'registration_end_date' => 'nullable|date|after_or_equal:registration_start_date',
             'registration_type' => 'nullable|in:individual,team_only,individual_or_team',
+            'team_formation_mode' => 'nullable|in:by_participants,by_organization,both',
+            'team_leader_required' => 'nullable|boolean',
             'allow_team_creation' => 'nullable|boolean',
             'allow_team_invites' => 'nullable|boolean',
             'allow_team_requests' => 'nullable|boolean',
@@ -401,11 +407,14 @@ class HackathonController extends Controller
             'category' => 'nullable|string|max:100',
             'modality' => 'sometimes|in:presential,online,hybrid',
             'location' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:draft,published,registration,submission,voting,finished',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
             'registration_start_date' => 'nullable|date',
             'registration_end_date' => 'nullable|date',
             'registration_type' => 'nullable|in:individual,team_only,individual_or_team',
+            'team_formation_mode' => 'nullable|in:by_participants,by_organization,both',
+            'team_leader_required' => 'nullable|boolean',
             'allow_team_creation' => 'nullable|boolean',
             'allow_team_invites' => 'nullable|boolean',
             'allow_team_requests' => 'nullable|boolean',
@@ -417,7 +426,7 @@ class HackathonController extends Controller
             'max_teams' => 'nullable|integer|min:1',
             'max_participants' => 'nullable|integer|min:1',
             'rules' => 'nullable|string',
-            'status' => 'nullable|string',
+            'status' => 'nullable|string|in:draft,published,registration,submission,voting,finished',
         ]);
 
         try {
@@ -426,6 +435,39 @@ class HackathonController extends Controller
             return redirect()->back()->with('success', 'Hackathon atualizado com sucesso!');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['title' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Update hackathon status directly
+     */
+    public function updateStatus(Request $request, string $id): RedirectResponse
+    {
+        $hackathon = Hackathon::findOrFail($id);
+        if (!\Illuminate\Support\Facades\Gate::allows('update', $hackathon)) {
+            abort(403, 'Acesso não autorizado para alterar o status deste Hackathon.');
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|string|in:draft,published,registration,submission,voting,finished',
+        ]);
+
+        try {
+            $this->hackathonService->updateStatus($hackathon, $validated['status'], Auth::user());
+
+            $labels = [
+                'draft' => 'Rascunho',
+                'published' => 'Publicado',
+                'registration' => 'Inscrições Abertas',
+                'submission' => 'Submissão de Projetos',
+                'voting' => 'Avaliação',
+                'finished' => 'Encerrado',
+            ];
+            $label = $labels[$validated['status']] ?? $validated['status'];
+
+            return redirect()->back()->with('success', "Status do hackathon atualizado para '{$label}' com sucesso!");
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['status' => $e->getMessage()]);
         }
     }
 

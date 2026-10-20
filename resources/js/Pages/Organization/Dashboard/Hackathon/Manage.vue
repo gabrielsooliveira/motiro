@@ -15,7 +15,122 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    canManageStages: {
+        type: Boolean,
+        default: false,
+    },
+    canManageParticipants: {
+        type: Boolean,
+        default: false,
+    },
+    canUpdate: {
+        type: Boolean,
+        default: true,
+    },
 });
+
+const showStatusModal = ref(false);
+const selectedNewStatus = ref(props.hackathon.status);
+const isUpdatingStatus = ref(false);
+
+const statusOptions = [
+    {
+        value: "registration",
+        label: "Inscrições Abertas",
+        badgeClass: "bg-success text-white",
+        btnClass: "btn-outline-success",
+        icon: "door-open",
+        description: "Visível no catálogo público e disponível para participantes e equipes se inscreverem.",
+    },
+    {
+        value: "published",
+        label: "Publicado (Em Breve)",
+        badgeClass: "bg-info text-dark",
+        btnClass: "btn-outline-info",
+        icon: "globe",
+        description: "Visível no catálogo para divulgação prévia do evento conforme as datas do cronograma.",
+    },
+    {
+        value: "submission",
+        label: "Submissão de Projetos",
+        badgeClass: "bg-warning text-dark",
+        btnClass: "btn-outline-warning",
+        icon: "code",
+        description: "Inscrições finalizadas. Os participantes desenvolvem e enviam seus projetos e documentação.",
+    },
+    {
+        value: "voting",
+        label: "Em Avaliação",
+        badgeClass: "bg-primary text-white",
+        btnClass: "btn-outline-primary",
+        icon: "scale-balanced",
+        description: "Submissões encerradas. Projetos distribuídos e sob avaliação da banca julgadora.",
+    },
+    {
+        value: "finished",
+        label: "Encerrado",
+        badgeClass: "bg-secondary text-white",
+        btnClass: "btn-outline-secondary",
+        icon: "flag-checkered",
+        description: "Hackathon encerrado e resultados finais publicados.",
+    },
+    {
+        value: "draft",
+        label: "Rascunho",
+        badgeClass: "bg-dark text-white",
+        btnClass: "btn-outline-dark",
+        icon: "file-pen",
+        description: "Oculto dos participantes e do catálogo público. Visível apenas para a equipe organizadora.",
+    },
+];
+
+const currentStatusObj = computed(() => {
+    return statusOptions.find(s => s.value === props.hackathon.status) || {
+        value: props.hackathon.status,
+        label: props.hackathon.status,
+        badgeClass: "bg-secondary text-white",
+        btnClass: "btn-outline-secondary",
+        icon: "circle-info",
+        description: "",
+    };
+});
+
+const openStatusModal = () => {
+    selectedNewStatus.value = props.hackathon.status;
+    showStatusModal.value = true;
+};
+
+const quickChangeStatus = (newStatus) => {
+    if (newStatus === props.hackathon.status) return;
+    const targetLabel = statusOptions.find(s => s.value === newStatus)?.label || newStatus;
+    if (confirm(`Deseja alterar o status do hackathon para "${targetLabel}"?`)) {
+        router.patch(route("hackathon.manage.status", props.hackathon.id), {
+            status: newStatus,
+        }, {
+            preserveScroll: true,
+        });
+    }
+};
+
+const submitChangeStatus = () => {
+    if (selectedNewStatus.value === props.hackathon.status) {
+        showStatusModal.value = false;
+        return;
+    }
+    isUpdatingStatus.value = true;
+    router.patch(route("hackathon.manage.status", props.hackathon.id), {
+        status: selectedNewStatus.value,
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            showStatusModal.value = false;
+            isUpdatingStatus.value = false;
+        },
+        onError: () => {
+            isUpdatingStatus.value = false;
+        },
+    });
+};
 
 const activeTab = ref("registrations");
 
@@ -63,16 +178,45 @@ const createTeamOrgForm = useForm({
 });
 
 const formatForm = useForm({
+    status: props.hackathon.status || "draft",
     registration_type: props.hackathon.registration_type || "individual_or_team",
+    team_formation_mode: props.hackathon.team_formation_mode || "by_participants",
+    team_leader_required: props.hackathon.team_leader_required ?? true,
     min_team_members: props.hackathon.min_team_members || 1,
     max_team_members: props.hackathon.max_team_members || 5,
     allow_team_creation: props.hackathon.allow_team_creation ?? true,
     allow_team_invites: props.hackathon.allow_team_invites ?? true,
     allow_team_requests: props.hackathon.allow_team_requests ?? true,
     allow_org_team_management: props.hackathon.allow_org_team_management ?? true,
+    registration_start_date: props.hackathon.registration_start_date ? props.hackathon.registration_start_date.substring(0, 16) : "",
+    registration_end_date: props.hackathon.registration_end_date ? props.hackathon.registration_end_date.substring(0, 16) : "",
+    start_date: props.hackathon.start_date ? props.hackathon.start_date.substring(0, 16) : "",
+    end_date: props.hackathon.end_date ? props.hackathon.end_date.substring(0, 16) : "",
     team_formation_deadline: props.hackathon.team_formation_deadline ? props.hackathon.team_formation_deadline.substring(0, 16) : "",
     team_management_deadline: props.hackathon.team_management_deadline ? props.hackathon.team_management_deadline.substring(0, 16) : "",
 });
+
+const showSetLeaderModal = ref(false);
+const selectedTeamForLeader = ref(null);
+const setLeaderForm = useForm({
+    leader_id: "",
+});
+
+const openSetLeaderModal = (team) => {
+    selectedTeamForLeader.value = team;
+    setLeaderForm.leader_id = team.leader_id || "";
+    showSetLeaderModal.value = true;
+};
+
+const submitSetLeader = () => {
+    if (!selectedTeamForLeader.value) return;
+    setLeaderForm.post(route("organization.hackathon.participants.set_leader", [props.hackathon.id, selectedTeamForLeader.value.id]), {
+        onSuccess: () => {
+            showSetLeaderModal.value = false;
+            setLeaderForm.reset();
+        },
+    });
+};
 
 const handleStatusUpdate = (registrationId, status) => {
     router.patch(route("registration.status.update", registrationId), {
@@ -169,9 +313,14 @@ const handleRemoveFromTeam = (reg) => {
 
 const openCreateTeamOrgModal = () => {
     createTeamOrgForm.reset();
-    createTeamOrgForm.leader_id = individualRegistrations.value[0]?.user_id || "";
+    createTeamOrgForm.member_registration_ids = [];
+    createTeamOrgForm.leader_id = "";
     showCreateTeamOrgModal.value = true;
 };
+
+const selectedRegistrationsForNewTeam = computed(() => {
+    return individualRegistrations.value.filter(r => createTeamOrgForm.member_registration_ids.includes(r.id));
+});
 
 const submitCreateTeamOrg = () => {
     createTeamOrgForm.post(route("organization.hackathon.participants.create_team", props.hackathon.id), {
@@ -188,26 +337,44 @@ const submitUpdateFormat = () => {
     });
 };
 
+const participantSearch = ref("");
+
+const hasGroup = (reg) => {
+    return Boolean(reg.hackathon_group_id || reg.team_id || reg.group || reg.team);
+};
+
 const individualRegistrations = computed(() => {
-    return (props.hackathon.registrations || []).filter(r => !r.team_id);
+    return (props.hackathon.registrations || []).filter(r => !hasGroup(r));
 });
 
 const teamRegistrations = computed(() => {
-    return (props.hackathon.registrations || []).filter(r => !!r.team_id);
+    return (props.hackathon.registrations || []).filter(r => hasGroup(r));
 });
 
 const filteredRegistrations = computed(() => {
-    const list = props.hackathon.registrations || [];
+    let list = props.hackathon.registrations || [];
     if (registrationFilter.value === "individual") {
-        return list.filter(r => !r.team_id);
+        list = list.filter(r => !hasGroup(r));
+    } else if (registrationFilter.value === "team") {
+        list = list.filter(r => hasGroup(r));
     }
-    if (registrationFilter.value === "team") {
-        return list.filter(r => !!r.team_id);
+
+    if (participantSearch.value.trim()) {
+        const query = participantSearch.value.toLowerCase().trim();
+        list = list.filter(r => {
+            const name = r.user?.name?.toLowerCase() || "";
+            const email = r.user?.email?.toLowerCase() || "";
+            return name.includes(query) || email.includes(query);
+        });
     }
+
     return list;
 });
 
 const hackathonTeams = computed(() => {
+    if (props.hackathon.groups && props.hackathon.groups.length > 0) {
+        return props.hackathon.groups;
+    }
     return props.hackathon.teams || [];
 });
 
@@ -366,13 +533,37 @@ const deleteCriterion = (critId) => {
                     <div class="d-flex align-items-center gap-2 flex-wrap">
                         <h1 class="h2 fw-bold text-dark mb-0">{{ hackathon.title }}</h1>
                         <span class="badge bg-light text-secondary border text-uppercase small">{{ hackathon.modality }}</span>
-                        <span class="badge bg-primary text-uppercase small">{{ hackathon.status }}</span>
+                        <!-- Status Badge / Selector Button -->
+                        <button
+                            v-if="canUpdate"
+                            type="button"
+                            class="badge border-0 px-3 py-2 cursor-pointer shadow-sm d-inline-flex align-items-center gap-1"
+                            :class="currentStatusObj.badgeClass"
+                            @click="openStatusModal"
+                            title="Clique para alterar o status do hackathon"
+                        >
+                            <font-awesome-icon :icon="['fas', currentStatusObj.icon]" class="me-1" />
+                            <span>{{ currentStatusObj.label }}</span>
+                            <font-awesome-icon :icon="['fas', 'pen-to-square']" class="ms-1 small opacity-75" />
+                        </button>
+                        <span v-else class="badge px-3 py-2 small" :class="currentStatusObj.badgeClass">
+                            {{ currentStatusObj.label }}
+                        </span>
                         <span v-if="hackathon.organization" class="badge bg-secondary-subtle text-secondary small">
                             {{ hackathon.organization.name }}
                         </span>
                     </div>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
+                    <button
+                        v-if="canUpdate"
+                        type="button"
+                        class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 shadow-sm"
+                        @click="openStatusModal"
+                    >
+                        <font-awesome-icon :icon="['fas', 'sliders']" />
+                        <span>Alterar Status</span>
+                    </button>
                     <button class="btn btn-sm btn-outline-info d-flex align-items-center gap-1" @click="handleDistributeJudging">
                         <font-awesome-icon :icon="['fas', 'share-nodes']" />
                         <span>Distribuir para Juízes</span>
@@ -380,6 +571,42 @@ const deleteCriterion = (critId) => {
                     <button class="btn btn-sm btn-success d-flex align-items-center gap-1" @click="handlePublishResults">
                         <font-awesome-icon :icon="['fas', 'award']" />
                         <span>Publicar Resultados</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Banner de Alerta para Hackathon em Rascunho -->
+            <div
+                v-if="hackathon.status === 'draft'"
+                class="alert alert-warning border-warning-subtle shadow-sm rounded-4 p-3 mb-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
+            >
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-warning bg-opacity-25 p-3 rounded-circle text-warning d-flex align-items-center justify-content-center">
+                        <font-awesome-icon :icon="['fas', 'triangle-exclamation']" class="fs-4 text-warning" />
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1 text-dark">Hackathon em modo Rascunho</h6>
+                        <p class="mb-0 text-muted small">
+                            Este hackathon está oculto e <strong>não aparece no catálogo de hackathons abertos</strong>. Altere o status para "Inscrições Abertas" para que os participantes possam encontrá-lo e se inscrever.
+                        </p>
+                    </div>
+                </div>
+                <div v-if="canUpdate" class="d-flex gap-2 align-self-md-center">
+                    <button
+                        type="button"
+                        class="btn btn-success btn-sm d-flex align-items-center gap-2 text-nowrap px-3 py-2 fw-semibold shadow-sm"
+                        @click="quickChangeStatus('registration')"
+                    >
+                        <font-awesome-icon :icon="['fas', 'door-open']" />
+                        <span>Publicar e Abrir Inscrições</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 text-nowrap px-3 py-2"
+                        @click="openStatusModal"
+                    >
+                        <font-awesome-icon :icon="['fas', 'sliders']" />
+                        <span>Outros Status</span>
                     </button>
                 </div>
             </div>
@@ -406,17 +633,6 @@ const deleteCriterion = (critId) => {
                     <button class="nav-link" :class="{ active: activeTab === 'format' }" @click="activeTab = 'format'">
                         <font-awesome-icon :icon="['fas', 'sliders']" class="me-1" />
                         Formato de Participação
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" :class="{ active: activeTab === 'projects' }" @click="activeTab = 'projects'">
-                        Projetos ({{ hackathon.projects?.length || 0 }})
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" :class="{ active: activeTab === 'staff' }" @click="activeTab = 'staff'">
-                        <font-awesome-icon :icon="['fas', 'user-shield']" class="me-1" />
-                        Equipe do Hackathon ({{ hackathon.members?.length || 0 }})
                     </button>
                 </li>
                 <li class="nav-item">
@@ -487,33 +703,47 @@ const deleteCriterion = (critId) => {
                 
                 <div class="card border-0 shadow-sm rounded-3 bg-white">
                     <div class="card-header bg-white border-bottom p-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <span class="fw-bold text-dark">Filtrar Inscritos:</span>
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button
-                                    type="button"
-                                    class="btn"
-                                    :class="registrationFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary'"
-                                    @click="registrationFilter = 'all'"
-                                >
-                                    Todos ({{ hackathon.registrations?.length || 0 }})
-                                </button>
-                                <button
-                                    type="button"
-                                    class="btn"
-                                    :class="registrationFilter === 'individual' ? 'btn-primary' : 'btn-outline-secondary'"
-                                    @click="registrationFilter = 'individual'"
-                                >
-                                    Sem Equipe ({{ individualRegistrations.length }})
-                                </button>
-                                <button
-                                    type="button"
-                                    class="btn"
-                                    :class="registrationFilter === 'team' ? 'btn-primary' : 'btn-outline-secondary'"
-                                    @click="registrationFilter = 'team'"
-                                >
-                                    Com Equipe ({{ teamRegistrations.length }})
-                                </button>
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold text-dark small">Filtrar:</span>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button
+                                        type="button"
+                                        class="btn"
+                                        :class="registrationFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary'"
+                                        @click="registrationFilter = 'all'"
+                                    >
+                                        Todos ({{ hackathon.registrations?.length || 0 }})
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn"
+                                        :class="registrationFilter === 'individual' ? 'btn-primary' : 'btn-outline-secondary'"
+                                        @click="registrationFilter = 'individual'"
+                                    >
+                                        Sem Grupo ({{ individualRegistrations.length }})
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn"
+                                        :class="registrationFilter === 'team' ? 'btn-primary' : 'btn-outline-secondary'"
+                                        @click="registrationFilter = 'team'"
+                                    >
+                                        Em Grupo ({{ teamRegistrations.length }})
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="text-muted" />
+                                </span>
+                                <input
+                                    type="text"
+                                    class="form-control border-start-0"
+                                    placeholder="Buscar por nome ou e-mail..."
+                                    v-model="participantSearch"
+                                />
                             </div>
                         </div>
                         <div v-if="hackathon.registration_type !== 'individual' && hackathon.allow_org_team_management">
@@ -523,7 +753,7 @@ const deleteCriterion = (critId) => {
                                 @click="openCreateTeamOrgModal"
                             >
                                 <font-awesome-icon :icon="['fas', 'plus']" />
-                                <span>Criar Equipe (Organização)</span>
+                                <span>Formar Grupo (Organização)</span>
                             </button>
                         </div>
                     </div>
@@ -558,14 +788,14 @@ const deleteCriterion = (critId) => {
                                             </div>
                                         </td>
                                         <td>
-                                            <div v-if="reg.team">
+                                            <div v-if="reg.group || reg.team">
                                                 <span class="badge bg-light text-dark border me-1">
                                                     <font-awesome-icon :icon="['fas', 'people-group']" class="me-1 text-primary" />
-                                                    {{ reg.team.name }}
+                                                    {{ (reg.group || reg.team).name }}
                                                 </span>
-                                                <span v-if="reg.team.leader_id === reg.user_id" class="badge bg-primary-subtle text-primary small">Líder</span>
+                                                <span v-if="(reg.group || reg.team).leader_id === reg.user_id" class="badge bg-primary-subtle text-primary small">Líder</span>
                                                 <div class="text-muted small mt-1">
-                                                    {{ reg.team.members?.length || 1 }} / {{ hackathon.max_team_members }} integrantes
+                                                    {{ (reg.group || reg.team).members?.length || 1 }} / {{ hackathon.max_team_members }} integrantes
                                                 </div>
                                             </div>
                                             <div v-else>
@@ -667,6 +897,7 @@ const deleteCriterion = (critId) => {
                                         <th scope="col">Integrantes / Vagas</th>
                                         <th scope="col">Situação</th>
                                         <th scope="col">Membros Atuais</th>
+                                        <th scope="col" class="text-end pe-3">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -676,10 +907,11 @@ const deleteCriterion = (critId) => {
                                             <div v-if="team.area_of_focus" class="text-muted small">{{ team.area_of_focus }}</div>
                                         </td>
                                         <td>
-                                            <div class="d-flex align-items-center gap-1">
+                                            <div v-if="team.leader" class="d-flex align-items-center gap-1">
                                                 <font-awesome-icon :icon="['fas', 'crown']" class="text-warning small" />
-                                                <span class="small fw-semibold">{{ team.leader?.name || '-' }}</span>
+                                                <span class="small fw-semibold">{{ team.leader.name }}</span>
                                             </div>
+                                            <span v-else class="badge bg-warning-subtle text-warning">Líder pendente</span>
                                         </td>
                                         <td>
                                             <span class="fw-bold">{{ team.members?.length || 0 }}</span>
@@ -716,6 +948,16 @@ const deleteCriterion = (critId) => {
                                                 </span>
                                             </div>
                                         </td>
+                                        <td class="text-end pe-3">
+                                            <button
+                                                v-if="hackathon.allow_org_team_management"
+                                                type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                @click="openSetLeaderModal(team)"
+                                            >
+                                                {{ team.leader_id ? 'Alterar Líder' : 'Definir Líder' }}
+                                            </button>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -733,6 +975,40 @@ const deleteCriterion = (critId) => {
                 <div class="card-body p-4">
                     <form @submit.prevent="submitUpdateFormat">
                         
+                        <!-- Status Geral do Hackathon -->
+                        <div class="mb-4 pb-4 border-bottom">
+                            <label class="form-label fw-bold text-dark">Status Geral do Evento *</label>
+                            <p class="small text-muted mb-3">
+                                Define a visibilidade do hackathon no catálogo e a fase atual do seu ciclo de vida.
+                            </p>
+                            <div class="row g-3">
+                                <div v-for="opt in statusOptions" :key="opt.value" class="col-md-4">
+                                    <div
+                                        class="card h-100 p-3 border-2 cursor-pointer"
+                                        :class="formatForm.status === opt.value ? 'border-primary bg-primary-subtle bg-opacity-25' : 'border-light-subtle'"
+                                        @click="formatForm.status = opt.value"
+                                    >
+                                        <div class="form-check">
+                                            <input
+                                                class="form-check-input"
+                                                type="radio"
+                                                name="format_status"
+                                                :value="opt.value"
+                                                v-model="formatForm.status"
+                                                :id="'format_status_' + opt.value"
+                                            />
+                                            <label class="form-check-label fw-bold text-dark cursor-pointer" :for="'format_status_' + opt.value">
+                                                <span class="badge me-1" :class="opt.badgeClass">{{ opt.label }}</span>
+                                            </label>
+                                        </div>
+                                        <p class="small text-muted mb-0 mt-2">
+                                            {{ opt.description }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="mb-4">
                             <label class="form-label fw-bold text-dark">Modalidade de Participação *</label>
                             <div class="row g-3">
@@ -813,6 +1089,82 @@ const deleteCriterion = (critId) => {
 
                         
                         <div v-if="formatForm.registration_type !== 'individual'" class="border-top pt-4 mt-4">
+                            <h3 class="h6 fw-bold text-dark mb-3">Modo de Formação de Equipes</h3>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <div
+                                        class="card h-100 p-3 border-2 cursor-pointer"
+                                        :class="formatForm.team_formation_mode === 'by_participants' ? 'border-primary bg-primary-subtle bg-opacity-25' : 'border-light-subtle'"
+                                        @click="formatForm.team_formation_mode = 'by_participants'"
+                                    >
+                                        <div class="form-check">
+                                            <input
+                                                class="form-check-input"
+                                                type="radio"
+                                                name="team_formation_mode"
+                                                value="by_participants"
+                                                v-model="formatForm.team_formation_mode"
+                                                id="form_mode_participants"
+                                            />
+                                            <label class="form-check-label fw-bold text-dark" for="form_mode_participants">
+                                                Pelos Participantes
+                                            </label>
+                                        </div>
+                                        <p class="small text-muted mb-0 mt-2">
+                                            Os participantes formam suas próprias equipes e escolhem o líder livremente.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div
+                                        class="card h-100 p-3 border-2 cursor-pointer"
+                                        :class="formatForm.team_formation_mode === 'by_organization' ? 'border-primary bg-primary-subtle bg-opacity-25' : 'border-light-subtle'"
+                                        @click="formatForm.team_formation_mode = 'by_organization'"
+                                    >
+                                        <div class="form-check">
+                                            <input
+                                                class="form-check-input"
+                                                type="radio"
+                                                name="team_formation_mode"
+                                                value="by_organization"
+                                                v-model="formatForm.team_formation_mode"
+                                                id="form_mode_org"
+                                            />
+                                            <label class="form-check-label fw-bold text-dark" for="form_mode_org">
+                                                Pela Organização
+                                            </label>
+                                        </div>
+                                        <p class="small text-muted mb-0 mt-2">
+                                            A organização agrupa e define quais participantes compõem cada equipe.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div
+                                        class="card h-100 p-3 border-2 cursor-pointer"
+                                        :class="formatForm.team_formation_mode === 'both' ? 'border-primary bg-primary-subtle bg-opacity-25' : 'border-light-subtle'"
+                                        @click="formatForm.team_formation_mode = 'both'"
+                                    >
+                                        <div class="form-check">
+                                            <input
+                                                class="form-check-input"
+                                                type="radio"
+                                                name="team_formation_mode"
+                                                value="both"
+                                                v-model="formatForm.team_formation_mode"
+                                                id="form_mode_both"
+                                            />
+                                            <label class="form-check-label fw-bold text-dark" for="form_mode_both">
+                                                Modo Misto (Ambos)
+                                            </label>
+                                        </div>
+                                        <p class="small text-muted mb-0 mt-2">
+                                            Participantes criam equipes e a organização também pode montar e ajustar grupos.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <h3 class="h6 fw-bold text-dark mb-3">Parâmetros de Equipe</h3>
 
                             <div class="row g-3 mb-4">
@@ -842,9 +1194,23 @@ const deleteCriterion = (critId) => {
                                 </div>
                             </div>
 
-                            <h3 class="h6 fw-bold text-dark mb-3">Permissões de Formação</h3>
+                            <h3 class="h6 fw-bold text-dark mb-3">Permissões de Formação & Liderança</h3>
 
                             <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch p-3 border rounded-3 bg-light">
+                                        <input
+                                            class="form-check-input ms-0 me-2"
+                                            type="checkbox"
+                                            id="team_leader_required"
+                                            v-model="formatForm.team_leader_required"
+                                        />
+                                        <label class="form-check-label fw-semibold" for="team_leader_required">
+                                            Exigir Líder para Inscrição da Equipe
+                                        </label>
+                                        <div class="text-muted small mt-1">Se ativo, a equipe só conclui inscrição no evento após ter um líder formalmente eleito.</div>
+                                    </div>
+                                </div>
                                 <div class="col-md-6">
                                     <div class="form-check form-switch p-3 border rounded-3 bg-light">
                                         <input
@@ -903,7 +1269,46 @@ const deleteCriterion = (critId) => {
                                 </div>
                             </div>
 
-                            <h3 class="h6 fw-bold text-dark mb-3">Prazos Limite</h3>
+                            <h3 class="h6 fw-bold text-dark mb-3">Datas e Prazos do Evento</h3>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Início das Inscrições</label>
+                                    <input
+                                        v-model="formatForm.registration_start_date"
+                                        type="datetime-local"
+                                        class="form-control"
+                                    />
+                                    <div class="form-text small">Data e hora a partir da qual os participantes podem se inscrever.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Encerramento das Inscrições</label>
+                                    <input
+                                        v-model="formatForm.registration_end_date"
+                                        type="datetime-local"
+                                        class="form-control"
+                                    />
+                                    <div class="form-text small">Data e hora limite para novas inscrições no evento.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Início Geral do Hackathon</label>
+                                    <input
+                                        v-model="formatForm.start_date"
+                                        type="datetime-local"
+                                        class="form-control"
+                                    />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Término Geral do Hackathon</label>
+                                    <input
+                                        v-model="formatForm.end_date"
+                                        type="datetime-local"
+                                        class="form-control"
+                                    />
+                                </div>
+                            </div>
+
+                            <h3 class="h6 fw-bold text-dark mb-3">Prazos de Gestão de Equipes</h3>
 
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
@@ -1368,6 +1773,71 @@ const deleteCriterion = (critId) => {
             </div>
         </div>
 
+        <!-- Modal para Alteração de Status do Hackathon -->
+        <div v-if="showStatusModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <form @submit.prevent="submitChangeStatus">
+                        <div class="modal-header border-bottom">
+                            <div>
+                                <h5 class="modal-title fw-bold">Alterar Status do Hackathon</h5>
+                                <span class="small text-muted">{{ hackathon.title }}</span>
+                            </div>
+                            <button type="button" class="btn-close" @click="showStatusModal = false"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="alert alert-info border-info-subtle bg-info-subtle bg-opacity-25 rounded-3 mb-4 small">
+                                <font-awesome-icon :icon="['fas', 'circle-info']" class="me-1 text-primary" />
+                                <strong>Dica:</strong> Para que o hackathon apareça listado no <strong>catálogo de hackathons abertos</strong> dos participantes, selecione <strong>Inscrições Abertas</strong>.
+                            </div>
+
+                            <label class="form-label fw-semibold text-dark mb-2">Selecione o novo status:</label>
+                            <div class="row g-3">
+                                <div v-for="opt in statusOptions" :key="opt.value" class="col-md-6">
+                                    <div
+                                        class="card h-100 p-3 border-2 cursor-pointer transition-all"
+                                        :class="selectedNewStatus === opt.value ? 'border-primary bg-primary-subtle bg-opacity-25 shadow-sm' : 'border-light-subtle'"
+                                        @click="selectedNewStatus = opt.value"
+                                    >
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <div class="form-check mb-0">
+                                                <input
+                                                    class="form-check-input"
+                                                    type="radio"
+                                                    name="modal_status"
+                                                    :value="opt.value"
+                                                    v-model="selectedNewStatus"
+                                                    :id="'modal_status_' + opt.value"
+                                                />
+                                                <label class="form-check-label fw-bold text-dark cursor-pointer ms-1" :for="'modal_status_' + opt.value">
+                                                    {{ opt.label }}
+                                                </label>
+                                            </div>
+                                            <span class="badge" :class="opt.badgeClass">{{ opt.value }}</span>
+                                        </div>
+                                        <p class="small text-muted mb-0 mt-1">
+                                            {{ opt.description }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top bg-light rounded-bottom-4">
+                            <button type="button" class="btn btn-secondary" @click="showStatusModal = false">Cancelar</button>
+                            <button
+                                type="submit"
+                                class="btn btn-primary d-flex align-items-center gap-2"
+                                :disabled="isUpdatingStatus || selectedNewStatus === hackathon.status"
+                            >
+                                <font-awesome-icon v-if="isUpdatingStatus" :icon="['fas', 'spinner']" class="fa-spin" />
+                                <font-awesome-icon v-else :icon="['fas', 'check']" />
+                                <span>{{ isUpdatingStatus ? 'Atualizando...' : 'Confirmar Alteração de Status' }}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         
         <div v-if="showAddMemberModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
@@ -1561,7 +2031,7 @@ const deleteCriterion = (critId) => {
             </div>
         </div>
 
-        
+        <!-- Modal: Criar Equipe pela Organização -->
         <div v-if="showCreateTeamOrgModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
                 <div class="modal-content rounded-4 border-0 shadow">
@@ -1597,20 +2067,6 @@ const deleteCriterion = (critId) => {
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">Líder da Equipe *</label>
-                                <select v-model="createTeamOrgForm.leader_id" class="form-select" required>
-                                    <option value="" disabled>Selecione um participante inscrito</option>
-                                    <option
-                                        v-for="reg in (individualRegistrations.length > 0 ? individualRegistrations : hackathon.registrations)"
-                                        :key="reg.user_id"
-                                        :value="reg.user_id"
-                                    >
-                                        {{ reg.user?.name }} ({{ reg.user?.email }}) - {{ reg.team_id ? 'Já possui equipe' : 'Sem equipe' }}
-                                    </option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
                                 <label class="form-label fw-semibold">Descrição do Projeto / Equipe</label>
                                 <textarea
                                     v-model="createTeamOrgForm.description"
@@ -1620,11 +2076,14 @@ const deleteCriterion = (critId) => {
                                 ></textarea>
                             </div>
 
-                            <div v-if="individualRegistrations.filter(r => r.user_id !== createTeamOrgForm.leader_id).length > 0" class="mb-3">
-                                <label class="form-label fw-semibold">Adicionar Outros Inscritos Sem Equipe (Opcional)</label>
-                                <div class="border rounded-3 p-3 bg-light scrollable-box">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Selecionar Participantes Inscritos *</label>
+                                <div v-if="individualRegistrations.length === 0" class="alert alert-secondary small py-2">
+                                    Não há participantes inscritos sem equipe disponíveis no momento.
+                                </div>
+                                <div v-else class="border rounded-3 p-3 bg-light scrollable-box">
                                     <div
-                                        v-for="reg in individualRegistrations.filter(r => r.user_id !== createTeamOrgForm.leader_id)"
+                                        v-for="reg in individualRegistrations"
                                         :key="reg.id"
                                         class="form-check mb-2"
                                     >
@@ -1641,7 +2100,24 @@ const deleteCriterion = (critId) => {
                                     </div>
                                 </div>
                                 <div class="form-text small">
-                                    Limite máximo de {{ hackathon.max_team_members }} membros por equipe (incluindo o líder).
+                                    Mínimo: {{ hackathon.min_team_members || 1 }} e Máximo: {{ hackathon.max_team_members }} participantes.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Designar Líder (Opcional)</label>
+                                <select v-model="createTeamOrgForm.leader_id" class="form-select">
+                                    <option value="">(Deixar sem líder inicial — integrantes elegerão)</option>
+                                    <option
+                                        v-for="reg in selectedRegistrationsForNewTeam"
+                                        :key="reg.user_id"
+                                        :value="reg.user_id"
+                                    >
+                                        {{ reg.user?.name }} ({{ reg.user?.email }})
+                                    </option>
+                                </select>
+                                <div class="form-text small">
+                                    Você pode escolher um dos integrantes selecionados acima ou deixar a liderança sem definição inicial.
                                 </div>
                             </div>
                         </div>
@@ -1650,10 +2126,56 @@ const deleteCriterion = (critId) => {
                             <button
                                 type="submit"
                                 class="btn btn-primary"
-                                :disabled="createTeamOrgForm.processing || !createTeamOrgForm.name || !createTeamOrgForm.leader_id"
+                                :disabled="createTeamOrgForm.processing || !createTeamOrgForm.name || createTeamOrgForm.member_registration_ids.length === 0"
                             >
                                 <span v-if="createTeamOrgForm.processing" class="spinner-border spinner-border-sm me-1"></span>
                                 Criar Equipe
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Definir / Alterar Líder pela Organização -->
+        <div v-if="showSetLeaderModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <form @submit.prevent="submitSetLeader">
+                        <div class="modal-header border-bottom">
+                            <div>
+                                <h5 class="modal-title fw-bold">Definir Líder da Equipe</h5>
+                                <span class="small text-muted">{{ selectedTeamForLeader?.name }}</span>
+                            </div>
+                            <button type="button" class="btn-close" @click="showSetLeaderModal = false"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Selecione o Líder</label>
+                                <select v-model="setLeaderForm.leader_id" class="form-select">
+                                    <option value="">(Deixar em aberto / sem líder)</option>
+                                    <option
+                                        v-for="member in (selectedTeamForLeader?.members || [])"
+                                        :key="member.id"
+                                        :value="member.id"
+                                    >
+                                        {{ member.name }} ({{ member.email }}) {{ member.id === selectedTeamForLeader?.leader_id ? '— [Atual Líder]' : '' }}
+                                    </option>
+                                </select>
+                                <div class="form-text small">
+                                    Apenas integrantes que pertençam a esta equipe podem ser definidos como líder.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top bg-light rounded-bottom-4">
+                            <button type="button" class="btn btn-secondary" @click="showSetLeaderModal = false">Cancelar</button>
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                :disabled="setLeaderForm.processing"
+                            >
+                                <span v-if="setLeaderForm.processing" class="spinner-border spinner-border-sm me-1"></span>
+                                Salvar Liderança
                             </button>
                         </div>
                     </form>

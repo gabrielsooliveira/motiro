@@ -34,7 +34,7 @@ class HackathonController extends Controller
     public function list(Request $request): Response
     {
         $query = Hackathon::with('organization')
-            ->whereIn('status', ['published', 'registration', 'submission', 'voting', 'finished', 'draft']);
+            ->whereIn('status', ['published', 'registration', 'submission', 'voting', 'finished']);
 
         if ($request->filled('search')) {
             $search = $request->query('search');

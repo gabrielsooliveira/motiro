@@ -38,7 +38,13 @@ class HackathonService
             $count++;
         }
         $data['slug'] = $slug;
-        $data['status'] = 'draft';
+        $data['status'] = $data['status'] ?? 'draft';
+
+        if ($data['status'] === 'registration') {
+            if (empty($data['registration_start_date']) || \Carbon\Carbon::parse($data['registration_start_date'])->isFuture()) {
+                $data['registration_start_date'] = now();
+            }
+        }
 
         $stagesData = $data['stages'] ?? null;
         $criteriaData = $data['criteria'] ?? null;
@@ -116,6 +122,27 @@ class HackathonService
         $hackathon->update($data);
 
         AuditService::log('hackathon.update', $hackathon, $oldValues, $hackathon->toArray(), $hackathon->organization_id, $hackathon->id);
+
+        return $hackathon;
+    }
+
+    /**
+     * Atualiza o status do Hackathon (draft, published, registration, submission, voting, finished).
+     */
+    public function updateStatus(Hackathon $hackathon, string $status, User $actor): Hackathon
+    {
+        $this->authorizeAdmin($hackathon, $actor);
+
+        $oldValues = ['status' => $hackathon->status];
+        $updates = ['status' => $status];
+
+        if ($status === 'registration' && $hackathon->registration_start_date && $hackathon->registration_start_date->isFuture()) {
+            $updates['registration_start_date'] = now();
+        }
+
+        $hackathon->update($updates);
+
+        AuditService::log('hackathon.status_update', $hackathon, $oldValues, $updates, $hackathon->organization_id, $hackathon->id);
 
         return $hackathon;
     }

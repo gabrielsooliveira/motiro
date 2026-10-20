@@ -30,6 +30,8 @@ class Hackathon extends Model
         'max_team_members',
         'requires_team',
         'registration_type',
+        'team_formation_mode',
+        'team_leader_required',
         'allow_team_creation',
         'allow_team_invites',
         'allow_team_requests',
@@ -65,6 +67,7 @@ class Hackathon extends Model
             'team_formation_deadline' => 'datetime',
             'team_management_deadline' => 'datetime',
             'requires_team' => 'boolean',
+            'team_leader_required' => 'boolean',
             'allow_team_creation' => 'boolean',
             'allow_team_invites' => 'boolean',
             'allow_team_requests' => 'boolean',
@@ -90,6 +93,11 @@ class Hackathon extends Model
         return $this->hasMany(HackathonRegistration::class);
     }
 
+    public function groups()
+    {
+        return $this->hasMany(HackathonGroup::class);
+    }
+
     public function teams()
     {
         return $this->hasMany(Team::class);
@@ -112,6 +120,25 @@ class Hackathon extends Model
         }
 
         return (bool) $this->requires_team;
+    }
+
+    public function allowsParticipantTeamCreation(): bool
+    {
+        return $this->allowsTeamRegistration()
+            && in_array($this->team_formation_mode ?? 'by_participants', ['by_participants', 'both'])
+            && (bool) $this->allow_team_creation;
+    }
+
+    public function allowsOrganizationTeamCreation(): bool
+    {
+        return $this->allowsTeamRegistration()
+            && in_array($this->team_formation_mode ?? 'by_participants', ['by_organization', 'both'])
+            && (bool) $this->allow_org_team_management;
+    }
+
+    public function requiresTeamLeader(): bool
+    {
+        return $this->team_leader_required ?? true;
     }
 
     public function isTeamFormationOpen(): bool

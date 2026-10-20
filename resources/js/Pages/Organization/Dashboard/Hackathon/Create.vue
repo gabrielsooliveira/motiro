@@ -15,44 +15,49 @@ const props = defineProps({
 
 const currentStep = ref(1);
 
+const formatLocalDate = (date) => {
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
 const defaultStages = [
     {
         name: "Inscrições e Formação de Equipes",
         description: "Período para cadastro de participantes, formação ou adesão a equipes.",
-        start_date: new Date(Date.now() + 1 * 86400000).toISOString().slice(0, 16),
-        end_date: new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 16),
+        start_date: formatLocalDate(new Date()),
+        end_date: formatLocalDate(new Date(Date.now() + 10 * 86400000)),
         allowed_actions: ["team_register"],
         order: 1,
     },
     {
         name: "Desenvolvimento e Mentorias",
         description: "Fase de ideação, prototipagem e desenvolvimento da solução com suporte de mentores.",
-        start_date: new Date(Date.now() + 11 * 86400000).toISOString().slice(0, 16),
-        end_date: new Date(Date.now() + 13 * 86400000).toISOString().slice(0, 16),
+        start_date: formatLocalDate(new Date(Date.now() + 10 * 86400000)),
+        end_date: formatLocalDate(new Date(Date.now() + 13 * 86400000)),
         allowed_actions: [],
         order: 2,
     },
     {
         name: "Submissão Final de Projetos",
         description: "Prazo limite para envio do repositório, link do pitch e documentação do projeto.",
-        start_date: new Date(Date.now() + 13 * 86400000).toISOString().slice(0, 16),
-        end_date: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 16),
+        start_date: formatLocalDate(new Date(Date.now() + 13 * 86400000)),
+        end_date: formatLocalDate(new Date(Date.now() + 14 * 86400000)),
         allowed_actions: ["project_submit"],
         order: 3,
     },
     {
         name: "Avaliação da Banca Julgadora",
         description: "Período em que os juízes avaliam os projetos com base nos critérios estabelecidos.",
-        start_date: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 16),
-        end_date: new Date(Date.now() + 16 * 86400000).toISOString().slice(0, 16),
+        start_date: formatLocalDate(new Date(Date.now() + 14 * 86400000)),
+        end_date: formatLocalDate(new Date(Date.now() + 16 * 86400000)),
         allowed_actions: ["judging"],
         order: 4,
     },
     {
         name: "Resultado e Premiação",
         description: "Divulgação do ranking oficial, vencedores e entrega das premiações.",
-        start_date: new Date(Date.now() + 17 * 86400000).toISOString().slice(0, 16),
-        end_date: new Date(Date.now() + 17 * 86400000).toISOString().slice(0, 16),
+        start_date: formatLocalDate(new Date(Date.now() + 17 * 86400000)),
+        end_date: formatLocalDate(new Date(Date.now() + 17 * 86400000)),
         allowed_actions: [],
         order: 5,
     },
@@ -108,16 +113,19 @@ const form = useForm({
     category: "",
     modality: "online",
     location: "",
-    start_date: new Date(Date.now() + 1 * 86400000).toISOString().slice(0, 16),
-    end_date: new Date(Date.now() + 17 * 86400000).toISOString().slice(0, 16),
-    registration_start_date: new Date(Date.now() + 1 * 86400000).toISOString().slice(0, 16),
-    registration_end_date: new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 16),
+    status: "registration",
+    start_date: formatLocalDate(new Date()),
+    end_date: formatLocalDate(new Date(Date.now() + 17 * 86400000)),
+    registration_start_date: formatLocalDate(new Date()),
+    registration_end_date: formatLocalDate(new Date(Date.now() + 10 * 86400000)),
     registration_type: "individual_or_team",
+    team_formation_mode: "by_participants",
+    team_leader_required: true,
     allow_team_creation: true,
     allow_team_invites: true,
     allow_team_requests: true,
     allow_org_team_management: true,
-    team_formation_deadline: new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 16),
+    team_formation_deadline: formatLocalDate(new Date(Date.now() + 10 * 86400000)),
     min_team_members: 1,
     max_team_members: 5,
     max_teams: 50,
@@ -131,6 +139,27 @@ const totalWeight = computed(() => {
     return form.criteria.reduce((sum, item) => sum + (parseFloat(item.weight) || 0), 0);
 });
 
+const statusOptions = [
+    {
+        value: "registration",
+        label: "Inscrições Abertas",
+        badge: "bg-success text-white",
+        desc: "O hackathon é publicado imediatamente e aparece no catálogo de hackathons abertos para os participantes se inscreverem.",
+    },
+    {
+        value: "published",
+        label: "Publicado (Em Breve)",
+        badge: "bg-info text-dark",
+        desc: "Visível no catálogo para divulgação. A abertura de inscrições seguirá os prazos configurados no cronograma.",
+    },
+    {
+        value: "draft",
+        label: "Rascunho",
+        badge: "bg-secondary text-white",
+        desc: "Oculto dos participantes e do catálogo público. Visível apenas para a instituição organizadora.",
+    },
+];
+
 const isWeightBalanced = computed(() => {
     return Math.abs(totalWeight.value - 100) < 0.01;
 });
@@ -140,8 +169,8 @@ const addStage = () => {
     form.stages.push({
         name: `Nova Etapa ${nextOrder}`,
         description: "",
-        start_date: form.end_date || new Date().toISOString().slice(0, 16),
-        end_date: form.end_date || new Date(Date.now() + 86400000).toISOString().slice(0, 16),
+        start_date: form.end_date || formatLocalDate(new Date()),
+        end_date: form.end_date || formatLocalDate(new Date(Date.now() + 86400000)),
         allowed_actions: [],
         order: nextOrder,
     });
@@ -365,6 +394,40 @@ const formatDate = (isoStr) => {
                     />
                 </div>
 
+                <!-- Status Inicial do Hackathon -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold text-dark">Status Inicial do Hackathon *</label>
+                    <div class="row g-3">
+                        <div v-for="opt in statusOptions" :key="opt.value" class="col-md-4">
+                            <div
+                                class="card h-100 p-3 border-2 cursor-pointer transition-all"
+                                :class="form.status === opt.value ? 'border-primary bg-primary-subtle bg-opacity-25' : 'border-light-subtle'"
+                                @click="form.status = opt.value"
+                            >
+                                <div class="form-check">
+                                    <input
+                                        class="form-check-input"
+                                        type="radio"
+                                        name="status"
+                                        :value="opt.value"
+                                        v-model="form.status"
+                                        :id="'status_' + opt.value"
+                                    />
+                                    <label class="form-check-label fw-bold text-dark cursor-pointer" :for="'status_' + opt.value">
+                                        <span class="badge me-1" :class="opt.badge">{{ opt.label }}</span>
+                                    </label>
+                                </div>
+                                <p class="small text-muted mb-0 mt-2">
+                                    {{ opt.desc }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="form.errors.status" class="text-danger small mt-1">
+                        {{ form.errors.status }}
+                    </div>
+                </div>
+
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Data e Hora de Início Geral</label>
@@ -407,6 +470,25 @@ const formatDate = (isoStr) => {
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Limite Total de Equipes</label>
                         <input v-model="form.max_teams" type="number" min="1" class="form-control" />
+                    </div>
+                </div>
+
+                <div v-if="form.registration_type !== 'individual'" class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Modo de Formação de Equipes</label>
+                        <select v-model="form.team_formation_mode" class="form-select">
+                            <option value="by_participants">Organizadas pelos Participantes</option>
+                            <option value="by_organization">Organizadas pela Organização</option>
+                            <option value="both">Modo Misto (Participantes e Organização)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="create_team_leader_required" v-model="form.team_leader_required" />
+                            <label class="form-check-label fw-semibold" for="create_team_leader_required">
+                                Exigir Líder para Inscrição da Equipe
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -653,6 +735,12 @@ const formatDate = (isoStr) => {
                         <div class="border rounded-4 p-3 bg-light bg-opacity-25 h-100">
                             <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Resumo Geral</h6>
                             <p class="mb-1"><strong>Título:</strong> {{ form.title || 'Não informado' }}</p>
+                            <p class="mb-1">
+                                <strong>Status Inicial:</strong>
+                                <span v-if="form.status === 'registration'" class="badge bg-success ms-1">Inscrições Abertas</span>
+                                <span v-else-if="form.status === 'published'" class="badge bg-info text-dark ms-1">Publicado</span>
+                                <span v-else class="badge bg-secondary ms-1">Rascunho</span>
+                            </p>
                             <p class="mb-1"><strong>Categoria:</strong> {{ form.category || 'Geral' }}</p>
                             <p class="mb-1"><strong>Modalidade:</strong> <span class="text-capitalize">{{ form.modality }}</span></p>
                             <p v-if="form.location" class="mb-1"><strong>Local:</strong> {{ form.location }}</p>

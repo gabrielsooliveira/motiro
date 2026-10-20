@@ -46,6 +46,8 @@ const getStatusBadge = (status) => {
     switch (status) {
         case "registration":
             return { text: "Inscrições Abertas", class: "bg-success text-white" };
+        case "published":
+            return { text: "Publicado", class: "bg-info text-dark" };
         case "submission":
             return { text: "Submissões Abertas", class: "bg-warning text-dark" };
         case "voting":

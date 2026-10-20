@@ -106,9 +106,26 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function permanentTeams()
+    {
+        return $this->teams();
+    }
+
     public function ledTeams()
     {
         return $this->hasMany(Team::class, 'leader_id');
+    }
+
+    public function hackathonGroups()
+    {
+        return $this->belongsToMany(HackathonGroup::class, 'hackathon_group_members', 'user_id', 'hackathon_group_id')
+            ->withPivot('role', 'joined_at')
+            ->withTimestamps();
+    }
+
+    public function ledHackathonGroups()
+    {
+        return $this->hasMany(HackathonGroup::class, 'leader_id');
     }
 
     public function teamInvitations()

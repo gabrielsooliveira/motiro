@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->dateTime('start_date')->nullable();
             $table->dateTime('end_date')->nullable();
-            $table->enum('status', ['draft', 'registration', 'submission', 'voting', 'finished'])->default('draft');
+            $table->enum('status', ['draft', 'published', 'registration', 'submission', 'voting', 'finished'])->default('draft');
             $table->string('banner_url')->nullable();
             $table->string('logo_url')->nullable();
             $table->string('livestream_url')->nullable();

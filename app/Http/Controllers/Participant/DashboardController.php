@@ -30,18 +30,31 @@ class DashboardController extends Controller
             ContextService::setCompetitorContext($request);
         }
 
-        // 1. Teams where user is member or leader
+        // 1. Teams where user is member or leader (Permanent Teams / Guildas)
         $userTeams = $user->teams()->with([
             'members',
+            'leader',
+            'invitations',
             'registrations.hackathon.stages',
             'projects.hackathon.stages'
         ])->get();
 
-        // 2. Hackathons user is registered in
+        // 2. Hackathon Participation Groups where user is member or leader
+        $userGroups = $user->hackathonGroups()->with([
+            'hackathon.stages',
+            'members',
+            'leader',
+            'originTeam',
+            'projects',
+        ])->get();
+
+        // 3. Hackathons user is registered in
         $userRegistrations = $user->registrations()->with([
             'hackathon.organization',
             'hackathon.stages',
             'hackathon.challenges',
+            'group.members',
+            'group.leader',
             'team.members'
         ])->get();
 
@@ -56,8 +69,14 @@ class DashboardController extends Controller
             ->take(6)
             ->get();
 
-        // 4. Pending team invitations
-        $pendingInvitations = $user->teamInvitations()->with('team')->where('status', 'pending')->get();
+        // 4. Pending team invitations (by invitee_id or matching email)
+        $pendingInvitations = \App\Models\TeamInvitation::with('team')
+            ->where('status', 'pending')
+            ->where(function ($q) use ($user) {
+                $q->where('invitee_id', $user->id)
+                  ->orWhere('email', $user->email);
+            })
+            ->get();
 
         // 5. Competitor Projects & Submissions
         $competitorProjects = Project::whereIn('team_id', $userTeams->pluck('id'))
@@ -82,6 +101,7 @@ class DashboardController extends Controller
             'user' => $user,
             'competitor' => [
                 'teams' => $userTeams,
+                'groups' => $userGroups,
                 'registrations' => $userRegistrations,
                 'invitations' => $pendingInvitations,
                 'projects' => $competitorProjects,

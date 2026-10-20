@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Hackathon;
+use App\Models\HackathonGroup;
 use App\Models\HackathonRegistration;
 use App\Models\Team;
 use App\Models\User;
@@ -70,6 +71,7 @@ class RegistrationService
                 ],
                 [
                     'team_id' => null,
+                    'hackathon_group_id' => null,
                     'participation_type' => 'individual',
                     'status' => $initialStatus,
                     'is_eligible' => $isEligible,
@@ -107,7 +109,12 @@ class RegistrationService
             throw new Exception('Este Hackathon aceita apenas inscrições individuais.');
         }
 
-        // 3. Validação de membros da equipe
+        // 3. Validação do modo de formação de equipes
+        if ($hackathon->team_formation_mode === 'by_organization') {
+            throw new Exception('A formação e inscrição de equipes neste Hackathon é organizada exclusivamente pela organização.');
+        }
+
+        // 4. Validação de membros da equipe
         $memberCount = $team->members()->count();
         if ($memberCount < $hackathon->min_team_members) {
             throw new Exception("A equipe possui {$memberCount} integrantes, mas o mínimo exigido é de {$hackathon->min_team_members}.");
@@ -117,7 +124,17 @@ class RegistrationService
             throw new Exception("A equipe possui {$memberCount} integrantes, excedendo o máximo permitido de {$hackathon->max_team_members}.");
         }
 
-        // 4. Verifica se a equipe já realizou inscrição
+        // 5. Validação de exigência de líder
+        if ($hackathon->requiresTeamLeader()) {
+            if (empty($team->leader_id)) {
+                throw new Exception('Este Hackathon exige a definição de um líder para concluir a inscrição da equipe.');
+            }
+            if (!$team->members()->where('users.id', $team->leader_id)->exists()) {
+                throw new Exception('O líder designado deve ser um integrante desta equipe.');
+            }
+        }
+
+        // 6. Verifica se a equipe já realizou inscrição
         $existingTeamReg = HackathonRegistration::where('hackathon_id', $hackathon->id)
             ->where('team_id', $team->id)
             ->first();
@@ -126,24 +143,13 @@ class RegistrationService
             throw new Exception('Esta equipe já realizou inscrição neste Hackathon.');
         }
 
-        // 5. Verifica se algum membro já está inscrito em outra equipe neste hackathon
+        // 7. Verifica se algum membro já está inscrito em outra equipe neste hackathon (exclusividade absoluta)
         $memberIds = $team->members()->pluck('users.id')->toArray();
-        $conflictingMember = DB::table('hackathon_registrations')
-            ->join('teams', 'hackathon_registrations.team_id', '=', 'teams.id')
-            ->join('team_members', 'teams.id', '=', 'team_members.team_id')
-            ->join('users', 'team_members.user_id', '=', 'users.id')
-            ->where('hackathon_registrations.hackathon_id', $hackathon->id)
-            ->where('hackathon_registrations.team_id', '!=', $team->id)
-            ->whereIn('hackathon_registrations.status', ['pending', 'under_review', 'approved'])
-            ->whereIn('team_members.user_id', $memberIds)
-            ->select('users.name')
-            ->first();
-
-        if ($conflictingMember) {
-            throw new Exception("O participante {$conflictingMember->name} já está inscrito em outra equipe neste Hackathon.");
+        foreach ($memberIds as $memberId) {
+            $this->ensureUserNotInAnotherTeam($hackathon->id, $memberId, $team->id);
         }
 
-        // 6. Limite máximo de equipes
+        // 8. Limite máximo de equipes
         if ($hackathon->max_teams) {
             $approvedOrPending = HackathonRegistration::where('hackathon_id', $hackathon->id)
                 ->whereNotNull('team_id')
@@ -159,8 +165,37 @@ class RegistrationService
         $initialStatus = $hackathon->auto_approve_registrations ? 'approved' : 'pending';
 
         return DB::transaction(function () use ($hackathon, $team, $user, $memberIds, $initialStatus, $answers, $documents) {
-            // Vincula a equipe diretamente ao hackathon
+            // Vincula a equipe diretamente ao hackathon (compatibilidade)
             $team->update(['hackathon_id' => $hackathon->id]);
+
+            // Cria ou atualiza o grupo de participação no hackathon
+            $group = HackathonGroup::updateOrCreate(
+                [
+                    'hackathon_id' => $hackathon->id,
+                    'origin_team_id' => $team->id,
+                ],
+                [
+                    'name' => $team->name,
+                    'slug' => Str::slug($team->name) . '-' . substr($hackathon->id, 0, 8),
+                    'description' => $team->description,
+                    'area_of_focus' => $team->area_of_focus,
+                    'technologies' => $team->technologies,
+                    'leader_id' => $team->leader_id,
+                    'status' => 'active',
+                ]
+            );
+
+            // Sincroniza integrantes do grupo de participação
+            foreach ($memberIds as $mId) {
+                $role = ($team->leader_id === $mId) ? 'leader' : 'member';
+                $group->members()->syncWithoutDetaching([
+                    $mId => [
+                        'id' => (string) Str::uuid(),
+                        'role' => $role,
+                        'joined_at' => now(),
+                    ]
+                ]);
+            }
 
             // Atualiza ou cria a inscrição para o líder/usuário
             $leaderRegistration = HackathonRegistration::updateOrCreate(
@@ -170,6 +205,7 @@ class RegistrationService
                 ],
                 [
                     'team_id' => $team->id,
+                    'hackathon_group_id' => $group->id,
                     'participation_type' => 'team',
                     'status' => $initialStatus,
                     'is_eligible' => true,
@@ -191,6 +227,7 @@ class RegistrationService
                         ],
                         [
                             'team_id' => $team->id,
+                            'hackathon_group_id' => $group->id,
                             'participation_type' => 'team',
                             'status' => $initialStatus,
                             'is_eligible' => true,
@@ -226,13 +263,19 @@ class RegistrationService
             throw new Exception('A equipe selecionada pertence a outro Hackathon.');
         }
 
-        // 2. Valida prazos de formação caso não seja administrador da instituição
+        // 2. Valida elegibilidade do participante para o Hackathon
+        $this->ensureUserEligibleForHackathonTeam($hackathon, $registration->user_id);
+
+        // 3. Valida se o participante já pertence a outra equipe no evento (exclusividade)
+        $this->ensureUserNotInAnotherTeam($hackathon->id, $registration->user_id, $team->id);
+
+        // 4. Valida prazos de formação caso não seja administrador da instituição
         $isOrgAdmin = $actingUser->isOrganizationAdmin($hackathon->organization_id) || $hackathon->organization->owner_id === $actingUser->id;
         if (!$isOrgAdmin && !$hackathon->isTeamFormationOpen()) {
             throw new Exception('O prazo para formação e alteração de equipes deste Hackathon está encerrado.');
         }
 
-        // 3. Valida limite de integrantes
+        // 5. Valida limite de integrantes
         $currentCount = $team->members()->count();
         if ($currentCount >= $hackathon->max_team_members) {
             throw new Exception("A equipe '{$team->name}' já atingiu o limite máximo de {$hackathon->max_team_members} integrantes.");
@@ -252,8 +295,48 @@ class RegistrationService
                 $oldTeam->members()->detach($user->id);
             }
 
-            // Adiciona como membro na nova equipe
+            // Localiza ou cria o grupo de participação correspondente
+            $group = HackathonGroup::firstOrCreate(
+                [
+                    'hackathon_id' => $hackathon->id,
+                    'origin_team_id' => $team->id,
+                ],
+                [
+                    'name' => $team->name,
+                    'slug' => Str::slug($team->name) . '-' . substr($hackathon->id, 0, 8),
+                    'description' => $team->description,
+                    'area_of_focus' => $team->area_of_focus,
+                    'technologies' => $team->technologies,
+                    'leader_id' => $team->leader_id,
+                    'status' => 'active',
+                ]
+            );
+
+            // Desvincula de outros grupos deste hackathon
+            $oldGroupIds = DB::table('hackathon_group_members')
+                ->join('hackathon_groups', 'hackathon_group_members.hackathon_group_id', '=', 'hackathon_groups.id')
+                ->where('hackathon_groups.hackathon_id', $hackathon->id)
+                ->where('hackathon_group_members.user_id', $user->id)
+                ->pluck('hackathon_groups.id')
+                ->toArray();
+
+            if (!empty($oldGroupIds)) {
+                DB::table('hackathon_group_members')
+                    ->whereIn('hackathon_group_id', $oldGroupIds)
+                    ->where('user_id', $user->id)
+                    ->delete();
+            }
+
+            // Adiciona como membro na nova equipe e no grupo
             $team->members()->syncWithoutDetaching([
+                $user->id => [
+                    'id' => (string) Str::uuid(),
+                    'role' => 'member',
+                    'joined_at' => now(),
+                ]
+            ]);
+
+            $group->members()->syncWithoutDetaching([
                 $user->id => [
                     'id' => (string) Str::uuid(),
                     'role' => 'member',
@@ -264,6 +347,7 @@ class RegistrationService
             // Atualiza a inscrição do participante
             $registration->update([
                 'team_id' => $team->id,
+                'hackathon_group_id' => $group->id,
                 'participation_type' => 'team',
                 'is_eligible' => true,
                 'notes' => null,
@@ -297,12 +381,18 @@ class RegistrationService
             throw new Exception('A equipe de destino pertence a outro Hackathon.');
         }
 
-        // 2. Valida capacidade da equipe de destino
+        // 2. Valida elegibilidade do participante
+        $this->ensureUserEligibleForHackathonTeam($hackathon, $registration->user_id);
+
+        // 3. Valida se o participante já pertence a outra equipe além da equipe de origem (exclusividade)
+        $this->ensureUserNotInAnotherTeam($hackathon->id, $registration->user_id, array_filter([$targetTeam->id, $registration->team_id]));
+
+        // 4. Valida capacidade da equipe de destino
         if ($targetTeam->members()->count() >= $hackathon->max_team_members) {
             throw new Exception("A equipe de destino atingiu o limite máximo de {$hackathon->max_team_members} integrantes.");
         }
 
-        // 3. Validação de prazo caso não seja admin
+        // 5. Validação de prazo caso não seja admin
         $isOrgAdmin = $actingUser->isOrganizationAdmin($hackathon->organization_id) || $hackathon->organization->owner_id === $actingUser->id;
         if (!$isOrgAdmin && !$hackathon->isTeamManagementOpen()) {
             throw new Exception('O prazo para transferência de membros entre equipes está encerrado.');
@@ -314,18 +404,50 @@ class RegistrationService
 
             if ($sourceTeam) {
                 $sourceTeam->members()->detach($user->id);
-                // Se o usuário era líder, transfere liderança para outro membro se houver
+                // Se o usuário era líder, transfere liderança para outro membro se houver ou remove líder
                 if ($sourceTeam->leader_id === $user->id) {
                     $nextLeader = $sourceTeam->members()->first();
+                    $sourceTeam->update(['leader_id' => $nextLeader?->id]);
                     if ($nextLeader) {
-                        $sourceTeam->update(['leader_id' => $nextLeader->id]);
+                        $sourceTeam->members()->updateExistingPivot($nextLeader->id, ['role' => 'leader']);
                     }
                 }
+            }
+
+            // Desvincula de outros grupos deste hackathon
+            $oldGroupIds = DB::table('hackathon_group_members')
+                ->join('hackathon_groups', 'hackathon_group_members.hackathon_group_id', '=', 'hackathon_groups.id')
+                ->where('hackathon_groups.hackathon_id', $hackathon->id)
+                ->where('hackathon_group_members.user_id', $user->id)
+                ->pluck('hackathon_groups.id')
+                ->toArray();
+
+            if (!empty($oldGroupIds)) {
+                DB::table('hackathon_group_members')
+                    ->whereIn('hackathon_group_id', $oldGroupIds)
+                    ->where('user_id', $user->id)
+                    ->delete();
             }
 
             if (!$targetTeam->hackathon_id) {
                 $targetTeam->update(['hackathon_id' => $hackathon->id]);
             }
+
+            $targetGroup = HackathonGroup::firstOrCreate(
+                [
+                    'hackathon_id' => $hackathon->id,
+                    'origin_team_id' => $targetTeam->id,
+                ],
+                [
+                    'name' => $targetTeam->name,
+                    'slug' => Str::slug($targetTeam->name) . '-' . substr($hackathon->id, 0, 8),
+                    'description' => $targetTeam->description,
+                    'area_of_focus' => $targetTeam->area_of_focus,
+                    'technologies' => $targetTeam->technologies,
+                    'leader_id' => $targetTeam->leader_id,
+                    'status' => 'active',
+                ]
+            );
 
             $targetTeam->members()->syncWithoutDetaching([
                 $user->id => [
@@ -335,8 +457,17 @@ class RegistrationService
                 ]
             ]);
 
+            $targetGroup->members()->syncWithoutDetaching([
+                $user->id => [
+                    'id' => (string) Str::uuid(),
+                    'role' => 'member',
+                    'joined_at' => now(),
+                ]
+            ]);
+
             $registration->update([
                 'team_id' => $targetTeam->id,
+                'hackathon_group_id' => $targetGroup->id,
                 'participation_type' => 'team',
                 'is_eligible' => true,
             ]);
@@ -374,11 +505,23 @@ class RegistrationService
             $user = $registration->user;
             $team->members()->detach($user->id);
 
+            // Se o participante pertencia a um grupo no hackathon, desvincula
+            if ($registration->hackathon_group_id) {
+                $group = HackathonGroup::find($registration->hackathon_group_id);
+                if ($group) {
+                    $group->members()->detach($user->id);
+                    if ($group->leader_id === $user->id) {
+                        $group->update(['leader_id' => null]);
+                    }
+                }
+            }
+
             $isEligible = $hackathon->allowsIndividualRegistration();
             $notes = !$isEligible ? 'Participante sem equipe em evento com exigência de equipe obrigatória.' : null;
 
             $registration->update([
                 'team_id' => null,
+                'hackathon_group_id' => null,
                 'participation_type' => 'individual',
                 'is_eligible' => $isEligible,
                 'notes' => $notes,
@@ -396,9 +539,19 @@ class RegistrationService
     /**
      * Criação de equipe vinculada ao Hackathon (por participante ou organização)
      */
-    public function createTeamForHackathon(Hackathon $hackathon, User $creator, array $data, ?User $actingUser = null): Team
-    {
+    public function createTeamForHackathon(
+        Hackathon $hackathon,
+        ?User $creator,
+        array $data,
+        ?User $actingUser = null,
+        array $memberUserIds = [],
+        ?string $leaderId = null
+    ): Team {
         $actingUser = $actingUser ?: $creator;
+        $isOrgAdmin = $actingUser && (
+            $actingUser->isOrganizationAdmin($hackathon->organization_id)
+            || $hackathon->organization->owner_id === $actingUser->id
+        );
 
         // 1. Validação de modalidade
         if (!$hackathon->allowsTeamRegistration()) {
@@ -406,17 +559,16 @@ class RegistrationService
         }
 
         // 2. Validação de permissões de criação
-        $isOrgAdmin = $actingUser->isOrganizationAdmin($hackathon->organization_id) || $hackathon->organization->owner_id === $actingUser->id;
-        if (!$isOrgAdmin && !$hackathon->allow_team_creation) {
-            throw new Exception('A criação de equipes por participantes não está autorizada para este Hackathon.');
+        if (!$isOrgAdmin) {
+            if (!$hackathon->allowsParticipantTeamCreation()) {
+                throw new Exception('A criação de equipes por participantes não está autorizada para este Hackathon.');
+            }
+            if (!$hackathon->isTeamFormationOpen()) {
+                throw new Exception('O prazo para formação de equipes deste Hackathon está encerrado.');
+            }
         }
 
-        // 3. Validação de prazos
-        if (!$isOrgAdmin && !$hackathon->isTeamFormationOpen()) {
-            throw new Exception('O prazo para formação de equipes deste Hackathon está encerrado.');
-        }
-
-        // 4. Limite máximo de equipes
+        // 3. Limite máximo de equipes
         if ($hackathon->max_teams) {
             $totalTeams = Team::where('hackathon_id', $hackathon->id)->count();
             if ($totalTeams >= $hackathon->max_teams) {
@@ -424,7 +576,41 @@ class RegistrationService
             }
         }
 
-        return DB::transaction(function () use ($hackathon, $creator, $data, $actingUser) {
+        // 4. Monta e valida lista de integrantes
+        $targetMemberIds = [];
+        if (!empty($memberUserIds)) {
+            $targetMemberIds = array_values(array_unique($memberUserIds));
+        } elseif ($creator) {
+            $targetMemberIds = [$creator->id];
+        }
+
+        if ($isOrgAdmin && !empty($targetMemberIds)) {
+            if ($hackathon->min_team_members && count($targetMemberIds) < $hackathon->min_team_members) {
+                throw new Exception("A equipe deve ter no mínimo {$hackathon->min_team_members} integrantes.");
+            }
+            if ($hackathon->max_team_members && count($targetMemberIds) > $hackathon->max_team_members) {
+                throw new Exception("A equipe excede o limite máximo de {$hackathon->max_team_members} integrantes.");
+            }
+        }
+
+        // 5. Validação de elegibilidade e exclusividade de cada membro no contexto deste Hackathon
+        foreach ($targetMemberIds as $mId) {
+            $this->ensureUserEligibleForHackathonTeam($hackathon, $mId);
+            $this->ensureUserNotInAnotherTeam($hackathon->id, $mId);
+        }
+
+        // 6. Resolução da liderança da equipe
+        if (!empty($leaderId)) {
+            if (!in_array($leaderId, $targetMemberIds)) {
+                throw new Exception('O líder designado deve ser um dos integrantes selecionados para a equipe.');
+            }
+        } elseif (!$isOrgAdmin && $creator && (!isset($data['set_as_leader']) || $data['set_as_leader'])) {
+            $leaderId = $creator->id;
+        } else {
+            $leaderId = null;
+        }
+
+        return DB::transaction(function () use ($hackathon, $data, $targetMemberIds, $leaderId) {
             $baseSlug = Str::slug($data['name']);
             $slug = $baseSlug ?: 'equipe';
             $count = 1;
@@ -440,35 +626,159 @@ class RegistrationService
                 'description' => $data['description'] ?? null,
                 'area_of_focus' => $data['area_of_focus'] ?? null,
                 'technologies' => $data['technologies'] ?? null,
-                'leader_id' => $creator->id,
+                'leader_id' => $leaderId,
                 'is_looking_for_members' => $data['is_looking_for_members'] ?? true,
             ]);
 
-            // Adiciona o criador como líder
-            $team->members()->attach($creator->id, [
-                'id' => (string) Str::uuid(),
-                'role' => 'leader',
-                'joined_at' => now(),
+            // Cria o grupo de participação correspondente para o hackathon
+            $group = HackathonGroup::create([
+                'hackathon_id' => $hackathon->id,
+                'name' => $data['name'],
+                'slug' => $slug,
+                'description' => $data['description'] ?? null,
+                'area_of_focus' => $data['area_of_focus'] ?? null,
+                'technologies' => $data['technologies'] ?? null,
+                'leader_id' => $leaderId,
+                'origin_team_id' => $team->id,
+                'status' => 'active',
             ]);
 
-            // Se o criador já tem uma inscrição neste hackathon, associa ao time
-            $existingReg = HackathonRegistration::where('hackathon_id', $hackathon->id)
-                ->where('user_id', $creator->id)
-                ->first();
-
-            if ($existingReg) {
-                $existingReg->update([
-                    'team_id' => $team->id,
-                    'participation_type' => 'team',
-                    'is_eligible' => true,
-                    'notes' => null,
+            // Adiciona todos os membros selecionados
+            foreach ($targetMemberIds as $mId) {
+                $role = ($leaderId && $mId === $leaderId) ? 'leader' : 'member';
+                $team->members()->attach($mId, [
+                    'id' => (string) Str::uuid(),
+                    'role' => $role,
+                    'joined_at' => now(),
                 ]);
+
+                $group->members()->attach($mId, [
+                    'id' => (string) Str::uuid(),
+                    'role' => $role,
+                    'joined_at' => now(),
+                ]);
+
+                // Atualiza ou cria a inscrição do participante
+                $existingReg = HackathonRegistration::where('hackathon_id', $hackathon->id)
+                    ->where('user_id', $mId)
+                    ->first();
+
+                if ($existingReg) {
+                    $existingReg->update([
+                        'team_id' => $team->id,
+                        'hackathon_group_id' => $group->id,
+                        'participation_type' => 'team',
+                        'is_eligible' => true,
+                        'notes' => null,
+                    ]);
+                } else {
+                    HackathonRegistration::create([
+                        'hackathon_id' => $hackathon->id,
+                        'user_id' => $mId,
+                        'team_id' => $team->id,
+                        'hackathon_group_id' => $group->id,
+                        'participation_type' => 'team',
+                        'status' => $hackathon->auto_approve_registrations ? 'approved' : 'pending',
+                        'is_eligible' => true,
+                    ]);
+                }
             }
 
             AuditService::log('team.created_for_hackathon', $team, null, $team->toArray(), $hackathon->organization_id, $hackathon->id);
 
             return $team;
         });
+    }
+
+    /**
+     * Valida se o participante já pertence a outra equipe ou grupo no hackathon (regra de exclusividade absoluta)
+     */
+    public function ensureUserNotInAnotherTeam(string $hackathonId, string $userId, array|string|null $excludeTeamIds = null): void
+    {
+        $excludeTeamIds = !empty($excludeTeamIds) ? (array) $excludeTeamIds : [];
+
+        // 1. Verifica se já é membro de outra equipe vinculada a este hackathon
+        $existingTeamMember = DB::table('team_members')
+            ->join('teams', 'team_members.team_id', '=', 'teams.id')
+            ->join('users', 'team_members.user_id', '=', 'users.id')
+            ->where('teams.hackathon_id', $hackathonId)
+            ->where('team_members.user_id', $userId)
+            ->when(!empty($excludeTeamIds), function ($query) use ($excludeTeamIds) {
+                return $query->whereNotIn('teams.id', $excludeTeamIds);
+            })
+            ->select('users.name', 'teams.name as team_name')
+            ->first();
+
+        if ($existingTeamMember) {
+            throw new Exception("O participante {$existingTeamMember->name} já pertence à equipe '{$existingTeamMember->team_name}' neste Hackathon.");
+        }
+
+        // 2. Verifica se já é membro de um grupo de participação vinculado a este hackathon
+        $existingGroupMember = DB::table('hackathon_group_members')
+            ->join('hackathon_groups', 'hackathon_group_members.hackathon_group_id', '=', 'hackathon_groups.id')
+            ->join('users', 'hackathon_group_members.user_id', '=', 'users.id')
+            ->where('hackathon_groups.hackathon_id', $hackathonId)
+            ->where('hackathon_group_members.user_id', $userId)
+            ->when(!empty($excludeTeamIds), function ($query) use ($excludeTeamIds) {
+                return $query->whereNotIn('hackathon_groups.id', $excludeTeamIds);
+            })
+            ->select('users.name', 'hackathon_groups.name as team_name')
+            ->first();
+
+        if ($existingGroupMember) {
+            throw new Exception("O participante {$existingGroupMember->name} já pertence ao grupo '{$existingGroupMember->team_name}' neste Hackathon.");
+        }
+
+        // 3. Verifica se possui inscrição ativa vinculada a outra equipe/grupo neste hackathon
+        $existingRegistration = DB::table('hackathon_registrations')
+            ->join('users', 'hackathon_registrations.user_id', '=', 'users.id')
+            ->where('hackathon_registrations.hackathon_id', $hackathonId)
+            ->where('hackathon_registrations.user_id', $userId)
+            ->where(function ($q) {
+                $q->whereNotNull('hackathon_registrations.team_id')
+                  ->orWhereNotNull('hackathon_registrations.hackathon_group_id');
+            })
+            ->whereNotIn('hackathon_registrations.status', ['cancelled', 'rejected', 'disqualified'])
+            ->when(!empty($excludeTeamIds), function ($query) use ($excludeTeamIds) {
+                return $query->whereNotIn('hackathon_registrations.team_id', $excludeTeamIds)
+                             ->whereNotIn('hackathon_registrations.hackathon_group_id', $excludeTeamIds);
+            })
+            ->first();
+
+        if ($existingRegistration) {
+            throw new Exception("O participante {$existingRegistration->name} já possui inscrição ativa em outra equipe neste Hackathon.");
+        }
+    }
+
+    /**
+     * Valida se o usuário possui inscrição válida e elegível no Hackathon
+     */
+    public function ensureUserEligibleForHackathonTeam(Hackathon $hackathon, string $userId, bool $requireExisting = true): ?HackathonRegistration
+    {
+        $registration = HackathonRegistration::with('user')->where('hackathon_id', $hackathon->id)
+            ->where('user_id', $userId)
+            ->first();
+
+        if (!$registration) {
+            if ($requireExisting) {
+                $user = User::find($userId);
+                $userName = $user ? $user->name : 'O participante';
+                throw new Exception("{$userName} não possui inscrição registrada para o Hackathon '{$hackathon->title}'.");
+            }
+            return null;
+        }
+
+        if (in_array($registration->status, ['cancelled', 'rejected', 'disqualified'])) {
+            $userName = $registration->user?->name ?? 'O participante';
+            throw new Exception("A inscrição de {$userName} está com status '{$registration->status}' e não é elegível para ingressar em equipes.");
+        }
+
+        if (!$hackathon->auto_approve_registrations && $registration->status === 'pending') {
+            $userName = $registration->user?->name ?? 'O participante';
+            throw new Exception("A inscrição de {$userName} ainda está pendente de aprovação pela organização.");
+        }
+
+        return $registration;
     }
 
     /**
@@ -546,7 +856,9 @@ class RegistrationService
     private function validateRegistrationWindow(Hackathon $hackathon): void
     {
         $now = Carbon::now();
-        if ($hackathon->registration_start_date && $now->lt($hackathon->registration_start_date)) {
+        // Se o status for 'published', respeitamos a data de início agendada.
+        // Se o status for explicitamente 'registration', as inscrições já estão abertas por decisão do administrador.
+        if ($hackathon->status !== 'registration' && $hackathon->registration_start_date && $now->lt($hackathon->registration_start_date)) {
             throw new Exception('O período de inscrições para este Hackathon ainda não foi iniciado.');
         }
 
