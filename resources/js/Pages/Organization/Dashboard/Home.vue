@@ -3,6 +3,7 @@ import { Head, Link, usePage, useForm, router } from "@inertiajs/vue3";
 import { ref } from "vue";
 import CompetitorDashboard from "@/js/Components/Team/CompetitorDashboard.vue";
 import JudgeDashboard from "@/js/Components/Judge/JudgeDashboard.vue";
+import ModalDialog from "@/js/Components/Modals/ModalDialog.vue";
 
 const page = usePage();
 const { user, competitor, judge } = page.props;
@@ -123,35 +124,30 @@ const handleDeclineInvite = (id) => {
             />
         </div>
 
-        <div v-if="showCreateTeamModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <form @submit.prevent="submitTeam">
-                        <div class="modal-header border-bottom">
-                            <h5 class="modal-title fw-bold">Criar Nova Equipe</h5>
-                            <button type="button" class="btn-close" @click="showCreateTeamModal = false"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Nome da Equipe *</label>
-                                <input v-model="teamForm.name" type="text" class="form-control" placeholder="ex: ByteCraft, InovaTech" required />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Área de Foco</label>
-                                <input v-model="teamForm.area_of_focus" type="text" class="form-control" placeholder="ex: Fintech, IA, Saúde, Sustentabilidade" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Descrição</label>
-                                <textarea v-model="teamForm.description" class="form-control" rows="3" placeholder="Apresentação da equipe e objetivos..."></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="showCreateTeamModal = false">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" :disabled="teamForm.processing">Criar Equipe</button>
-                        </div>
-                    </form>
+        <ModalDialog
+            :is-visible="showCreateTeamModal"
+            title="Criar Nova Equipe"
+            size="md"
+            @close="showCreateTeamModal = false"
+        >
+            <form @submit.prevent="submitTeam">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nome da Equipe *</label>
+                    <input v-model="teamForm.name" type="text" class="form-control" placeholder="ex: ByteCraft, InovaTech" required />
                 </div>
-            </div>
-        </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Área de Foco</label>
+                    <input v-model="teamForm.area_of_focus" type="text" class="form-control" placeholder="ex: Fintech, IA, Saúde, Sustentabilidade" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Descrição</label>
+                    <textarea v-model="teamForm.description" class="form-control" rows="3" placeholder="Apresentação da equipe e objetivos..."></textarea>
+                </div>
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @click="showCreateTeamModal = false">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" :disabled="teamForm.processing">Criar Equipe</button>
+                </div>
+            </form>
+        </ModalDialog>
     </section>
 </template>

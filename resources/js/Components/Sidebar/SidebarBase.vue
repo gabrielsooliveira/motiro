@@ -110,7 +110,7 @@ const navbarClass = computed(() => {
                 </span>
             </div>
 
-            <nav class="sidebar-nav py-3 px-3">
+            <nav class="sidebar-nav py-3 px-3 fs-8">
                 <slot :close-menu="closeMenu"></slot>
             </nav>
         </div>

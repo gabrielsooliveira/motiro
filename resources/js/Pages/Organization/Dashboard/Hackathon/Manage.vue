@@ -1,6 +1,8 @@
 <script setup>
 import { Head, Link, useForm, router } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
+import ModalDialog from "@/js/Components/Modals/ModalDialog.vue";
+import ModalConfirmation from "@/js/Components/Modals/ModalConfirmation.vue";
 
 const props = defineProps({
     hackathon: {
@@ -100,16 +102,41 @@ const openStatusModal = () => {
     showStatusModal.value = true;
 };
 
+const confirmationState = ref({
+    isVisible: false,
+    message: "",
+    subMessage: "",
+    confirmText: "Confirmar",
+    cancelText: "Cancelar",
+    onConfirm: () => {},
+});
+
+const openConfirmation = ({ message, subMessage = "", confirmText = "Confirmar", cancelText = "Cancelar", onConfirm }) => {
+    confirmationState.value = {
+        isVisible: true,
+        message,
+        subMessage,
+        confirmText,
+        cancelText,
+        onConfirm,
+    };
+};
+
 const quickChangeStatus = (newStatus) => {
     if (newStatus === props.hackathon.status) return;
     const targetLabel = statusOptions.find(s => s.value === newStatus)?.label || newStatus;
-    if (confirm(`Deseja alterar o status do hackathon para "${targetLabel}"?`)) {
-        router.patch(route("hackathon.manage.status", props.hackathon.id), {
-            status: newStatus,
-        }, {
-            preserveScroll: true,
-        });
-    }
+    openConfirmation({
+        message: "Alterar Status",
+        subMessage: `Deseja alterar o status do hackathon para "${targetLabel}"?`,
+        confirmText: "Alterar Status",
+        onConfirm: () => {
+            router.patch(route("hackathon.manage.status", props.hackathon.id), {
+                status: newStatus,
+            }, {
+                preserveScroll: true,
+            });
+        },
+    });
 };
 
 const submitChangeStatus = () => {
@@ -225,15 +252,25 @@ const handleStatusUpdate = (registrationId, status) => {
 };
 
 const handleDistributeJudging = () => {
-    if (confirm("Deseja distribuir os projetos submetidos entre os juízes cadastrados?")) {
-        router.post(route("hackathon.manage.distribute", props.hackathon.id));
-    }
+    openConfirmation({
+        message: "Distribuir Projetos",
+        subMessage: "Deseja distribuir os projetos submetidos entre os juízes cadastrados?",
+        confirmText: "Distribuir",
+        onConfirm: () => {
+            router.post(route("hackathon.manage.distribute", props.hackathon.id));
+        },
+    });
 };
 
 const handlePublishResults = () => {
-    if (confirm("Deseja publicar os resultados e finalizar este Hackathon?")) {
-        router.post(route("hackathon.manage.publish", props.hackathon.id));
-    }
+    openConfirmation({
+        message: "Finalizar Hackathon",
+        subMessage: "Deseja publicar os resultados e finalizar este Hackathon?",
+        confirmText: "Publicar e Finalizar",
+        onConfirm: () => {
+            router.post(route("hackathon.manage.publish", props.hackathon.id));
+        },
+    });
 };
 
 const submitAddMember = () => {
@@ -246,9 +283,14 @@ const submitAddMember = () => {
 };
 
 const removeStaffMember = (memberId, name) => {
-    if (confirm(`Remover ${name} da equipe responsável deste hackathon?`)) {
-        router.delete(route("organization.hackathon.members.destroy", [props.hackathon.id, memberId]));
-    }
+    openConfirmation({
+        message: "Remover da Equipe",
+        subMessage: `Remover ${name} da equipe responsável deste hackathon?`,
+        confirmText: "Remover",
+        onConfirm: () => {
+            router.delete(route("organization.hackathon.members.destroy", [props.hackathon.id, memberId]));
+        },
+    });
 };
 
 const updateStaffRole = (memberId, newRole) => {
@@ -267,9 +309,14 @@ const submitAddChallenge = () => {
 };
 
 const deleteChallenge = (challengeId, title) => {
-    if (confirm(`Remover o desafio '${title}'?`)) {
-        router.delete(route("organization.hackathon.challenges.destroy", [props.hackathon.id, challengeId]));
-    }
+    openConfirmation({
+        message: "Remover Desafio",
+        subMessage: `Remover o desafio '${title}'?`,
+        confirmText: "Remover Desafio",
+        onConfirm: () => {
+            router.delete(route("organization.hackathon.challenges.destroy", [props.hackathon.id, challengeId]));
+        },
+    });
 };
 
 const openAssignModal = (reg) => {
@@ -306,9 +353,14 @@ const submitTransfer = () => {
 };
 
 const handleRemoveFromTeam = (reg) => {
-    if (confirm(`Remover o participante ${reg.user?.name || 'Inscrito'} da equipe ${reg.team?.name}?`)) {
-        router.delete(route("organization.hackathon.participants.remove_team", [props.hackathon.id, reg.id]));
-    }
+    openConfirmation({
+        message: "Remover da Equipe",
+        subMessage: `Remover o participante ${reg.user?.name || 'Inscrito'} da equipe ${reg.team?.name}?`,
+        confirmText: "Remover",
+        onConfirm: () => {
+            router.delete(route("organization.hackathon.participants.remove_team", [props.hackathon.id, reg.id]));
+        },
+    });
 };
 
 const openCreateTeamOrgModal = () => {
@@ -453,9 +505,14 @@ const cancelStageForm = () => {
 };
 
 const deleteStage = (stageId) => {
-    if (confirm("Deseja realmente remover esta etapa do cronograma?")) {
-        router.delete(route("hackathon.manage.stage.destroy", [props.hackathon.id, stageId]));
-    }
+    openConfirmation({
+        message: "Remover Etapa",
+        subMessage: "Deseja realmente remover esta etapa do cronograma?",
+        confirmText: "Remover",
+        onConfirm: () => {
+            router.delete(route("hackathon.manage.stage.destroy", [props.hackathon.id, stageId]));
+        },
+    });
 };
 
 const showAddCriterionForm = ref(false);
@@ -511,9 +568,14 @@ const cancelCriterionForm = () => {
 };
 
 const deleteCriterion = (critId) => {
-    if (confirm("Deseja realmente remover este critério de entrega?")) {
-        router.delete(route("hackathon.manage.criterion.destroy", [props.hackathon.id, critId]));
-    }
+    openConfirmation({
+        message: "Remover Critério",
+        subMessage: "Deseja realmente remover este critério de entrega?",
+        confirmText: "Remover",
+        onConfirm: () => {
+            router.delete(route("hackathon.manage.criterion.destroy", [props.hackathon.id, critId]));
+        },
+    });
 };
 </script>
 
@@ -1774,412 +1836,390 @@ const deleteCriterion = (critId) => {
         </div>
 
         <!-- Modal para Alteração de Status do Hackathon -->
-        <div v-if="showStatusModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <form @submit.prevent="submitChangeStatus">
-                        <div class="modal-header border-bottom">
-                            <div>
-                                <h5 class="modal-title fw-bold">Alterar Status do Hackathon</h5>
-                                <span class="small text-muted">{{ hackathon.title }}</span>
-                            </div>
-                            <button type="button" class="btn-close" @click="showStatusModal = false"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="alert alert-info border-info-subtle bg-info-subtle bg-opacity-25 rounded-3 mb-4 small">
-                                <font-awesome-icon :icon="['fas', 'circle-info']" class="me-1 text-primary" />
-                                <strong>Dica:</strong> Para que o hackathon apareça listado no <strong>catálogo de hackathons abertos</strong> dos participantes, selecione <strong>Inscrições Abertas</strong>.
-                            </div>
-
-                            <label class="form-label fw-semibold text-dark mb-2">Selecione o novo status:</label>
-                            <div class="row g-3">
-                                <div v-for="opt in statusOptions" :key="opt.value" class="col-md-6">
-                                    <div
-                                        class="card h-100 p-3 border-2 cursor-pointer transition-all"
-                                        :class="selectedNewStatus === opt.value ? 'border-primary bg-primary-subtle bg-opacity-25 shadow-sm' : 'border-light-subtle'"
-                                        @click="selectedNewStatus = opt.value"
-                                    >
-                                        <div class="d-flex align-items-center justify-content-between mb-2">
-                                            <div class="form-check mb-0">
-                                                <input
-                                                    class="form-check-input"
-                                                    type="radio"
-                                                    name="modal_status"
-                                                    :value="opt.value"
-                                                    v-model="selectedNewStatus"
-                                                    :id="'modal_status_' + opt.value"
-                                                />
-                                                <label class="form-check-label fw-bold text-dark cursor-pointer ms-1" :for="'modal_status_' + opt.value">
-                                                    {{ opt.label }}
-                                                </label>
-                                            </div>
-                                            <span class="badge" :class="opt.badgeClass">{{ opt.value }}</span>
-                                        </div>
-                                        <p class="small text-muted mb-0 mt-1">
-                                            {{ opt.description }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="showStatusModal = false">Cancelar</button>
-                            <button
-                                type="submit"
-                                class="btn btn-primary d-flex align-items-center gap-2"
-                                :disabled="isUpdatingStatus || selectedNewStatus === hackathon.status"
-                            >
-                                <font-awesome-icon v-if="isUpdatingStatus" :icon="['fas', 'spinner']" class="fa-spin" />
-                                <font-awesome-icon v-else :icon="['fas', 'check']" />
-                                <span>{{ isUpdatingStatus ? 'Atualizando...' : 'Confirmar Alteração de Status' }}</span>
-                            </button>
-                        </div>
-                    </form>
+        <ModalDialog
+            :is-visible="showStatusModal"
+            title="Alterar Status do Hackathon"
+            size="lg"
+            @close="showStatusModal = false"
+        >
+            <form @submit.prevent="submitChangeStatus">
+                <div class="mb-3 text-muted small">
+                    Hackathon: <strong class="text-dark">{{ hackathon.title }}</strong>
                 </div>
-            </div>
-        </div>
+                <div class="alert alert-info border-info-subtle bg-info-subtle bg-opacity-25 rounded-3 mb-4 small">
+                    <font-awesome-icon :icon="['fas', 'circle-info']" class="me-1 text-primary" />
+                    <strong>Dica:</strong> Para que o hackathon apareça listado no <strong>catálogo de hackathons abertos</strong> dos participantes, selecione <strong>Inscrições Abertas</strong>.
+                </div>
+
+                <label class="form-label fw-semibold text-dark mb-2">Selecione o novo status:</label>
+                <div class="row g-3 mb-4">
+                    <div v-for="opt in statusOptions" :key="opt.value" class="col-md-6">
+                        <div
+                            class="card h-100 p-3 border-2 cursor-pointer transition-all"
+                            :class="selectedNewStatus === opt.value ? 'border-primary bg-primary-subtle bg-opacity-25 shadow-sm' : 'border-light-subtle'"
+                            @click="selectedNewStatus = opt.value"
+                        >
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="form-check mb-0">
+                                    <input
+                                        class="form-check-input"
+                                        type="radio"
+                                        name="modal_status"
+                                        :value="opt.value"
+                                        v-model="selectedNewStatus"
+                                        :id="'modal_status_' + opt.value"
+                                    />
+                                    <label class="form-check-label fw-bold text-dark cursor-pointer ms-1" :for="'modal_status_' + opt.value">
+                                        {{ opt.label }}
+                                    </label>
+                                </div>
+                                <span class="badge" :class="opt.badgeClass">{{ opt.value }}</span>
+                            </div>
+                            <p class="small text-muted mb-0 mt-1">
+                                {{ opt.description }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @click="showStatusModal = false">Cancelar</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary d-flex align-items-center gap-2"
+                        :disabled="isUpdatingStatus || selectedNewStatus === hackathon.status"
+                    >
+                        <font-awesome-icon v-if="isUpdatingStatus" :icon="['fas', 'spinner']" class="fa-spin" />
+                        <font-awesome-icon v-else :icon="['fas', 'check']" />
+                        <span>{{ isUpdatingStatus ? 'Atualizando...' : 'Confirmar Alteração de Status' }}</span>
+                    </button>
+                </div>
+            </form>
+        </ModalDialog>
         
-        <div v-if="showAddMemberModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <form @submit.prevent="submitAddMember">
-                        <div class="modal-header border-bottom">
-                            <div>
-                                <h5 class="modal-title fw-bold">Adicionar Responsável ao Hackathon</h5>
-                                <span class="small text-muted">{{ hackathon.title }}</span>
-                            </div>
-                            <button type="button" class="btn-close" @click="showAddMemberModal = false"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Usuário da Instituição *</label>
-                                <select v-model="memberForm.user_id" class="form-select" required>
-                                    <option value="" disabled>Selecione um usuário da instituição</option>
-                                    <option v-for="user in availableOrgUsers" :key="user.id" :value="user.id">
-                                        {{ user.name }} ({{ user.email }})
-                                    </option>
-                                </select>
-                                <div v-if="availableOrgUsers.length === 0" class="form-text text-warning small mt-1">
-                                    Todos os membros da instituição já estão vinculados ou nenhum está cadastrado.
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Função neste Hackathon *</label>
-                                <select v-model="memberForm.role" class="form-select" required>
-                                    <option value="collaborator">Colaborador (Visualiza e apoia o hackathon)</option>
-                                    <option value="manager">Gestor (Gerencia etapas, inscrições e submissões)</option>
-                                    <option value="admin">Administrador (Controle total deste hackathon)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="showAddMemberModal = false">Cancelar</button>
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                                :disabled="memberForm.processing || !memberForm.user_id"
-                            >
-                                Adicionar à Equipe
-                            </button>
-                        </div>
-                    </form>
+        <!-- Modal: Adicionar Responsável ao Hackathon -->
+        <ModalDialog
+            :is-visible="showAddMemberModal"
+            title="Adicionar Responsável ao Hackathon"
+            size="md"
+            @close="showAddMemberModal = false"
+        >
+            <form @submit.prevent="submitAddMember">
+                <div class="mb-3 text-muted small">
+                    Hackathon: <strong class="text-dark">{{ hackathon.title }}</strong>
                 </div>
-            </div>
-        </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Usuário da Instituição *</label>
+                    <select v-model="memberForm.user_id" class="form-select" required>
+                        <option value="" disabled>Selecione um usuário da instituição</option>
+                        <option v-for="user in availableOrgUsers" :key="user.id" :value="user.id">
+                            {{ user.name }} ({{ user.email }})
+                        </option>
+                    </select>
+                    <div v-if="availableOrgUsers.length === 0" class="form-text text-warning small mt-1">
+                        Todos os membros da instituição já estão vinculados ou nenhum está cadastrado.
+                    </div>
+                </div>
 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Função neste Hackathon *</label>
+                    <select v-model="memberForm.role" class="form-select" required>
+                        <option value="collaborator">Colaborador (Visualiza e apoia o hackathon)</option>
+                        <option value="manager">Gestor (Gerencia etapas, inscrições e submissões)</option>
+                        <option value="admin">Administrador (Controle total deste hackathon)</option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @click="showAddMemberModal = false">Cancelar</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        :disabled="memberForm.processing || !memberForm.user_id"
+                    >
+                        Adicionar à Equipe
+                    </button>
+                </div>
+            </form>
+        </ModalDialog>
         
-        <div v-if="showAddChallengeModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <form @submit.prevent="submitAddChallenge">
-                        <div class="modal-header border-bottom">
-                            <div>
-                                <h5 class="modal-title fw-bold">Novo Desafio do Hackathon</h5>
-                                <span class="small text-muted">{{ hackathon.title }}</span>
-                            </div>
-                            <button type="button" class="btn-close" @click="showAddChallengeModal = false"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Título do Desafio *</label>
-                                <input v-model="challengeForm.title" type="text" class="form-control" placeholder="ex: Solução para Eficiência Energética Urbana" required />
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Descrição do Problema</label>
-                                <textarea v-model="challengeForm.description" class="form-control" rows="3" placeholder="Contextualize a dor a ser resolvida..."></textarea>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Requisitos / Regras Específicas</label>
-                                <textarea v-model="challengeForm.requirements" class="form-control" rows="2" placeholder="Tecnologias obrigatórias, formato de protótipo, etc."></textarea>
-                            </div>
-
-                            <div class="row g-2">
-                                <div class="col-8">
-                                    <label class="form-label fw-semibold">Premiação (opcional)</label>
-                                    <input v-model="challengeForm.prize" type="text" class="form-control" placeholder="ex: R$ 5.000 + Incubação" />
-                                </div>
-                                <div class="col-4">
-                                    <label class="form-label fw-semibold">Ordem</label>
-                                    <input v-model="challengeForm.order" type="number" class="form-control" min="1" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="showAddChallengeModal = false">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" :disabled="challengeForm.processing">
-                                Salvar Desafio
-                            </button>
-                        </div>
-                    </form>
+        <!-- Modal: Novo Desafio do Hackathon -->
+        <ModalDialog
+            :is-visible="showAddChallengeModal"
+            title="Novo Desafio do Hackathon"
+            size="md"
+            @close="showAddChallengeModal = false"
+        >
+            <form @submit.prevent="submitAddChallenge">
+                <div class="mb-3 text-muted small">
+                    Hackathon: <strong class="text-dark">{{ hackathon.title }}</strong>
                 </div>
-            </div>
-        </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Título do Desafio *</label>
+                    <input v-model="challengeForm.title" type="text" class="form-control" placeholder="ex: Solução para Eficiência Energética Urbana" required />
+                </div>
 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Descrição do Problema</label>
+                    <textarea v-model="challengeForm.description" class="form-control" rows="3" placeholder="Contextualize a dor a ser resolvida..."></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Requisitos / Regras Específicas</label>
+                    <textarea v-model="challengeForm.requirements" class="form-control" rows="2" placeholder="Tecnologias obrigatórias, formato de protótipo, etc."></textarea>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-8">
+                        <label class="form-label fw-semibold">Premiação (opcional)</label>
+                        <input v-model="challengeForm.prize" type="text" class="form-control" placeholder="ex: R$ 5.000 + Incubação" />
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label fw-semibold">Ordem</label>
+                        <input v-model="challengeForm.order" type="number" class="form-control" min="1" />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @click="showAddChallengeModal = false">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" :disabled="challengeForm.processing">
+                        Salvar Desafio
+                    </button>
+                </div>
+            </form>
+        </ModalDialog>
         
-        <div v-if="showAssignModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <form @submit.prevent="submitAssign">
-                        <div class="modal-header border-bottom">
-                            <div>
-                                <h5 class="modal-title fw-bold">Alocar Participante em Equipe</h5>
-                                <span class="small text-muted">{{ selectedRegistration?.user?.name }} ({{ selectedRegistration?.user?.email }})</span>
-                            </div>
-                            <button type="button" class="btn-close" @click="showAssignModal = false"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Selecione a Equipe de Destino *</label>
-                                <select v-model="assignForm.team_id" class="form-select" required>
-                                    <option value="" disabled>Escolha uma equipe com vagas disponíveis</option>
-                                    <option v-for="team in availableTeamsForAssignment" :key="team.id" :value="team.id">
-                                        {{ team.name }} ({{ team.members?.length || 0 }}/{{ hackathon.max_team_members }} integrantes) - Líder: {{ team.leader?.name || '-' }}
-                                    </option>
-                                </select>
-                                <div v-if="availableTeamsForAssignment.length === 0" class="form-text text-danger small mt-1">
-                                    Não há equipes com vagas abertas no momento. Crie uma nova equipe para alocar o participante.
-                                </div>
-                            </div>
-                            <div class="alert alert-info py-2 px-3 small mb-0">
-                                <font-awesome-icon :icon="['fas', 'info-circle']" class="me-1" />
-                                O participante será vinculado imediatamente e sua inscrição se tornará elegível para o hackathon.
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="showAssignModal = false">Cancelar</button>
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                                :disabled="assignForm.processing || !assignForm.team_id"
-                            >
-                                <span v-if="assignForm.processing" class="spinner-border spinner-border-sm me-1"></span>
-                                Confirmar Alocação
-                            </button>
-                        </div>
-                    </form>
+        <!-- Modal: Alocar Participante em Equipe -->
+        <ModalDialog
+            :is-visible="showAssignModal"
+            title="Alocar Participante em Equipe"
+            size="md"
+            @close="showAssignModal = false"
+        >
+            <form @submit.prevent="submitAssign">
+                <div class="mb-3 text-muted small">
+                    Participante: <strong class="text-dark">{{ selectedRegistration?.user?.name }}</strong> ({{ selectedRegistration?.user?.email }})
                 </div>
-            </div>
-        </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Selecione a Equipe de Destino *</label>
+                    <select v-model="assignForm.team_id" class="form-select" required>
+                        <option value="" disabled>Escolha uma equipe com vagas disponíveis</option>
+                        <option v-for="team in availableTeamsForAssignment" :key="team.id" :value="team.id">
+                            {{ team.name }} ({{ team.members?.length || 0 }}/{{ hackathon.max_team_members }} integrantes) - Líder: {{ team.leader?.name || '-' }}
+                        </option>
+                    </select>
+                    <div v-if="availableTeamsForAssignment.length === 0" class="form-text text-danger small mt-1">
+                        Não há equipes com vagas abertas no momento. Crie uma nova equipe para alocar o participante.
+                    </div>
+                </div>
+                <div class="alert alert-info py-2 px-3 small mb-3">
+                    <font-awesome-icon :icon="['fas', 'info-circle']" class="me-1" />
+                    O participante será vinculado imediatamente e sua inscrição se tornará elegível para o hackathon.
+                </div>
 
-        
-        <div v-if="showTransferModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <form @submit.prevent="submitTransfer">
-                        <div class="modal-header border-bottom">
-                            <div>
-                                <h5 class="modal-title fw-bold">Transferir de Equipe</h5>
-                                <span class="small text-muted">{{ selectedRegistration?.user?.name }} (Equipe Atual: {{ selectedRegistration?.team?.name }})</span>
-                            </div>
-                            <button type="button" class="btn-close" @click="showTransferModal = false"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Nova Equipe *</label>
-                                <select v-model="transferForm.target_team_id" class="form-select" required>
-                                    <option value="" disabled>Escolha a nova equipe de destino</option>
-                                    <option
-                                        v-for="team in (hackathon.teams || []).filter(t => t.id !== selectedRegistration?.team_id && (t.members?.length || 0) < hackathon.max_team_members)"
-                                        :key="team.id"
-                                        :value="team.id"
-                                    >
-                                        {{ team.name }} ({{ team.members?.length || 0 }}/{{ hackathon.max_team_members }} membros)
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="alert alert-warning py-2 px-3 small mb-0">
-                                <font-awesome-icon :icon="['fas', 'triangle-exclamation']" class="me-1" />
-                                O participante será removido da equipe atual e adicionado à nova equipe selecionada.
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="showTransferModal = false">Cancelar</button>
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                                :disabled="transferForm.processing || !transferForm.target_team_id"
-                            >
-                                <span v-if="transferForm.processing" class="spinner-border spinner-border-sm me-1"></span>
-                                Confirmar Transferência
-                            </button>
-                        </div>
-                    </form>
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @click="showAssignModal = false">Cancelar</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        :disabled="assignForm.processing || !assignForm.team_id"
+                    >
+                        <span v-if="assignForm.processing" class="spinner-border spinner-border-sm me-1"></span>
+                        Confirmar Alocação
+                    </button>
                 </div>
-            </div>
-        </div>
+            </form>
+        </ModalDialog>
+        
+        <!-- Modal: Transferir de Equipe -->
+        <ModalDialog
+            :is-visible="showTransferModal"
+            title="Transferir de Equipe"
+            size="md"
+            @close="showTransferModal = false"
+        >
+            <form @submit.prevent="submitTransfer">
+                <div class="mb-3 text-muted small">
+                    Participante: <strong class="text-dark">{{ selectedRegistration?.user?.name }}</strong> (Equipe Atual: {{ selectedRegistration?.team?.name }})
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nova Equipe *</label>
+                    <select v-model="transferForm.target_team_id" class="form-select" required>
+                        <option value="" disabled>Escolha a nova equipe de destino</option>
+                        <option
+                            v-for="team in (hackathon.teams || []).filter(t => t.id !== selectedRegistration?.team_id && (t.members?.length || 0) < hackathon.max_team_members)"
+                            :key="team.id"
+                            :value="team.id"
+                        >
+                            {{ team.name }} ({{ team.members?.length || 0 }}/{{ hackathon.max_team_members }} membros)
+                        </option>
+                    </select>
+                </div>
+                <div class="alert alert-warning py-2 px-3 small mb-3">
+                    <font-awesome-icon :icon="['fas', 'triangle-exclamation']" class="me-1" />
+                    O participante será removido da equipe atual e adicionado à nova equipe selecionada.
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @click="showTransferModal = false">Cancelar</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        :disabled="transferForm.processing || !transferForm.target_team_id"
+                    >
+                        <span v-if="transferForm.processing" class="spinner-border spinner-border-sm me-1"></span>
+                        Confirmar Transferência
+                    </button>
+                </div>
+            </form>
+        </ModalDialog>
 
         <!-- Modal: Criar Equipe pela Organização -->
-        <div v-if="showCreateTeamOrgModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <form @submit.prevent="submitCreateTeamOrg">
-                        <div class="modal-header border-bottom">
-                            <div>
-                                <h5 class="modal-title fw-bold">Criar Equipe (Organização)</h5>
-                                <span class="small text-muted">Criação administrativa de equipe para participantes do hackathon</span>
-                            </div>
-                            <button type="button" class="btn-close" @click="showCreateTeamOrgModal = false"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-7">
-                                    <label class="form-label fw-semibold">Nome da Equipe *</label>
-                                    <input
-                                        v-model="createTeamOrgForm.name"
-                                        type="text"
-                                        class="form-control"
-                                        placeholder="ex: Equipe Inovação Alpha"
-                                        required
-                                    />
-                                </div>
-                                <div class="col-md-5">
-                                    <label class="form-label fw-semibold">Área de Foco</label>
-                                    <input
-                                        v-model="createTeamOrgForm.area_of_focus"
-                                        type="text"
-                                        class="form-control"
-                                        placeholder="ex: Inteligência Artificial"
-                                    />
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Descrição do Projeto / Equipe</label>
-                                <textarea
-                                    v-model="createTeamOrgForm.description"
-                                    class="form-control"
-                                    rows="2"
-                                    placeholder="Breve descrição da proposta da equipe..."
-                                ></textarea>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Selecionar Participantes Inscritos *</label>
-                                <div v-if="individualRegistrations.length === 0" class="alert alert-secondary small py-2">
-                                    Não há participantes inscritos sem equipe disponíveis no momento.
-                                </div>
-                                <div v-else class="border rounded-3 p-3 bg-light scrollable-box">
-                                    <div
-                                        v-for="reg in individualRegistrations"
-                                        :key="reg.id"
-                                        class="form-check mb-2"
-                                    >
-                                        <input
-                                            class="form-check-input"
-                                            type="checkbox"
-                                            :value="reg.id"
-                                            :id="'reg_cb_' + reg.id"
-                                            v-model="createTeamOrgForm.member_registration_ids"
-                                        />
-                                        <label class="form-check-label small" :for="'reg_cb_' + reg.id">
-                                            <strong>{{ reg.user?.name }}</strong> ({{ reg.user?.email }})
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="form-text small">
-                                    Mínimo: {{ hackathon.min_team_members || 1 }} e Máximo: {{ hackathon.max_team_members }} participantes.
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Designar Líder (Opcional)</label>
-                                <select v-model="createTeamOrgForm.leader_id" class="form-select">
-                                    <option value="">(Deixar sem líder inicial — integrantes elegerão)</option>
-                                    <option
-                                        v-for="reg in selectedRegistrationsForNewTeam"
-                                        :key="reg.user_id"
-                                        :value="reg.user_id"
-                                    >
-                                        {{ reg.user?.name }} ({{ reg.user?.email }})
-                                    </option>
-                                </select>
-                                <div class="form-text small">
-                                    Você pode escolher um dos integrantes selecionados acima ou deixar a liderança sem definição inicial.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="showCreateTeamOrgModal = false">Cancelar</button>
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                                :disabled="createTeamOrgForm.processing || !createTeamOrgForm.name || createTeamOrgForm.member_registration_ids.length === 0"
-                            >
-                                <span v-if="createTeamOrgForm.processing" class="spinner-border spinner-border-sm me-1"></span>
-                                Criar Equipe
-                            </button>
-                        </div>
-                    </form>
+        <ModalDialog
+            :is-visible="showCreateTeamOrgModal"
+            title="Criar Equipe (Organização)"
+            size="lg"
+            @close="showCreateTeamOrgModal = false"
+        >
+            <form @submit.prevent="submitCreateTeamOrg">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label fw-semibold">Nome da Equipe *</label>
+                        <input
+                            v-model="createTeamOrgForm.name"
+                            type="text"
+                            class="form-control"
+                            placeholder="ex: Equipe Inovação Alpha"
+                            required
+                        />
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold">Área de Foco</label>
+                        <input
+                            v-model="createTeamOrgForm.area_of_focus"
+                            type="text"
+                            class="form-control"
+                            placeholder="ex: Inteligência Artificial"
+                        />
+                    </div>
                 </div>
-            </div>
-        </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Descrição do Projeto / Equipe</label>
+                    <textarea
+                        v-model="createTeamOrgForm.description"
+                        class="form-control"
+                        rows="2"
+                        placeholder="Breve descrição da proposta da equipe..."
+                    ></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Selecionar Participantes Inscritos *</label>
+                    <div v-if="individualRegistrations.length === 0" class="alert alert-secondary small py-2">
+                        Não há participantes inscritos sem equipe disponíveis no momento.
+                    </div>
+                    <div v-else class="border rounded-3 p-3 bg-light scrollable-box">
+                        <div
+                            v-for="reg in individualRegistrations"
+                            :key="reg.id"
+                            class="form-check mb-2"
+                        >
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                :value="reg.id"
+                                :id="'reg_cb_' + reg.id"
+                                v-model="createTeamOrgForm.member_registration_ids"
+                            />
+                            <label class="form-check-label small" :for="'reg_cb_' + reg.id">
+                                <strong>{{ reg.user?.name }}</strong> ({{ reg.user?.email }})
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-text small">
+                        Mínimo: {{ hackathon.min_team_members || 1 }} e Máximo: {{ hackathon.max_team_members }} participantes.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Designar Líder (Opcional)</label>
+                    <select v-model="createTeamOrgForm.leader_id" class="form-select">
+                        <option value="">(Deixar sem líder inicial — integrantes elegerão)</option>
+                        <option
+                            v-for="reg in selectedRegistrationsForNewTeam"
+                            :key="reg.user_id"
+                            :value="reg.user_id"
+                        >
+                            {{ reg.user?.name }} ({{ reg.user?.email }})
+                        </option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @click="showCreateTeamOrgModal = false">Cancelar</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        :disabled="createTeamOrgForm.processing || !createTeamOrgForm.name || createTeamOrgForm.member_registration_ids.length === 0"
+                    >
+                        <span v-if="createTeamOrgForm.processing" class="spinner-border spinner-border-sm me-1"></span>
+                        Criar Equipe
+                    </button>
+                </div>
+            </form>
+        </ModalDialog>
 
         <!-- Modal: Definir / Alterar Líder pela Organização -->
-        <div v-if="showSetLeaderModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <form @submit.prevent="submitSetLeader">
-                        <div class="modal-header border-bottom">
-                            <div>
-                                <h5 class="modal-title fw-bold">Definir Líder da Equipe</h5>
-                                <span class="small text-muted">{{ selectedTeamForLeader?.name }}</span>
-                            </div>
-                            <button type="button" class="btn-close" @click="showSetLeaderModal = false"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Selecione o Líder</label>
-                                <select v-model="setLeaderForm.leader_id" class="form-select">
-                                    <option value="">(Deixar em aberto / sem líder)</option>
-                                    <option
-                                        v-for="member in (selectedTeamForLeader?.members || [])"
-                                        :key="member.id"
-                                        :value="member.id"
-                                    >
-                                        {{ member.name }} ({{ member.email }}) {{ member.id === selectedTeamForLeader?.leader_id ? '— [Atual Líder]' : '' }}
-                                    </option>
-                                </select>
-                                <div class="form-text small">
-                                    Apenas integrantes que pertençam a esta equipe podem ser definidos como líder.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="showSetLeaderModal = false">Cancelar</button>
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                                :disabled="setLeaderForm.processing"
-                            >
-                                <span v-if="setLeaderForm.processing" class="spinner-border spinner-border-sm me-1"></span>
-                                Salvar Liderança
-                            </button>
-                        </div>
-                    </form>
+        <ModalDialog
+            :is-visible="showSetLeaderModal"
+            title="Definir Líder da Equipe"
+            size="md"
+            @close="showSetLeaderModal = false"
+        >
+            <form @submit.prevent="submitSetLeader">
+                <div class="mb-3 text-muted small">
+                    Equipe: <strong class="text-dark">{{ selectedTeamForLeader?.name }}</strong>
                 </div>
-            </div>
-        </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Selecione o Líder</label>
+                    <select v-model="setLeaderForm.leader_id" class="form-select">
+                        <option value="">(Deixar em aberto / sem líder)</option>
+                        <option
+                            v-for="member in (selectedTeamForLeader?.members || [])"
+                            :key="member.id"
+                            :value="member.id"
+                        >
+                            {{ member.name }} ({{ member.email }}) {{ member.id === selectedTeamForLeader?.leader_id ? '— [Atual Líder]' : '' }}
+                        </option>
+                    </select>
+                    <div class="form-text small">
+                        Apenas integrantes que pertençam a esta equipe podem ser definidos como líder.
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @click="showSetLeaderModal = false">Cancelar</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        :disabled="setLeaderForm.processing"
+                    >
+                        <span v-if="setLeaderForm.processing" class="spinner-border spinner-border-sm me-1"></span>
+                        Salvar Liderança
+                    </button>
+                </div>
+            </form>
+        </ModalDialog>
+
+        <!-- Confirmação Unificada de Ações -->
+        <ModalConfirmation
+            :is-visible="confirmationState.isVisible"
+            :message="confirmationState.message"
+            :sub-message="confirmationState.subMessage"
+            :confirm-text="confirmationState.confirmText"
+            :cancel-text="confirmationState.cancelText"
+            @confirm="confirmationState.onConfirm(); confirmationState.isVisible = false"
+            @close="confirmationState.isVisible = false"
+        />
 </template>

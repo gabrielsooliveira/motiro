@@ -106,9 +106,27 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    /**
+     * Alias de domínio orientado a Guildas Permanentes.
+     */
+    public function guilds()
+    {
+        return $this->teams();
+    }
+
     public function permanentTeams()
     {
         return $this->teams();
+    }
+
+    public function createdTeams()
+    {
+        return $this->hasMany(Team::class, 'creator_id');
+    }
+
+    public function createdGuilds()
+    {
+        return $this->createdTeams();
     }
 
     public function ledTeams()

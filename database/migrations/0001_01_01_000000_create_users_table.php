@@ -15,11 +15,35 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('username')->unique();
+            $table->string('avatar')->nullable();
             $table->text('bio')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            // Informations
+            $table->string('city')->nullable();
+            $table->string('state', 50)->nullable();
+            $table->string('education_institution')->nullable();
+            $table->string('education_course')->nullable();
+            $table->text('professional_experience')->nullable();
+            $table->json('skills')->nullable();
+            $table->json('technologies')->nullable();
+            $table->enum('type_user', ['personal','organization'])->default('personal');
+            
+            // Links
+            $table->string('github_url')->nullable();
+            $table->string('linkedin_url')->nullable();
+            $table->string('portfolio_url')->nullable();
+            $table->string('website_url')->nullable();
+
+            // LGPD / Privacy
+            $table->boolean('is_profile_public')->default(false);
+            $table->timestamp('lgpd_consent_at')->nullable();
+            $table->timestamp('terms_accepted_at')->nullable();
+            
+            // Data
             $table->rememberToken();
             $table->timestamps();
         });

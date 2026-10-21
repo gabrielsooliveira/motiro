@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug');
             $table->text('description')->nullable();
-            $table->string('area_of_focus')->nullable();
             $table->json('technologies')->nullable();
             $table->uuid('leader_id')->nullable();
             $table->uuid('origin_team_id')->nullable(); // Optional reference if spawned from a guild
@@ -72,7 +71,6 @@ return new class extends Migration
                         'name' => $ht->name,
                         'slug' => $ht->slug,
                         'description' => $ht->description,
-                        'area_of_focus' => $ht->area_of_focus,
                         'technologies' => $ht->technologies,
                         'leader_id' => $ht->leader_id,
                         'origin_team_id' => null,

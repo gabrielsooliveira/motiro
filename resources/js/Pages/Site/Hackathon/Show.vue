@@ -1,6 +1,8 @@
 <script setup>
 import { Head, Link, router, useForm, usePage } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
+import ModalDialog from "@/js/Components/Modals/ModalDialog.vue";
+import ModalConfirmation from "@/js/Components/Modals/ModalConfirmation.vue";
 
 const props = defineProps({
     hackathon: {
@@ -77,10 +79,14 @@ const submitDirectIndividual = () => {
     submitRegistration();
 };
 
+const showCancelConfirm = ref(false);
+
 const cancelRegistration = () => {
-    if (!confirm("Tem certeza que deseja cancelar sua inscrição neste Hackathon?")) {
-        return;
-    }
+    showCancelConfirm.value = true;
+};
+
+const executeCancelRegistration = () => {
+    showCancelConfirm.value = false;
     const regId = props.userRegistration?.id;
     if (regId) {
         router.delete(route("registration.cancel", regId), {
@@ -426,98 +432,103 @@ const getStatusBadge = (status) => {
         </div>
 
         
-        <div v-if="showRegisterModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content border-0 shadow rounded-4">
-                    <form @submit.prevent="submitRegistration">
-                        <div class="modal-header border-bottom">
-                            <h5 class="modal-title fw-bold">Inscrição no Hackathon</h5>
-                            <button type="button" class="btn-close" @click="showRegisterModal = false"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            
-                            <div v-if="allowsIndividual && allowsTeam" class="mb-4">
-                                <label class="form-label fw-semibold mb-2">Como você deseja se inscrever?</label>
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <div
-                                            class="border rounded-3 p-3 text-center cursor-pointer h-100"
-                                            :class="{ 'border-primary bg-primary bg-opacity-10 text-primary fw-bold': registrationForm.participation_type === 'individual', 'bg-light': registrationForm.participation_type !== 'individual' }"
-                                            @click="setParticipationType('individual')"
-                                        >
-                                            <font-awesome-icon :icon="['fas', 'user']" class="fs-4 mb-2 d-block mx-auto" />
-                                            <span>Individualmente</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div
-                                            class="border rounded-3 p-3 text-center cursor-pointer h-100"
-                                            :class="{ 'border-primary bg-primary bg-opacity-10 text-primary fw-bold': registrationForm.participation_type === 'team', 'bg-light': registrationForm.participation_type !== 'team' }"
-                                            @click="setParticipationType('team')"
-                                        >
-                                            <font-awesome-icon :icon="['fas', 'users']" class="fs-4 mb-2 d-block mx-auto" />
-                                            <span>Com Equipe</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            
-                            <div v-if="registrationForm.participation_type === 'individual'" class="alert alert-info py-2 px-3 small mb-3">
-                                <font-awesome-icon :icon="['fas', 'circle-info']" class="me-1" />
-                                Você será inscrito individualmente. 
-                                <span v-if="allowsTeam">Caso deseje, poderá integrar ou criar uma equipe posteriormente.</span>
-                            </div>
-
-                            
-                            <div v-if="registrationForm.participation_type === 'team'" class="mb-3">
-                                <template v-if="userTeams.length > 0">
-                                    <label class="form-label fw-semibold">Selecione sua Equipe *</label>
-                                    <select v-model="registrationForm.team_id" class="form-select" required>
-                                        <option value="" disabled>Selecione uma equipe...</option>
-                                        <option v-for="team in userTeams" :key="team.id" :value="team.id">
-                                            {{ team.name }} ({{ team.members ? team.members.length : 1 }} integrante(s))
-                                        </option>
-                                    </select>
-                                    <small class="text-muted d-block mt-1">
-                                        A equipe deve cumprir entre {{ hackathon.min_team_members }} e {{ hackathon.max_team_members }} integrantes.
-                                    </small>
-                                </template>
-                                <template v-else>
-                                    <div class="alert alert-warning py-2 small mb-2">
-                                        Você ainda não integra nenhuma equipe. Você pode criar uma equipe agora ou inscrever-se individualmente para aguardar alocação.
-                                    </div>
-                                    <Link :href="route('dashboard.index')" class="btn btn-sm btn-outline-primary w-100 mb-2">
-                                        Criar Nova Equipe no Dashboard
-                                    </Link>
-                                    <button
-                                        v-if="allowsIndividual"
-                                        type="button"
-                                        class="btn btn-sm btn-secondary w-100"
-                                        @click="setParticipationType('individual')"
-                                    >
-                                        Mudar para Inscrição Individual
-                                    </button>
-                                </template>
-                            </div>
-
-                            <div v-if="registrationForm.errors.registration" class="alert alert-danger py-2 small">
-                                {{ registrationForm.errors.registration }}
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="showRegisterModal = false">Cancelar</button>
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                                :disabled="registrationForm.processing || (registrationForm.participation_type === 'team' && userTeams.length === 0)"
+        <!-- Modal de Inscrição no Hackathon -->
+        <ModalDialog
+            :is-visible="showRegisterModal"
+            title="Inscrição no Hackathon"
+            size="md"
+            @close="showRegisterModal = false"
+        >
+            <form @submit.prevent="submitRegistration">
+                <div v-if="allowsIndividual && allowsTeam" class="mb-4">
+                    <label class="form-label fw-semibold mb-2">Como você deseja se inscrever?</label>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div
+                                class="border rounded-3 p-3 text-center cursor-pointer h-100"
+                                :class="{ 'border-primary bg-primary bg-opacity-10 text-primary fw-bold': registrationForm.participation_type === 'individual', 'bg-light': registrationForm.participation_type !== 'individual' }"
+                                @click="setParticipationType('individual')"
                             >
-                                Confirmar Inscrição
-                            </button>
+                                <font-awesome-icon :icon="['fas', 'user']" class="fs-4 mb-2 d-block mx-auto" />
+                                <span>Individualmente</span>
+                            </div>
                         </div>
-                    </form>
+                        <div class="col-6">
+                            <div
+                                class="border rounded-3 p-3 text-center cursor-pointer h-100"
+                                :class="{ 'border-primary bg-primary bg-opacity-10 text-primary fw-bold': registrationForm.participation_type === 'team', 'bg-light': registrationForm.participation_type !== 'team' }"
+                                @click="setParticipationType('team')"
+                            >
+                                <font-awesome-icon :icon="['fas', 'users']" class="fs-4 mb-2 d-block mx-auto" />
+                                <span>Com Equipe</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+
+                <div v-if="registrationForm.participation_type === 'individual'" class="alert alert-info py-2 px-3 small mb-3">
+                    <font-awesome-icon :icon="['fas', 'circle-info']" class="me-1" />
+                    Você será inscrito individualmente. 
+                    <span v-if="allowsTeam">Caso deseje, poderá integrar ou criar uma equipe posteriormente.</span>
+                </div>
+
+                <div v-if="registrationForm.participation_type === 'team'" class="mb-3">
+                    <template v-if="userTeams.length > 0">
+                        <label class="form-label fw-semibold">Selecione sua Equipe *</label>
+                        <select v-model="registrationForm.team_id" class="form-select" required>
+                            <option value="" disabled>Selecione uma equipe...</option>
+                            <option v-for="team in userTeams" :key="team.id" :value="team.id">
+                                {{ team.name }} ({{ team.members ? team.members.length : 1 }} integrante(s))
+                            </option>
+                        </select>
+                        <small class="text-muted d-block mt-1">
+                            A equipe deve cumprir entre {{ hackathon.min_team_members }} e {{ hackathon.max_team_members }} integrantes.
+                        </small>
+                    </template>
+                    <template v-else>
+                        <div class="alert alert-warning py-2 small mb-2">
+                            Você ainda não integra nenhuma equipe. Você pode criar uma equipe agora ou inscrever-se individualmente para aguardar alocação.
+                        </div>
+                        <Link :href="route('dashboard.index')" class="btn btn-sm btn-outline-primary w-100 mb-2">
+                            Criar Nova Equipe no Dashboard
+                        </Link>
+                        <button
+                            v-if="allowsIndividual"
+                            type="button"
+                            class="btn btn-sm btn-secondary w-100"
+                            @click="setParticipationType('individual')"
+                        >
+                            Mudar para Inscrição Individual
+                        </button>
+                    </template>
+                </div>
+
+                <div v-if="registrationForm.errors.registration" class="alert alert-danger py-2 small">
+                    {{ registrationForm.errors.registration }}
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @click="showRegisterModal = false">Cancelar</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        :disabled="registrationForm.processing || (registrationForm.participation_type === 'team' && userTeams.length === 0)"
+                    >
+                        Confirmar Inscrição
+                    </button>
+                </div>
+            </form>
+        </ModalDialog>
+
+        <!-- Modal de Confirmação de Cancelamento -->
+        <ModalConfirmation
+            :is-visible="showCancelConfirm"
+            message="Cancelar Inscrição"
+            sub-message="Tem certeza que deseja cancelar sua inscrição neste Hackathon?"
+            confirm-text="Sim, Cancelar"
+            cancel-text="Voltar"
+            @confirm="executeCancelRegistration"
+            @close="showCancelConfirm = false"
+        />
     </div>
 </template>

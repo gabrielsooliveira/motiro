@@ -11,38 +11,34 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('teams', function (Blueprint $table) {
+        Schema::create('guilds', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->string('logo')->nullable();
-            $table->json('technologies')->nullable();
-            $table->string('area_of_focus')->nullable();
             $table->uuid('leader_id');
-            $table->json('links')->nullable();
-            $table->boolean('is_looking_for_members')->default(false);
             $table->timestamps();
 
             $table->foreign('leader_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        Schema::create('team_members', function (Blueprint $table) {
+        Schema::create('guild_members', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('team_id');
+            $table->uuid('guild_id');
             $table->uuid('user_id');
             $table->enum('role', ['leader', 'member'])->default('member');
             $table->timestamp('joined_at')->useCurrent();
             $table->timestamps();
 
-            $table->unique(['team_id', 'user_id']);
-            $table->foreign('team_id')->references('id')->on('teams')->onDelete('cascade');
+            $table->unique(['guild_id', 'user_id']);
+            $table->foreign('guild_id')->references('id')->on('guilds')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        Schema::create('team_invitations', function (Blueprint $table) {
+        Schema::create('guild_invitations', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('team_id');
+            $table->uuid('guild_id');
             $table->uuid('inviter_id');
             $table->uuid('invitee_id')->nullable();
             $table->string('email')->nullable();
@@ -50,7 +46,7 @@ return new class extends Migration
             $table->string('token', 64)->unique();
             $table->timestamps();
 
-            $table->foreign('team_id')->references('id')->on('teams')->onDelete('cascade');
+            $table->foreign('guild_id')->references('id')->on('guilds')->onDelete('cascade');
             $table->foreign('inviter_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('invitee_id')->references('id')->on('users')->onDelete('cascade');
         });
@@ -61,8 +57,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('team_invitations');
-        Schema::dropIfExists('team_members');
-        Schema::dropIfExists('teams');
+        Schema::dropIfExists('guild_invitations');
+        Schema::dropIfExists('guild_members');
+        Schema::dropIfExists('guilds');
     }
 };

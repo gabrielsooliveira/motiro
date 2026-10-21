@@ -17,7 +17,33 @@ class TeamInvitation extends Model
         'status',
         'type',
         'token',
+        'expires_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'expires_at' => 'datetime',
+        ];
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expires_at !== null && $this->expires_at->isPast();
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending' && !$this->isExpired();
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            });
+    }
 
     public function isInvite(): bool
     {

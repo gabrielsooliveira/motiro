@@ -18,12 +18,26 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->dateTime('start_date')->nullable();
             $table->dateTime('end_date')->nullable();
-            $table->enum('status', ['draft', 'published', 'registration', 'submission', 'voting', 'finished'])->default('draft');
+            $table->enum('status', ['draft', 'published', 'in_progress', 'finished'])->default('draft');
             $table->string('banner_url')->nullable();
             $table->string('logo_url')->nullable();
-            $table->string('livestream_url')->nullable();
-            $table->timestamps();
+            $table->string('rules_file')->nullable();
+            $table->string('slug')->unique();
+            $table->string('category')->nullable();
+            $table->json('tags')->nullable();
+            $table->string('location')->nullable();
+            $table->enum('modality', ['presential', 'online', 'hybrid'])->default('online');
+            $table->string('external_website')->nullable();
+            $table->string('contact_email')->nullable();
+            $table->string('contact_phone')->nullable();
 
+            // Limits
+            $table->unsignedInteger('max_participants')->nullable();
+            $table->unsignedInteger('max_teams')->nullable();
+            $table->unsignedSmallInteger('min_team_members')->default(1);
+            $table->unsignedSmallInteger('max_team_members')->default(5);
+
+            $table->timestamps();
             $table->foreign('organization_id')->references('id')->on('organizations')->onDelete('cascade');
         });
     }

@@ -1,6 +1,8 @@
 <script setup>
 import { Head, Link, useForm, router } from "@inertiajs/vue3";
 import { ref } from "vue";
+import ModalDialog from "@/js/Components/Modals/ModalDialog.vue";
+import ModalConfirmation from "@/js/Components/Modals/ModalConfirmation.vue";
 
 const props = defineProps({
     organization: {
@@ -61,23 +63,58 @@ const submitUpdateRole = () => {
     });
 };
 
+const confirmationState = ref({
+    isVisible: false,
+    message: "",
+    subMessage: "",
+    confirmText: "Confirmar",
+    cancelText: "Cancelar",
+    onConfirm: () => {},
+});
+
+const openConfirmation = ({ message, subMessage = "", confirmText = "Confirmar", cancelText = "Cancelar", onConfirm }) => {
+    confirmationState.value = {
+        isVisible: true,
+        message,
+        subMessage,
+        confirmText,
+        cancelText,
+        onConfirm,
+    };
+};
+
 const toggleMemberStatus = (member) => {
     const action = member.is_active ? "desativar" : "ativar";
-    if (confirm(`Deseja realmente ${action} o acesso de ${member.name} nesta instituição?`)) {
-        router.put(route("organization.users.toggle_status", member.id));
-    }
+    openConfirmation({
+        message: `${member.is_active ? 'Desativar' : 'Ativar'} Usuário`,
+        subMessage: `Deseja realmente ${action} o acesso de ${member.name} nesta instituição?`,
+        confirmText: member.is_active ? "Desativar" : "Ativar",
+        onConfirm: () => {
+            router.put(route("organization.users.toggle_status", member.id));
+        },
+    });
 };
 
 const removeMember = (member) => {
-    if (confirm(`Tem certeza que deseja remover o vínculo de ${member.name} com a instituição? Todos os acessos a hackathons desta organização serão revogados.`)) {
-        router.delete(route("organization.users.remove", member.id));
-    }
+    openConfirmation({
+        message: "Remover Vínculo",
+        subMessage: `Tem certeza que deseja remover o vínculo de ${member.name} com a instituição? Todos os acessos a hackathons desta organização serão revogados.`,
+        confirmText: "Remover",
+        onConfirm: () => {
+            router.delete(route("organization.users.remove", member.id));
+        },
+    });
 };
 
 const cancelInvite = (invitationId) => {
-    if (confirm("Deseja realmente cancelar este convite?")) {
-        router.delete(route("organization.invitations.cancel", invitationId));
-    }
+    openConfirmation({
+        message: "Cancelar Convite",
+        subMessage: "Deseja realmente cancelar este convite?",
+        confirmText: "Cancelar Convite",
+        onConfirm: () => {
+            router.delete(route("organization.invitations.cancel", invitationId));
+        },
+    });
 };
 
 const copyInviteLink = (token) => {
@@ -318,98 +355,103 @@ const getRoleBadge = (role) => {
         </div>
 
         
-        <div v-if="showInviteModal" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <form @submit.prevent="submitInvite">
-                        <div class="modal-header border-bottom">
-                            <div>
-                                <h5 class="modal-title fw-bold">Convidar para a Instituição</h5>
-                                <span class="small text-muted">{{ organization.name }}</span>
-                            </div>
-                            <button type="button" class="btn-close" @click="showInviteModal = false"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">E-mail do Usuário *</label>
-                                <input
-                                    v-model="inviteForm.email"
-                                    type="email"
-                                    class="form-control"
-                                    placeholder="usuario@exemplo.com"
-                                    required
-                                />
-                                <div class="form-text small">
-                                    Se o usuário já possuir conta no Motirõ, será vinculado imediatamente. Caso contrário, um convite será gerado.
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Função / Nível de Acesso *</label>
-                                <select v-model="inviteForm.role" class="form-select" required>
-                                    <option value="collaborator">Colaborador (Acesso aos hackathons autorizados)</option>
-                                    <option value="manager">Gestor de Hackathon (Gerencia hackathons designados)</option>
-                                    <option value="admin">Administrador da Instituição (Acesso total)</option>
-                                </select>
-                            </div>
-
-                            
-                            <div class="p-3 bg-light rounded-3 small text-muted border">
-                                <div v-if="inviteForm.role === 'admin'">
-                                    <strong class="text-primary d-block mb-1">Administrador da Instituição:</strong>
-                                    Pode gerenciar a instituição, convidar/remover usuários, criar e editar todos os hackathons e definir responsáveis.
-                                </div>
-                                <div v-else-if="inviteForm.role === 'manager'">
-                                    <strong class="text-success d-block mb-1">Gestor de Hackathon:</strong>
-                                    Pode gerenciar hackathons aos quais foi vinculado, gerenciar etapas, desafios, equipes e submissões. Não administra toda a instituição.
-                                </div>
-                                <div v-else>
-                                    <strong class="text-info d-block mb-1">Colaborador:</strong>
-                                    Acesso restrito aos hackathons e funcionalidades explicitamente atribuídos a ele pela equipe.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="showInviteModal = false">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" :disabled="inviteForm.processing">
-                                {{ inviteForm.processing ? 'Enviando...' : 'Enviar Convite' }}
-                            </button>
-                        </div>
-                    </form>
+        <!-- Modal de Convite -->
+        <ModalDialog
+            :is-visible="showInviteModal"
+            title="Convidar para a Instituição"
+            size="md"
+            @close="showInviteModal = false"
+        >
+            <form @submit.prevent="submitInvite">
+                <div class="mb-3 text-muted small">
+                    Instituição: <strong class="text-dark">{{ organization.name }}</strong>
                 </div>
-            </div>
-        </div>
 
-        
-        <div v-if="editingMember" class="modal fade show d-block bg-dark bg-opacity-50" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <form @submit.prevent="submitUpdateRole">
-                        <div class="modal-header border-bottom">
-                            <div>
-                                <h5 class="modal-title fw-bold">Alterar Função do Usuário</h5>
-                                <span class="small text-muted">{{ editingMember.name }} ({{ editingMember.email }})</span>
-                            </div>
-                            <button type="button" class="btn-close" @click="editingMember = null"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Nova Função</label>
-                                <select v-model="roleForm.role" class="form-select" required>
-                                    <option value="collaborator">Colaborador</option>
-                                    <option value="manager">Gestor de Hackathon</option>
-                                    <option value="admin">Administrador da Instituição</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light rounded-bottom-4">
-                            <button type="button" class="btn btn-secondary" @click="editingMember = null">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" :disabled="roleForm.processing">
-                                Salvar Alteração
-                            </button>
-                        </div>
-                    </form>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">E-mail do Usuário *</label>
+                    <input
+                        v-model="inviteForm.email"
+                        type="email"
+                        class="form-control"
+                        placeholder="usuario@exemplo.com"
+                        required
+                    />
+                    <div class="form-text small">
+                        Se o usuário já possuir conta no Motirõ, será vinculado imediatamente. Caso contrário, um convite será gerado.
+                    </div>
                 </div>
-            </div>
-        </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Função / Nível de Acesso *</label>
+                    <select v-model="inviteForm.role" class="form-select" required>
+                        <option value="collaborator">Colaborador (Acesso aos hackathons autorizados)</option>
+                        <option value="manager">Gestor de Hackathon (Gerencia hackathons designados)</option>
+                        <option value="admin">Administrador da Instituição (Acesso total)</option>
+                    </select>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 small text-muted border mb-3">
+                    <div v-if="inviteForm.role === 'admin'">
+                        <strong class="text-primary d-block mb-1">Administrador da Instituição:</strong>
+                        Pode gerenciar a instituição, convidar/remover usuários, criar e editar todos os hackathons e definir responsáveis.
+                    </div>
+                    <div v-else-if="inviteForm.role === 'manager'">
+                        <strong class="text-success d-block mb-1">Gestor de Hackathon:</strong>
+                        Pode gerenciar hackathons aos quais foi vinculado, gerenciar etapas, desafios, equipes e submissões. Não administra toda a instituição.
+                    </div>
+                    <div v-else>
+                        <strong class="text-info d-block mb-1">Colaborador:</strong>
+                        Acesso restrito aos hackathons e funcionalidades explicitamente atribuídos a ele pela equipe.
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @click="showInviteModal = false">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" :disabled="inviteForm.processing">
+                        {{ inviteForm.processing ? 'Enviando...' : 'Enviar Convite' }}
+                    </button>
+                </div>
+            </form>
+        </ModalDialog>
+
+        <!-- Modal de Alteração de Papel -->
+        <ModalDialog
+            :is-visible="Boolean(editingMember)"
+            title="Alterar Função do Usuário"
+            size="md"
+            @close="editingMember = null"
+        >
+            <form v-if="editingMember" @submit.prevent="submitUpdateRole">
+                <div class="mb-3 text-muted small">
+                    Usuário: <strong class="text-dark">{{ editingMember.name }}</strong> ({{ editingMember.email }})
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nova Função</label>
+                    <select v-model="roleForm.role" class="form-select" required>
+                        <option value="collaborator">Colaborador</option>
+                        <option value="manager">Gestor de Hackathon</option>
+                        <option value="admin">Administrador da Instituição</option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary" @click="editingMember = null">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" :disabled="roleForm.processing">
+                        Salvar Alteração
+                    </button>
+                </div>
+            </form>
+        </ModalDialog>
+
+        <!-- Confirmação Unificada -->
+        <ModalConfirmation
+            :is-visible="confirmationState.isVisible"
+            :message="confirmationState.message"
+            :sub-message="confirmationState.subMessage"
+            :confirm-text="confirmationState.confirmText"
+            :cancel-text="confirmationState.cancelText"
+            @confirm="confirmationState.onConfirm(); confirmationState.isVisible = false"
+            @close="confirmationState.isVisible = false"
+        />
 </template>

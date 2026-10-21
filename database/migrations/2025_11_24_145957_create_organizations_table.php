@@ -30,7 +30,7 @@ return new class extends Migration
         Schema::create('organization_user', function (Blueprint $table) {
             $table->uuid('organization_id');
             $table->uuid('user_id');
-            $table->string('role')->default('collaborator');
+            $table->enum('role', ['collaborator', 'admin'])->default(['collaborator']);
             $table->timestamps();
 
             $table->primary(['organization_id', 'user_id']);

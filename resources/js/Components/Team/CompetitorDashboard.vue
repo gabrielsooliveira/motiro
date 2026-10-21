@@ -183,56 +183,56 @@ const getStageStatus = (stage) => {
             </div>
         </div>
 
-        <!-- Navegação Conceitual das Seções do Participante -->
+        <!-- Navegação das Seções do Participante -->
         <ul class="nav nav-pills mb-4 gap-2 border-bottom pb-3 flex-wrap">
             <li class="nav-item">
-                <button
+                <Link
                     class="nav-link"
-                    :class="{ active: activeSection === 'overview' }"
-                    @click="activeSection = 'overview'"
+                    :class="{ active: $page.url === '/participante' || $page.url === '/participante/dashboard' || $page.url === '/dashboard' }"
+                    :href="route('participant.dashboard')"
                 >
                     <font-awesome-icon :icon="['fas', 'gauge-high']" class="me-1" />
                     Visão Geral
-                </button>
+                </Link>
             </li>
             <li class="nav-item">
-                <button
+                <Link
                     class="nav-link"
-                    :class="{ active: activeSection === 'teams' }"
-                    @click="activeSection = 'teams'"
+                    :class="{ active: $page.url.startsWith('/participante/guildas') || $page.url.startsWith('/participante/equipes') || $page.url.startsWith('/dashboard/teams') || $page.url.startsWith('/dashboard/guilds') }"
+                    :href="route().has('participant.guilds.index') ? route('participant.guilds.index') : route('participant.teams.index')"
                 >
-                    <font-awesome-icon :icon="['fas', 'users-rectangle']" class="me-1" />
-                    Minhas Equipes (Guildas)
-                    <span class="badge ms-1" :class="activeSection === 'teams' ? 'bg-white text-primary' : 'bg-primary-subtle text-primary'">
+                    <font-awesome-icon :icon="['fas', 'shield-halved']" class="me-1" />
+                    Minhas Guildas
+                    <span class="badge ms-1" :class="($page.url.startsWith('/participante/guildas') || $page.url.startsWith('/participante/equipes') || $page.url.startsWith('/dashboard/teams') || $page.url.startsWith('/dashboard/guilds')) ? 'bg-white text-primary' : 'bg-primary-subtle text-primary'">
                         {{ teams.length }}
                     </span>
-                </button>
+                </Link>
             </li>
             <li class="nav-item">
-                <button
+                <Link
                     class="nav-link"
-                    :class="{ active: activeSection === 'groups' }"
-                    @click="activeSection = 'groups'"
+                    :class="{ active: $page.url.startsWith('/participante/grupos') || $page.url.startsWith('/dashboard/groups') }"
+                    :href="route('participant.groups.index')"
                 >
                     <font-awesome-icon :icon="['fas', 'people-group']" class="me-1" />
                     Grupos de Participação
-                    <span class="badge ms-1" :class="activeSection === 'groups' ? 'bg-white text-primary' : 'bg-success-subtle text-success'">
+                    <span class="badge ms-1" :class="($page.url.startsWith('/participante/grupos') || $page.url.startsWith('/dashboard/groups')) ? 'bg-white text-primary' : 'bg-success-subtle text-success'">
                         {{ groups.length }}
                     </span>
-                </button>
+                </Link>
             </li>
             <li class="nav-item">
-                <button
+                <Link
                     class="nav-link"
-                    :class="{ active: activeSection === 'registrations' }"
-                    @click="activeSection = 'registrations'"
+                    :class="{ active: $page.url.startsWith('/participante/meus-hackathons') || $page.url.startsWith('/dashboard/my-hackathons') }"
+                    :href="route('participant.my_hackathons')"
                 >
                     <font-awesome-icon :icon="['fas', 'trophy']" class="me-1" />
                     Meus Hackathons
-                    <span class="badge ms-1" :class="activeSection === 'registrations' ? 'bg-white text-primary' : 'bg-info-subtle text-info'">
+                    <span class="badge ms-1" :class="($page.url.startsWith('/participante/meus-hackathons') || $page.url.startsWith('/dashboard/my-hackathons')) ? 'bg-white text-primary' : 'bg-info-subtle text-info'">
                         {{ registrations.length }}
                     </span>
-                </button>
+                </Link>
             </li>
         </ul>
 
@@ -698,18 +698,10 @@ const getStageStatus = (stage) => {
                                     </span>
                                     <span v-else class="badge bg-light text-secondary border">Membro</span>
                                 </div>
-                                <h5 class="fw-bold text-dark mb-1">{{ team.name }}</h5>
-                                <p class="text-muted small mb-3 text-truncate-2">
-                                    {{ team.description || 'Sem descrição cadastrada.' }}
-                                </p>
-                                <div class="small text-muted mb-2">
-                                    <font-awesome-icon :icon="['fas', 'users']" class="me-1" />
-                                    <strong>{{ team.members?.length || 1 }}</strong> integrante(s)
-                                </div>
                             </div>
                             <div class="pt-2 border-top mt-2">
                                 <Link :href="route('team.show', team.id)" class="btn btn-sm btn-outline-primary w-100">
-                                    Gerenciar Guilda &rarr;
+                                    Gerenciar Guilda
                                 </Link>
                             </div>
                         </div>

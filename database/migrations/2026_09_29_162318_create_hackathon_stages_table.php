@@ -20,10 +20,6 @@ return new class extends Migration
             $table->dateTime('end_date');
             $table->unsignedSmallInteger('order')->default(1);
             $table->enum('status', ['upcoming', 'active', 'completed'])->default('upcoming');
-            $table->json('rules')->nullable();
-            $table->json('allowed_actions')->nullable(); // e.g. ['team_register', 'project_submit', 'judging']
-            $table->enum('visibility', ['public', 'participants_only', 'judges_only', 'admins_only'])->default('public');
-            $table->json('attachments')->nullable();
             $table->timestamps();
 
             $table->foreign('hackathon_id')->references('id')->on('hackathons')->onDelete('cascade');

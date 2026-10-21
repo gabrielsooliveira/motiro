@@ -10,4 +10,6 @@ services:
   - mysql
   - redis
 workers:
+  - queue
+  - schedule
   - vite

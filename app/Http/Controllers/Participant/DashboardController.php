@@ -117,6 +117,178 @@ class DashboardController extends Controller
     }
 
     /**
+     * Dedicated Minhas Guildas page (Domínio Orientado a Comunidades Permanentes)
+     */
+    public function guilds(Request $request): Response
+    {
+        $user = Auth::user();
+
+        if ($request->session()->get('current_context') !== ContextService::CONTEXT_COMPETITOR) {
+            ContextService::setCompetitorContext($request);
+        }
+
+        $userGuilds = $user->guilds()->with([
+            'members',
+            'leader',
+            'creator',
+            'invitations',
+            'registrations.hackathon',
+        ])->get();
+
+        $pendingInvitations = \App\Models\TeamInvitation::with(['team', 'inviter'])
+            ->where('status', 'pending')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->where(function ($q) use ($user) {
+                $q->where('invitee_id', $user->id)
+                  ->orWhere('email', $user->email);
+            })
+            ->get();
+
+        return inertia('Participant/Dashboard/Guilds/Index', [
+            'user' => $user,
+            'guilds' => $userGuilds,
+            'teams' => $userGuilds,
+            'invitations' => $pendingInvitations,
+        ]);
+    }
+
+    /**
+     * Dedicated Minhas Equipes (Equipes Competitivas de Hackathons)
+     */
+    public function teams(Request $request): Response
+    {
+        $user = Auth::user();
+
+        if ($request->session()->get('current_context') !== ContextService::CONTEXT_COMPETITOR) {
+            ContextService::setCompetitorContext($request);
+        }
+
+        // Se a requisição veio explicitamente de rota de guildas, despacha para guilds()
+        if ($request->routeIs('participant.guilds.*') || $request->routeIs('guild.*')) {
+            return $this->guilds($request);
+        }
+
+        // 1. Equipes de hackathons / equipes permanentes
+        $userTeams = $user->teams()->with([
+            'members',
+            'leader',
+            'creator',
+            'invitations',
+            'registrations.hackathon.stages',
+            'projects.hackathon.stages'
+        ])->get();
+
+        // 2. Grupos de competição formados para hackathons
+        $userGroups = $user->hackathonGroups()->with([
+            'hackathon.stages',
+            'hackathon.organization',
+            'members',
+            'leader',
+            'originTeam',
+            'projects',
+        ])->get();
+
+        // 3. Inscrições em hackathons
+        $userRegistrations = $user->registrations()->with([
+            'hackathon.organization',
+            'hackathon.stages',
+            'group.members',
+            'group.leader',
+            'team.members',
+        ])->get();
+
+        // 4. Convites pendentes de equipes
+        $pendingInvitations = \App\Models\TeamInvitation::with(['team', 'inviter'])
+            ->where('status', 'pending')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->where(function ($q) use ($user) {
+                $q->where('invitee_id', $user->id)
+                  ->orWhere('email', $user->email);
+            })
+            ->get();
+
+        // 5. Guildas permanentes do usuário (para formação de equipes a partir da guilda)
+        $userGuilds = $user->guilds()->with('members')->get();
+
+        return Inertia::render('Participant/Dashboard/Teams', [
+            'user' => $user,
+            'teams' => $userTeams,
+            'groups' => $userGroups,
+            'registrations' => $userRegistrations,
+            'invitations' => $pendingInvitations,
+            'guilds' => $userGuilds,
+        ]);
+    }
+
+    /**
+     * Dedicated Grupos de Hackathons (Participação no Evento) page
+     */
+    public function groups(Request $request): Response
+    {
+        $user = Auth::user();
+
+        if ($request->session()->get('current_context') !== ContextService::CONTEXT_COMPETITOR) {
+            ContextService::setCompetitorContext($request);
+        }
+
+        $userGroups = $user->hackathonGroups()->with([
+            'hackathon.stages',
+            'hackathon.organization',
+            'members',
+            'leader',
+            'originTeam',
+            'projects',
+        ])->get();
+
+        $userRegistrations = $user->registrations()->with([
+            'hackathon.organization',
+            'hackathon.stages',
+            'group.members',
+            'group.leader',
+            'team.members',
+        ])->get();
+
+        $userTeams = $user->teams()->with('members')->get();
+
+        return Inertia::render('Participant/Dashboard/Groups', [
+            'user' => $user,
+            'groups' => $userGroups,
+            'registrations' => $userRegistrations,
+            'teams' => $userTeams,
+        ]);
+    }
+
+    /**
+     * Dedicated Meus Hackathons (Inscrições do Participante) page
+     */
+    public function myHackathons(Request $request): Response
+    {
+        $user = Auth::user();
+
+        if ($request->session()->get('current_context') !== ContextService::CONTEXT_COMPETITOR) {
+            ContextService::setCompetitorContext($request);
+        }
+
+        $userRegistrations = $user->registrations()->with([
+            'hackathon.organization',
+            'hackathon.stages',
+            'hackathon.challenges',
+            'group.members',
+            'group.leader',
+            'team.members'
+        ])->latest()->get();
+
+        return Inertia::render('Participant/Dashboard/MyHackathons', [
+            'user' => $user,
+            'registrations' => $userRegistrations,
+        ]);
+    }
+
+    /**
      * Authenticated Participant Hackathon Discovery (Section 10-15)
      */
     public function hackathons(Request $request): Response

@@ -2,13 +2,18 @@
 
 namespace App\Services;
 
+use App\Mail\GuildInvitationMail;
 use App\Models\Hackathon;
 use App\Models\HackathonRegistration;
 use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\User;
 use Exception;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class TeamService
@@ -41,6 +46,16 @@ class TeamService
             $this->registrationService->ensureUserNotInAnotherTeam($hackathon->id, $creator->id);
         }
 
+        // Upload de imagem ou logo da guilda
+        if (isset($data['image']) && $data['image'] instanceof UploadedFile && $data['image']->isValid()) {
+            $path = $data['image']->store('guilds/logos', 'public');
+            $data['logo'] = '/storage/' . $path;
+        } elseif (isset($data['logo']) && $data['logo'] instanceof UploadedFile && $data['logo']->isValid()) {
+            $path = $data['logo']->store('guilds/logos', 'public');
+            $data['logo'] = '/storage/' . $path;
+        }
+        unset($data['image']);
+
         $slug = Str::slug($data['name']);
         $count = 1;
         while (Team::where('slug', $slug)->exists()) {
@@ -48,6 +63,7 @@ class TeamService
             $count++;
         }
         $data['slug'] = $slug;
+        $data['creator_id'] = $creator->id;
 
         // Determinação do líder inicial da equipe
         if (array_key_exists('set_as_leader', $data) && !$data['set_as_leader']) {
@@ -105,6 +121,168 @@ class TeamService
             AuditService::log('team.create', $team, null, $team->toArray(), null, $data['hackathon_id'] ?? null);
 
             return $team;
+        });
+    }
+
+    /**
+     * Atualiza dados de uma guilda (nome, descrição, área de foco, imagem)
+     */
+    public function updateGuild(Team $team, array $data, User $actingUser): Team
+    {
+        if (!$team->canManage($actingUser)) {
+            throw new Exception('Apenas o líder ou criador da guilda pode editar suas informações.');
+        }
+
+        // Remoção ou substituição de imagem
+        $removeImage = !empty($data['remove_image']);
+        $newImage = $data['image'] ?? $data['logo'] ?? null;
+
+        if ($removeImage) {
+            if ($team->logo && str_starts_with($team->logo, '/storage/')) {
+                $oldPath = substr($team->logo, strlen('/storage/'));
+                Storage::disk('public')->delete($oldPath);
+            }
+            $team->logo = null;
+        } elseif ($newImage instanceof UploadedFile && $newImage->isValid()) {
+            if ($team->logo && str_starts_with($team->logo, '/storage/')) {
+                $oldPath = substr($team->logo, strlen('/storage/'));
+                Storage::disk('public')->delete($oldPath);
+            }
+            $path = $newImage->store('guilds/logos', 'public');
+            $team->logo = '/storage/' . $path;
+        }
+
+        if (!empty($data['name']) && $data['name'] !== $team->name) {
+            $slug = Str::slug($data['name']);
+            $count = 1;
+            while (Team::where('slug', $slug)->where('id', '!=', $team->id)->exists()) {
+                $slug = Str::slug($data['name']) . '-' . $count;
+                $count++;
+            }
+            $team->name = $data['name'];
+            $team->slug = $slug;
+        }
+
+        if (array_key_exists('description', $data)) {
+            $team->description = $data['description'];
+        }
+
+        if (array_key_exists('area_of_focus', $data)) {
+            $team->area_of_focus = $data['area_of_focus'];
+        }
+
+        if (array_key_exists('is_looking_for_members', $data)) {
+            $team->is_looking_for_members = (bool) $data['is_looking_for_members'];
+        }
+
+        $team->save();
+
+        AuditService::log('team.update', $team, null, $team->toArray(), null, $team->hackathon_id);
+
+        return $team->fresh(['members', 'leader', 'creator']);
+    }
+
+    /**
+     * Exclui uma guilda definitivamente
+     */
+    public function deleteGuild(Team $team, User $actingUser): void
+    {
+        // Apenas o criador (ou líder atual se criador for nulo) pode excluir a guilda
+        $canDelete = $team->creator_id ? ($team->creator_id === $actingUser->id) : ($team->leader_id === $actingUser->id);
+        if (!$canDelete) {
+            throw new Exception('Apenas o criador da guilda tem autorização para excluí-la.');
+        }
+
+        // Deleta arquivo de imagem se existir
+        if ($team->logo && str_starts_with($team->logo, '/storage/')) {
+            $oldPath = substr($team->logo, strlen('/storage/'));
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        DB::transaction(function () use ($team) {
+            $team->invitations()->delete();
+            $team->members()->detach();
+            $team->delete();
+        });
+    }
+
+    /**
+     * Remove um membro da guilda
+     */
+    public function removeMember(Team $team, User $memberToRemove, User $actingUser): void
+    {
+        if (!$team->canManage($actingUser)) {
+            throw new Exception('Apenas o líder ou criador da guilda pode remover integrantes.');
+        }
+
+        if ($team->isCreator($memberToRemove)) {
+            throw new Exception('O criador original da guilda não pode ser removido.');
+        }
+
+        if ($actingUser->id === $memberToRemove->id) {
+            throw new Exception('Para sair da guilda utilize a opção voluntária de desligamento.');
+        }
+
+        if (!$team->isMember($memberToRemove)) {
+            throw new Exception('Este usuário não integra a guilda.');
+        }
+
+        // Se o membro a ser removido for o líder, deve haver criador para reassumir ou transferir
+        if ($team->isLeader($memberToRemove)) {
+            $successor = $team->creator_id && $team->creator_id !== $memberToRemove->id
+                ? User::find($team->creator_id)
+                : $team->members()->where('users.id', '!=', $memberToRemove->id)->first();
+
+            $team->update(['leader_id' => $successor?->id]);
+            if ($successor) {
+                $team->members()->updateExistingPivot($successor->id, ['role' => 'leader']);
+            }
+        }
+
+        DB::transaction(function () use ($team, $memberToRemove) {
+            $team->members()->detach($memberToRemove->id);
+
+            NotificationService::notify(
+                $memberToRemove,
+                'team_removed',
+                'Remoção de Guilda',
+                "Você foi removido da guilda '{$team->name}'."
+            );
+
+            AuditService::log('team.member_removed', $team, null, [
+                'user_id' => $memberToRemove->id,
+            ], null, $team->hackathon_id);
+        });
+    }
+
+    /**
+     * Desligamento voluntário de um membro da guilda
+     */
+    public function leaveGuild(Team $team, User $user): void
+    {
+        if (!$team->isMember($user)) {
+            throw new Exception('Você não faz parte desta guilda.');
+        }
+
+        $otherMembersCount = $team->members()->where('users.id', '!=', $user->id)->count();
+
+        // Se for o líder e houver outros integrantes, deve transferir a liderança antes
+        if ($team->isLeader($user) && $otherMembersCount > 0) {
+            throw new Exception('Você é o líder da guilda. Transfira a liderança para outro integrante antes de sair.');
+        }
+
+        DB::transaction(function () use ($team, $user, $otherMembersCount) {
+            $team->members()->detach($user->id);
+
+            // Se a guilda ficou sem nenhum membro restante
+            if ($otherMembersCount === 0) {
+                $this->deleteGuild($team, $user);
+                return;
+            }
+
+            AuditService::log('team.member_left', $team, null, [
+                'user_id' => $user->id,
+            ], null, $team->hackathon_id);
         });
     }
 
@@ -213,16 +391,27 @@ class TeamService
             throw new Exception('Já existe um convite pendente para este participante.');
         }
 
+        $plainToken = Str::random(40);
+
         $invitation = TeamInvitation::create([
             'team_id' => $team->id,
             'inviter_id' => $sender->id,
             'invitee_id' => $invitee?->id,
             'email' => $invitee ? $invitee->email : $emailOrUserId,
-            'token' => Str::random(40),
+            'token' => $plainToken,
             'type' => 'invite',
             'status' => 'pending',
             'expires_at' => now()->addDays(7),
         ]);
+
+        $recipientEmail = $invitee ? $invitee->email : $emailOrUserId;
+        if (filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+            try {
+                Mail::to($recipientEmail)->send(new GuildInvitationMail($team, $invitation, $sender, $plainToken));
+            } catch (\Throwable $e) {
+                Log::warning("Falha ao enviar e-mail de convite para {$recipientEmail}: " . $e->getMessage());
+            }
+        }
 
         if ($invitee) {
             NotificationService::notify(
@@ -236,6 +425,133 @@ class TeamService
         AuditService::log('team.invite_sent', $team, null, $invitation->toArray(), null, $team->hackathon_id);
 
         return $invitation;
+    }
+
+    /**
+     * Reenvia um convite de participação na guilda (com rate limiting de 2 minutos)
+     */
+    public function resendInvitation(TeamInvitation $invitation, User $actingUser): TeamInvitation
+    {
+        $team = $invitation->team;
+        if (!$team->canManage($actingUser)) {
+            throw new Exception('Apenas o líder ou criador da guilda pode reenviar convites.');
+        }
+
+        if ($invitation->status !== 'pending') {
+            throw new Exception('Apenas convites pendentes podem ser reenviados.');
+        }
+
+        // Rate limit: mínimo de 2 minutos entre reenvios
+        if ($invitation->updated_at && $invitation->updated_at->diffInMinutes(now()) < 2 && $invitation->created_at->diffInMinutes(now()) < 2) {
+            throw new Exception('Aguarde ao menos 2 minutos antes de reenviar este convite.');
+        }
+
+        $plainToken = Str::random(40);
+        $invitation->update([
+            'token' => $plainToken,
+            'expires_at' => now()->addDays(7),
+            'updated_at' => now(),
+        ]);
+
+        $recipientEmail = $invitation->email;
+        if (filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+            try {
+                Mail::to($recipientEmail)->send(new GuildInvitationMail($team, $invitation, $actingUser, $plainToken));
+            } catch (\Throwable $e) {
+                Log::warning("Falha ao reenviar e-mail de convite para {$recipientEmail}: " . $e->getMessage());
+            }
+        }
+
+        AuditService::log('team.invite_resent', $team, null, $invitation->toArray(), null, $team->hackathon_id);
+
+        return $invitation;
+    }
+
+    /**
+     * Cancela um convite pendente da guilda
+     */
+    public function cancelInvitation(TeamInvitation $invitation, User $actingUser): void
+    {
+        $team = $invitation->team;
+        if (!$team->canManage($actingUser)) {
+            throw new Exception('Apenas o líder ou criador da guilda pode cancelar convites.');
+        }
+
+        if ($invitation->status !== 'pending') {
+            throw new Exception('Apenas convites pendentes podem ser cancelados.');
+        }
+
+        $invitation->update([
+            'status' => 'cancelled',
+        ]);
+
+        AuditService::log('team.invite_cancelled', $team, null, $invitation->toArray(), null, $team->hackathon_id);
+    }
+
+    /**
+     * Aceita convite a partir do token público enviado por e-mail
+     */
+    public function acceptInvitationByToken(string $token, User $user): Team
+    {
+        $invitation = TeamInvitation::with('team')
+            ->where(function ($q) use ($token) {
+                $q->where('token', $token)
+                  ->orWhere('token', hash('sha256', $token));
+            })
+            ->first();
+
+        if (!$invitation) {
+            throw new Exception('Convite não encontrado ou token inválido.');
+        }
+
+        if ($invitation->status !== 'pending') {
+            throw new Exception('Este convite já foi processado ou não está mais ativo.');
+        }
+
+        if ($invitation->isExpired()) {
+            throw new Exception('Este convite expirou.');
+        }
+
+        $matchesId = $invitation->invitee_id && $invitation->invitee_id === $user->id;
+        $matchesEmail = !empty($invitation->email) && strtolower($invitation->email) === strtolower($user->email);
+
+        if (!$matchesId && !$matchesEmail) {
+            throw new Exception("Este convite foi enviado para outro participante ({$invitation->email}).");
+        }
+
+        $this->acceptInvitation($invitation, $user);
+
+        return $invitation->team;
+    }
+
+    /**
+     * Recusa convite a partir do token público enviado por e-mail
+     */
+    public function declineInvitationByToken(string $token, User $user): void
+    {
+        $invitation = TeamInvitation::with('team')
+            ->where(function ($q) use ($token) {
+                $q->where('token', $token)
+                  ->orWhere('token', hash('sha256', $token));
+            })
+            ->first();
+
+        if (!$invitation) {
+            throw new Exception('Convite não encontrado ou token inválido.');
+        }
+
+        if ($invitation->status !== 'pending') {
+            throw new Exception('Este convite já foi respondido.');
+        }
+
+        $matchesId = $invitation->invitee_id && $invitation->invitee_id === $user->id;
+        $matchesEmail = !empty($invitation->email) && strtolower($invitation->email) === strtolower($user->email);
+
+        if (!$matchesId && !$matchesEmail) {
+            throw new Exception('Acesso não autorizado para responder a este convite.');
+        }
+
+        $this->declineInvitation($invitation, $user);
     }
 
     /**
