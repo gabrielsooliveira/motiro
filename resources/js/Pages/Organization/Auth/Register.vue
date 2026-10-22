@@ -179,7 +179,7 @@ const logoutCurrentIdentity = () => {
     <div class="py-2">
         
         <div class="text-center mb-4">
-            <Link :href="route('home')" class="text-decoration-none">
+            <Link href="#" class="text-decoration-none">
                 <h1 class="fw-bold text-white fs-3 mb-1 tracking-tight">Motirõ</h1>
             </Link>
             <p class="text-secondary small mb-0">
@@ -905,7 +905,7 @@ const logoutCurrentIdentity = () => {
 
         
         <div class="text-center mt-4 pt-3 border-top border-secondary-subtle">
-            <Link :href="route('home')" class="text-secondary text-decoration-none small">
+            <Link href="#" class="text-secondary text-decoration-none small">
                 <font-awesome-icon :icon="['fas', 'arrow-left']" class="me-1" />
                 Voltar para a página inicial
             </Link>

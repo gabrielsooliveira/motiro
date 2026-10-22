@@ -133,7 +133,7 @@ const toggleView = () => {
         </p>
 
         <Link
-            :href="route('home')"
+            href="#"
             class="text-decoration-none text-white small"
         >
             <font-awesome-icon icon="fa-solid fa-arrow-left" class="me-1" />

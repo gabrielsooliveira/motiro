@@ -199,7 +199,7 @@ const processedTeams = computed(() => {
             <div v-else>
                 <h4 class="fw-bold text-dark mb-2">Você ainda não faz parte de nenhuma guilda</h4>
                 <p class="text-muted small mx-auto mb-4 col-md-7">
-                    As guildas são equipes permanentes no Motirõ. Crie uma guilda para reunir parceiros de projetos, convidar amigos por e-mail e formar squads para futuros hackathons.
+                    Crie uma guilda para reunir parceiros de projetos, convidar amigos por e-mail e formar squads para futuros hackathons.
                 </p>
                 <button
                     type="button"

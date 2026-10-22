@@ -21,7 +21,6 @@ class StoreGuildRequest extends FormRequest
             'logo' => ['nullable'],
             'invite_emails' => ['nullable', 'string', 'max:1000'],
             'set_as_leader' => ['nullable', 'boolean'],
-            'hackathon_id' => ['nullable', 'uuid', 'exists:hackathons,id'],
             'leader_id' => ['nullable', 'uuid', 'exists:users,id'],
         ];
     }

@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProjectSubmission extends Model
 {
-    use HasUuids;
+    use HasUuids, SoftDeletes;
+
+    protected $table = 'project_submissions';
 
     protected $fillable = [
         'project_id',
@@ -23,12 +27,12 @@ class ProjectSubmission extends Model
         ];
     }
 
-    public function project()
+    public function project(): BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Project::class, 'project_id');
     }
 
-    public function submitter()
+    public function submitter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'submitted_by');
     }

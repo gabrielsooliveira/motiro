@@ -140,7 +140,7 @@ class JudgeController extends Controller
         $validated = $request->validate([
             'hackathon_id' => 'required|uuid|exists:hackathons,id',
             'project_id' => 'nullable|uuid|exists:projects,id',
-            'team_id' => 'nullable|uuid|exists:teams,id',
+            'team_id' => 'nullable|uuid|exists:guilds,id',
             'reason' => 'required|string|max:1000',
         ]);
 

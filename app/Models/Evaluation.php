@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Evaluation extends Model
 {
     use HasUuids;
+
+    protected $table = 'evaluations';
 
     protected $fillable = [
         'hackathon_id',
@@ -24,28 +28,33 @@ class Evaluation extends Model
     protected function casts(): array
     {
         return [
-            'final_score' => 'float',
+            'final_score' => 'decimal:2',
             'submitted_at' => 'datetime',
         ];
     }
 
-    public function hackathon()
+    public function hackathon(): BelongsTo
     {
-        return $this->belongsTo(Hackathon::class);
+        return $this->belongsTo(Hackathon::class, 'hackathon_id');
     }
 
-    public function project()
+    public function project(): BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Project::class, 'project_id');
     }
 
-    public function judge()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function scores()
+    public function judge(): BelongsTo
     {
-        return $this->hasMany(EvaluationScore::class);
+        return $this->user();
+    }
+
+    public function scores(): HasMany
+    {
+        return $this->hasMany(EvaluationScore::class, 'evaluation_id');
     }
 }

@@ -109,7 +109,7 @@ const steps = [
                 
                 <div class="d-flex flex-column flex-sm-row gap-3">
                     <Link
-                        :href="route('participant.login')"
+                        href="#"
                         class="btn btn-primary btn-lg fw-bold shadow-sm"
                     >
                         <font-awesome-icon :icon="['fas', 'user-astronaut']" class="me-2" />
@@ -117,7 +117,7 @@ const steps = [
                     </Link>
 
                     <Link
-                        :href="route('organization.login')"
+                        href="#"
                         class="btn btn-outline-dark btn-lg fw-bold"
                     >
                         <font-awesome-icon :icon="['fas', 'building']" class="me-2" />
@@ -197,7 +197,7 @@ const steps = [
                         </ul>
 
                         <Link
-                            :href="route('participant.login')"
+                            href="#"
                             class="btn btn-success btn-lg fw-bold text-white w-100 shadow-sm"
                         >
                             Quero Competir &rarr;
@@ -227,7 +227,7 @@ const steps = [
                         </ul>
 
                         <Link
-                            :href="route('organization.login')"
+                            href="#"
                             class="btn btn-primary btn-lg fw-bold text-white w-100 shadow-sm"
                         >
                             Quero Criar um Hackathon &rarr;
@@ -272,10 +272,10 @@ const steps = [
                 o Motirõ é o seu ponto de encontro.
             </p>
             <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <Link :href="route('hackathon.list')" class="btn btn-outline-light btn-lg fw-semibold">
+                <Link href="#" class="btn btn-outline-light btn-lg fw-semibold">
                     Explorar Hackathons
                 </Link>
-                <Link :href="route('select.login')" class="btn btn-primary btn-lg fw-semibold">
+                <Link href="#" class="btn btn-primary btn-lg fw-semibold">
                     Começar Gratuitamente
                 </Link>
             </div>

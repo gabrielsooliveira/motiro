@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HackathonChallenge extends Model
 {
@@ -20,8 +21,15 @@ class HackathonChallenge extends Model
         'prize',
     ];
 
-    public function hackathon()
+    protected function casts(): array
     {
-        return $this->belongsTo(Hackathon::class);
+        return [
+            'order' => 'integer',
+        ];
+    }
+
+    public function hackathon(): BelongsTo
+    {
+        return $this->belongsTo(Hackathon::class, 'hackathon_id');
     }
 }

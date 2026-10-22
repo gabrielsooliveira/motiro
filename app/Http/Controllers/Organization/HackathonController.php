@@ -81,7 +81,7 @@ class HackathonController extends Controller
             $userTeams = $user->ledTeams()->with('members')->get();
             // Check if user has an already registered team
             $registeredIds = $hackathon->registrations()->pluck('team_id')->toArray();
-            $userTeamIds = $user->teams()->pluck('teams.id')->toArray();
+            $userTeamIds = $user->guilds()->pluck('guilds.id')->toArray();
             $intersect = array_intersect($registeredIds, $userTeamIds);
             $userRegisteredTeamId = !empty($intersect) ? reset($intersect) : null;
         }

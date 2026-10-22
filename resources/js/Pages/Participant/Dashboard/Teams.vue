@@ -109,7 +109,7 @@ const totalMembersCount = computed(() => {
 
             <div class="d-flex gap-2">
                 <Link
-                    :href="route('participant.guilds.index')"
+                    href="#"
                     class="btn btn-outline-secondary rounded-pill px-3 d-inline-flex align-items-center gap-2 shadow-sm"
                 >
                     <font-awesome-icon :icon="['fas', 'shield-halved']" />

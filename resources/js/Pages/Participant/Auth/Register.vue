@@ -48,7 +48,7 @@ const submitOrganization = () => {
     <div class="p-3 auth-register-container">
         
         <div class="text-center mb-4">
-            <Link :href="route('home')" class="text-decoration-none">
+            <Link href="#" class="text-decoration-none">
                 <h2 class="fw-bold text-white title-page mb-1">Motirõ</h2>
             </Link>
             <p class="text-light text-opacity-75 small">

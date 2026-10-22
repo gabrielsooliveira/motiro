@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class JudgeAssignment extends Model
 {
     use HasUuids;
+
+    protected $table = 'judge_assignments';
 
     protected $fillable = [
         'hackathon_id',
@@ -16,18 +19,18 @@ class JudgeAssignment extends Model
         'status',
     ];
 
-    public function hackathon()
+    public function hackathon(): BelongsTo
     {
-        return $this->belongsTo(Hackathon::class);
+        return $this->belongsTo(Hackathon::class, 'hackathon_id');
     }
 
-    public function judge()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function project()
+    public function project(): BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Project::class, 'project_id');
     }
 }

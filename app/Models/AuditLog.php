@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AuditLog extends Model
 {
     use HasUuids;
+
+    protected $table = 'audit_logs';
 
     protected $fillable = [
         'user_id',
@@ -30,23 +33,18 @@ class AuditLog extends Model
         ];
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function organization()
+    public function organization(): BelongsTo
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsTo(Organization::class, 'organization_id');
     }
 
-    public function hackathon()
+    public function hackathon(): BelongsTo
     {
-        return $this->belongsTo(Hackathon::class);
-    }
-
-    public function auditable()
-    {
-        return $this->morphTo();
+        return $this->belongsTo(Hackathon::class, 'hackathon_id');
     }
 }

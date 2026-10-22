@@ -36,7 +36,7 @@ const submit = () => {
     <div class="min-vh-100 d-flex flex-column justify-content-center align-items-center bg-light py-5">
         <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 auth-card">
             <div class="text-center mb-4">
-                <Link :href="route('home')" class="text-decoration-none text-dark">
+                <Link href="#" class="text-decoration-none text-dark">
                     <h2 class="fw-bold tracking-tight mb-1">Motirõ</h2>
                 </Link>
                 <p class="text-muted small mb-0">Crie uma nova senha de acesso.</p>
@@ -114,7 +114,7 @@ const submit = () => {
                 </div>
 
                 <div class="text-center">
-                    <Link :href="route('home')" class="text-decoration-none small text-muted">
+                    <Link href="#" class="text-decoration-none small text-muted">
                         &larr; Voltar para a página inicial
                     </Link>
                 </div>

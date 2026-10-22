@@ -146,7 +146,7 @@ const navbarClass = computed(() => {
             <!-- Brand / Logo -->
             <Link
                 class="navbar-brand fw-bold fs-4 title-page brand-logo text-decoration-none py-0"
-                :href="route('home')"
+                href="#"
             >
                 Motirõ
             </Link>
@@ -169,7 +169,7 @@ const navbarClass = computed(() => {
                     </li>
                     <li>
                         <Link
-                            :href="route('hackathon.list')"
+                            :href="route('hackathon.index')"
                             class="site-nav-clean-link"
                             :class="{ active: isHackathonsActive }"
                             :aria-current="isHackathonsActive ? 'page' : undefined"
@@ -179,7 +179,7 @@ const navbarClass = computed(() => {
                     </li>
                     <li>
                         <Link
-                            href="#"
+                            :href="route('guild.index')"
                             class="site-nav-clean-link"
                             :class="{ active: isTeamsActive }"
                             :aria-current="isTeamsActive ? 'page' : undefined"
@@ -190,7 +190,7 @@ const navbarClass = computed(() => {
                     </li>
                     <li>
                         <Link
-                            href="#"
+                            :href="route('news.index')"
                             class="site-nav-clean-link"
                             :class="{ active: isNewsActive }"
                             :aria-current="isNewsActive ? 'page' : undefined"
@@ -205,7 +205,7 @@ const navbarClass = computed(() => {
                 <div class="d-flex align-items-center gap-2">
                     <template v-if="user">
                         <Link
-                            :href="dashboardDestination.url"
+                            href="#"
                             class="btn btn-primary fw-semibold btn-sm px-3 py-2 d-flex align-items-center gap-2 rounded-3 shadow-sm"
                         >
                             <span>{{ dashboardDestination.label }}</span>
@@ -213,7 +213,7 @@ const navbarClass = computed(() => {
                         </Link>
                         <Link
                             v-if="userOrgs.length > 0"
-                            :href="route('context.select')"
+                            href="#"
                             class="btn btn-outline-secondary fw-semibold btn-sm px-2 py-2 rounded-3"
                             title="Alternar Contexto"
                         >
@@ -229,13 +229,13 @@ const navbarClass = computed(() => {
                             Entrar
                         </Link>
                         <Link
-                            :href="route('participant.login')"
+                            href="#"
                             class="btn btn-outline-primary fw-semibold btn-sm px-3 py-2 rounded-3"
                         >
                             Quero Participar
                         </Link>
                         <Link
-                            :href="route('organization.login')"
+                            href="#"
                             class="btn btn-primary fw-semibold btn-sm px-3 py-2 rounded-3 shadow-sm"
                         >
                             Organizar Hackathon
@@ -266,7 +266,7 @@ const navbarClass = computed(() => {
             <div class="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom border-light-subtle">
                 <Link
                     class="navbar-brand fw-bold fs-4 title-page brand-logo text-decoration-none"
-                    :href="route('home')"
+                    href="#"
                     @click="handleMobileNavClick"
                 >
                     Motirõ
@@ -294,7 +294,7 @@ const navbarClass = computed(() => {
                 </Link>
 
                 <Link
-                    :href="route('hackathon.list')"
+                    href="#"
                     class="site-mobile-nav-link"
                     :class="{ active: isHackathonsActive }"
                     :aria-current="isHackathonsActive ? 'page' : undefined"

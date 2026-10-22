@@ -37,23 +37,8 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
 
-        $userData = $user ? [
-            'id' => $user->id,
-            'name' => $user->name,
-            'username' => $user->username,
-            'email' => $user->email,
-            'avatar' => $user->avatar,
-            'is_org_admin' => $user->organizations()->wherePivot('role', 'admin')->wherePivot('is_active', true)->exists(),
-            'is_judge' => $user->judgeAssignments()->exists(),
-            'has_teams' => $user->teams()->exists(),
-        ] : null;
-
         return [
-            'user' => fn() => $userData,
-            'auth' => fn() => [
-                'user' => $userData,
-            ],
-            'context' => fn() => \App\Services\ContextService::getContextData($request),
+            'user' => fn() => $user,
             'flash' => [
                 'success' => fn() => $request->session()->get('success'),
                 'error' => fn() => $request->session()->get('error'),

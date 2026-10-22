@@ -35,7 +35,7 @@ defineEmits(["create-hackathon"]);
                             <button v-if="organizations.length > 0" class="btn btn-sm btn-primary" @click="$emit('create-hackathon')">
                                 Criar Primeiro Hackathon
                             </button>
-                            <Link v-else :href="route('organization.index')" class="btn btn-sm btn-primary">
+                            <Link v-else href="#" class="btn btn-sm btn-primary">
                                 Cadastrar Organização
                             </Link>
                         </div>
@@ -62,7 +62,7 @@ defineEmits(["create-hackathon"]);
                                         <td>{{ hack.registrations_count ?? 0 }}</td>
                                         <td>{{ hack.projects_count ?? 0 }}</td>
                                         <td class="text-end">
-                                            <Link :href="route('hackathon.manage.index', hack.id)" class="btn btn-sm btn-primary">
+                                            <Link href="#" class="btn btn-sm btn-primary">
                                                 Gerenciar
                                             </Link>
                                         </td>

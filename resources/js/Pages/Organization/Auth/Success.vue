@@ -94,7 +94,7 @@ const props = defineProps({
         </div>
 
         <div class="text-center">
-            <Link :href="route('home')" class="text-secondary text-decoration-none small">
+            <Link href="#" class="text-secondary text-decoration-none small">
                 <font-awesome-icon :icon="['fas', 'house']" class="me-1" />
                 Página Inicial do Motirõ
             </Link>

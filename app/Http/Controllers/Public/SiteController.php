@@ -12,9 +12,4 @@ class SiteController extends Controller
     {
         return inertia('Site/Home');
     }
-
-    public function selectLogin(): Response
-    {
-        return inertia('Site/SelectLogin');
-    }
 }

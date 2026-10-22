@@ -4,19 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class HackathonRegistration extends Model
 {
-    use HasUuids;
+    use HasUuids, SoftDeletes;
+
+    protected $table = 'hackathon_registrations';
 
     protected $fillable = [
         'hackathon_id',
-        'hackathon_group_id',
-        'team_id',
         'user_id',
-        'participation_type',
-        'status',
+        'hackathon_group_id',
+        'guild_id',
+        'team_id',
+        'participation_type', // 'individual' ou 'team'
         'is_eligible',
+        'status',
         'rejection_reason',
         'notes',
         'custom_answers',
@@ -24,6 +29,17 @@ class HackathonRegistration extends Model
         'approved_at',
         'approved_by',
     ];
+
+    public function setTeamIdAttribute($value)
+    {
+        $this->attributes['guild_id'] = $value;
+        $this->attributes['team_id'] = $value;
+    }
+
+    public function getTeamIdAttribute()
+    {
+        return $this->attributes['guild_id'] ?? $this->attributes['team_id'] ?? null;
+    }
 
     protected function casts(): array
     {
@@ -37,12 +53,7 @@ class HackathonRegistration extends Model
 
     public function isIndividual(): bool
     {
-        return $this->participation_type === 'individual' || (empty($this->hackathon_group_id) && empty($this->team_id));
-    }
-
-    public function hasTeam(): bool
-    {
-        return !empty($this->hackathon_group_id) || !empty($this->team_id);
+        return $this->participation_type === 'individual' || empty($this->hackathon_group_id);
     }
 
     public function hasGroup(): bool
@@ -50,38 +61,42 @@ class HackathonRegistration extends Model
         return !empty($this->hackathon_group_id);
     }
 
-    public function hackathon()
+    public function hasTeam(): bool
     {
-        return $this->belongsTo(Hackathon::class);
+        return $this->hasGroup();
     }
 
-    /**
-     * Grupo de participação específico do hackathon
-     */
-    public function group()
+    public function hackathon(): BelongsTo
     {
-        return $this->belongsTo(HackathonGroup::class, 'hackathon_group_id');
+        return $this->belongsTo(Hackathon::class, 'hackathon_id');
     }
 
-    public function hackathonGroup()
+    public function group(): BelongsTo
     {
         return $this->belongsTo(HackathonGroup::class, 'hackathon_group_id');
     }
 
-    /**
-     * Equipe permanente / legada
-     */
-    public function team()
+    public function hackathonGroup(): BelongsTo
     {
-        return $this->belongsTo(Team::class);
+        return $this->group();
     }
 
-    public function user()
+    public function guild(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Guild::class, 'guild_id');
     }
 
-    public function approver()
+    public function team(): BelongsTo
+    {
+        return $this->guild();
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
     }

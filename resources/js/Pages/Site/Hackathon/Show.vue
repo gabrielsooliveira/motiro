@@ -122,7 +122,7 @@ const getStatusBadge = (status) => {
     <div class="container py-4">
         
         <div class="mb-3">
-            <Link :href="route('hackathon.list')" class="text-decoration-none text-muted fw-semibold">
+            <Link href="#" class="text-decoration-none text-muted fw-semibold">
                 <font-awesome-icon :icon="['fas', 'arrow-left']" class="me-1" />
                 Voltar para lista de Hackathons
             </Link>
@@ -178,7 +178,7 @@ const getStatusBadge = (status) => {
                     
                     <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
                         <template v-if="!user">
-                            <Link :href="route('login')" class="btn btn-primary btn-lg shadow-sm">
+                            <Link href="#" class="btn btn-primary btn-lg shadow-sm">
                                 <font-awesome-icon :icon="['fas', 'right-to-bracket']" class="me-2" />
                                 Entrar para se Inscrever
                             </Link>
@@ -489,7 +489,7 @@ const getStatusBadge = (status) => {
                         <div class="alert alert-warning py-2 small mb-2">
                             Você ainda não integra nenhuma equipe. Você pode criar uma equipe agora ou inscrever-se individualmente para aguardar alocação.
                         </div>
-                        <Link :href="route('dashboard.index')" class="btn btn-sm btn-outline-primary w-100 mb-2">
+                        <Link href="#" class="btn btn-sm btn-outline-primary w-100 mb-2">
                             Criar Nova Equipe no Dashboard
                         </Link>
                         <button

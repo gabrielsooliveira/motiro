@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HackathonStage extends Model
 {
     use HasUuids;
+
+    protected $table = 'hackathon_stages';
 
     protected $fillable = [
         'hackathon_id',
@@ -17,10 +20,6 @@ class HackathonStage extends Model
         'end_date',
         'order',
         'status',
-        'rules',
-        'allowed_actions',
-        'visibility',
-        'attachments',
     ];
 
     protected function casts(): array
@@ -28,14 +27,12 @@ class HackathonStage extends Model
         return [
             'start_date' => 'datetime',
             'end_date' => 'datetime',
-            'rules' => 'array',
-            'allowed_actions' => 'array',
-            'attachments' => 'array',
+            'order' => 'integer',
         ];
     }
 
-    public function hackathon()
+    public function hackathon(): BelongsTo
     {
-        return $this->belongsTo(Hackathon::class);
+        return $this->belongsTo(Hackathon::class, 'hackathon_id');
     }
 }

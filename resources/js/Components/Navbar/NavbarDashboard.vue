@@ -22,7 +22,7 @@ const notifications = computed(() => page.props.notifications || []);
         <div class="d-md-none d-flex justify-content-between w-100">
             <Link
                 class="navbar-brand fw-semibold title-page"
-                :href="route('home')"
+                href="#"
                 >Motirõ</Link
             >
             <div class="d-flex align-items-center gap-2">

@@ -660,14 +660,14 @@ const getStageStatus = (stage) => {
         </div>
         </div>
 
-        <!-- SEÇÃO 2: MINHAS EQUIPES (GUILDAS PERMANENTES) -->
-        <div v-else-if="activeSection === 'teams'">
+        <!-- SEÇÃO 2: MINHAS GUILDAS -->
+        <div v-else-if="activeSection === 'guilds'">
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
                     <div>
-                        <h4 class="fw-bold mb-1 text-dark">Minhas Equipes Permanentes (Guildas)</h4>
+                        <h4 class="fw-bold mb-1 text-dark">Minhas Guildas</h4>
                         <p class="text-muted small mb-0">
-                            Equipes permanentes representam suas guildas independentes de hackathons. Você pode reunir membros, convidar participantes por e-mail e organizar equipes sem compromisso com eventos específicos.
+                            Guildas representam suas guildas independentes de hackathons. Você pode reunir membros, convidar participantes por e-mail e organizar equipes sem compromisso com eventos específicos.
                         </p>
                     </div>
                     <button class="btn btn-primary d-flex align-items-center gap-2" @click="$emit('create-team')">

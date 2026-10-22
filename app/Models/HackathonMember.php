@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class HackathonMember extends Model
 {
-    use HasUuids;
+    use HasUuids, SoftDeletes;
 
     protected $table = 'hackathon_members';
 
@@ -25,13 +27,13 @@ class HackathonMember extends Model
         ];
     }
 
-    public function hackathon()
+    public function hackathon(): BelongsTo
     {
-        return $this->belongsTo(Hackathon::class);
+        return $this->belongsTo(Hackathon::class, 'hackathon_id');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

@@ -4,10 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Hackathon extends Model
 {
     use HasUuids;
+
+    protected $table = 'hackathons';
 
     protected $fillable = [
         'organization_id',
@@ -20,10 +25,15 @@ class Hackathon extends Model
         'banner_url',
         'logo_url',
         'livestream_url',
+        'rules_file',
+        'rules',
         'category',
         'tags',
         'location',
         'modality',
+        'external_website',
+        'contact_email',
+        'contact_phone',
         'max_participants',
         'max_teams',
         'min_team_members',
@@ -48,10 +58,6 @@ class Hackathon extends Model
         'evaluations_per_project_target',
         'scoring_algorithm',
         'results_published',
-        'rules',
-        'external_website',
-        'contact_email',
-        'contact_phone',
     ];
 
     protected function casts(): array
@@ -78,29 +84,81 @@ class Hackathon extends Model
         ];
     }
 
-    public function organization()
+    public function organization(): BelongsTo
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsTo(Organization::class, 'organization_id');
     }
 
-    public function stages()
+    public function stages(): HasMany
     {
-        return $this->hasMany(HackathonStage::class)->orderBy('order');
+        return $this->hasMany(HackathonStage::class, 'hackathon_id')->orderBy('order');
     }
 
-    public function registrations()
+    public function challenges(): HasMany
     {
-        return $this->hasMany(HackathonRegistration::class);
+        return $this->hasMany(HackathonChallenge::class, 'hackathon_id')->orderBy('order');
     }
 
-    public function groups()
+    public function members(): HasMany
     {
-        return $this->hasMany(HackathonGroup::class);
+        return $this->hasMany(HackathonMember::class, 'hackathon_id');
     }
 
-    public function teams()
+    public function staffUsers(): BelongsToMany
     {
-        return $this->hasMany(Team::class);
+        return $this->belongsToMany(User::class, 'hackathon_members', 'hackathon_id', 'user_id')
+            ->withPivot('id', 'role', 'permissions')
+            ->withTimestamps();
+    }
+
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(HackathonRegistration::class, 'hackathon_id');
+    }
+
+    public function groups(): HasMany
+    {
+        return $this->hasMany(HackathonGroup::class, 'hackathon_id');
+    }
+
+    public function teams(): HasMany
+    {
+        return $this->groups();
+    }
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class, 'hackathon_id');
+    }
+
+    public function criteria(): HasMany
+    {
+        return $this->hasMany(EvaluationCriterion::class, 'hackathon_id')->orderBy('order');
+    }
+
+    public function evaluationCriteria(): HasMany
+    {
+        return $this->criteria();
+    }
+
+    public function judgeAssignments(): HasMany
+    {
+        return $this->hasMany(JudgeAssignment::class, 'hackathon_id');
+    }
+
+    public function evaluations(): HasMany
+    {
+        return $this->hasMany(Evaluation::class, 'hackathon_id');
+    }
+
+    public function conflictsOfInterest(): HasMany
+    {
+        return $this->hasMany(ConflictOfInterest::class, 'hackathon_id');
+    }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AuditLog::class, 'hackathon_id');
     }
 
     public function allowsIndividualRegistration(): bool
@@ -165,52 +223,5 @@ class Hackathon extends Model
         }
 
         return $this->isTeamFormationOpen();
-    }
-
-    public function projects()
-    {
-        return $this->hasMany(Project::class);
-    }
-
-    public function evaluationCriteria()
-    {
-        return $this->hasMany(EvaluationCriterion::class)->orderBy('order');
-    }
-
-    public function judgeAssignments()
-    {
-        return $this->hasMany(JudgeAssignment::class);
-    }
-
-    public function evaluations()
-    {
-        return $this->hasMany(Evaluation::class);
-    }
-
-    public function conflictsOfInterest()
-    {
-        return $this->hasMany(ConflictOfInterest::class);
-    }
-
-    public function auditLogs()
-    {
-        return $this->hasMany(AuditLog::class);
-    }
-
-    public function members()
-    {
-        return $this->hasMany(HackathonMember::class);
-    }
-
-    public function staffUsers()
-    {
-        return $this->belongsToMany(User::class, 'hackathon_members', 'hackathon_id', 'user_id')
-            ->withPivot('role', 'permissions')
-            ->withTimestamps();
-    }
-
-    public function challenges()
-    {
-        return $this->hasMany(HackathonChallenge::class)->orderBy('order');
     }
 }
