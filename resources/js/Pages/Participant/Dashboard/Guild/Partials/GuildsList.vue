@@ -116,7 +116,7 @@ const processedTeams = computed(() => {
                             v-model="searchQuery"
                             type="text"
                             class="form-control border-start-0 bg-light"
-                            placeholder="Buscar guilda..."
+                            placeholder="Buscar guild..."
                         />
                         <button
                             v-if="searchQuery"
@@ -182,9 +182,9 @@ const processedTeams = computed(() => {
             </div>
 
             <div v-if="searchQuery || roleFilter !== 'all'">
-                <h4 class="fw-bold text-dark mb-2">Nenhuma guilda encontrada para estes filtros</h4>
+                <h4 class="fw-bold text-dark mb-2">Nenhuma guild encontrada para estes filtros</h4>
                 <p class="text-muted small mx-auto mb-4 col-md-7">
-                    Não encontramos guildas correspondentes à busca ou ao filtro selecionado. Tente alterar os termos ou limpar os filtros.
+                    Não encontramos guilds correspondentes à busca ou ao filtro selecionado. Tente alterar os termos ou limpar os filtros.
                 </p>
                 <button
                     type="button"
@@ -197,9 +197,9 @@ const processedTeams = computed(() => {
             </div>
 
             <div v-else>
-                <h4 class="fw-bold text-dark mb-2">Você ainda não faz parte de nenhuma guilda</h4>
+                <h4 class="fw-bold text-dark mb-2">Você ainda não faz parte de nenhuma guild</h4>
                 <p class="text-muted small mx-auto mb-4 col-md-7">
-                    Crie uma guilda para reunir parceiros de projetos, convidar amigos por e-mail e formar squads para futuros hackathons.
+                    Crie uma guild para reunir parceiros de projetos, convidar amigos por e-mail e formar squads para futuros hackathons.
                 </p>
                 <button
                     type="button"
@@ -207,7 +207,7 @@ const processedTeams = computed(() => {
                     @click="emit('open-create-modal')"
                 >
                     <font-awesome-icon :icon="['fas', 'plus']" />
-                    <span>Criar Minha Primeira Guilda</span>
+                    <span>Criar Minha Primeira Guild</span>
                 </button>
             </div>
         </div>
@@ -279,7 +279,7 @@ const processedTeams = computed(() => {
                             :href="getGuildShowUrl(team.id)"
                             class="btn btn-outline-primary btn-sm px-3 rounded-pill d-inline-flex align-items-center gap-2"
                         >
-                            <span>Gerenciar Guilda</span>
+                            <span>Gerenciar Guild</span>
                             <font-awesome-icon :icon="['fas', 'arrow-right']" class="small" />
                         </Link>
                     </div>
@@ -293,7 +293,7 @@ const processedTeams = computed(() => {
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light border-bottom">
                         <tr>
-                            <th class="ps-4 py-3 text-secondary text-uppercase small fw-bold">Guilda</th>
+                            <th class="ps-4 py-3 text-secondary text-uppercase small fw-bold">Guild</th>
                             <th class="py-3 text-secondary text-uppercase small fw-bold">Seu Papel</th>
                             <th class="py-3 text-secondary text-uppercase small fw-bold">Integrantes</th>
                             <th class="py-3 text-secondary text-uppercase small fw-bold">Criada em</th>
@@ -358,7 +358,7 @@ const processedTeams = computed(() => {
                                     :href="getGuildShowUrl(team.id)"
                                     class="btn btn-outline-primary btn-sm rounded-pill px-3"
                                 >
-                                    Gerenciar &rarr;
+                                    Gerenciar
                                 </Link>
                             </td>
                         </tr>

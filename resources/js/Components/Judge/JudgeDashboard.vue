@@ -57,10 +57,10 @@ defineProps({
                                             <span v-else class="badge bg-warning text-dark">Pendente</span>
                                         </td>
                                         <td class="text-end">
-                                            <Link v-if="assign.project_id" href="#" class="btn btn-sm btn-primary">
+                                            <Link v-if="assign.project_id" :href="route('judge.evaluate', assign.project_id)" class="btn btn-sm btn-primary">
                                                 Avaliar
                                             </Link>
-                                            <Link v-else href="#" class="btn btn-sm btn-outline-secondary">
+                                            <Link v-else :href="route('judge.index')" class="btn btn-sm btn-outline-secondary">
                                                 Ver Fila
                                             </Link>
                                         </td>

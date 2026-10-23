@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Convite para Guilda</title>
+    <title>Convite para Guild</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -110,23 +110,23 @@
     <div class="container">
         <div class="header">
             <h1>Motirõ</h1>
-            <div class="badge">Convite para Guilda</div>
+            <div class="badge">Convite para Guild</div>
         </div>
         <div class="content">
             <p class="greeting">Olá,</p>
             <p>
-                <strong>{{ $inviter ? $inviter->name : 'Um participante' }}</strong> convidou você para ingressar na guilda permanente <strong>{{ $guild->name }}</strong> na plataforma Motirõ.
+                <strong>{{ $inviter ? $inviter->name : 'Um participante' }}</strong> convidou você para ingressar na guild permanente <strong>{{ $guild->name }}</strong> na plataforma Motirõ.
             </p>
 
             <div class="guild-card">
                 <h3 class="guild-name">{{ $guild->name }}</h3>
                 <p class="guild-desc">
-                    {{ $guild->description ?: 'Guilda independente de hackathons para colaboração e desenvolvimento de projetos.' }}
+                    {{ $guild->description ?: 'Guild independente de hackathons para colaboração e desenvolvimento de projetos.' }}
                 </p>
             </div>
 
             <p style="font-size: 14px; color: #475569;">
-                Como membro desta guilda, você poderá colaborar com o time, participar de futuros eventos e planejar projetos coletivos.
+                Como membro desta guild, você poderá colaborar com o time, participar de futuros eventos e planejar projetos coletivos.
             </p>
 
             <div class="btn-wrapper">

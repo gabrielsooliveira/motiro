@@ -4,20 +4,23 @@ namespace App\Actions\User;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserParticipant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class CreateUserAccountAction
 {
     /**
-     * Cria uma nova conta de usuário pessoal com papel base de competidor.
+     * Cria uma nova identidade de usuário no Motirõ.
+     * Opcionalmente provisiona o perfil de participante associado.
      *
      * @param array $data ['name' => ..., 'email' => ..., 'password' => ...]
+     * @param bool $createParticipantProfile
      * @return User
      */
-    public function execute(array $data): User
+    public function execute(array $data, bool $createParticipantProfile = false): User
     {
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $createParticipantProfile) {
             $user = User::create([
                 'name' => trim($data['name']),
                 'email' => strtolower(trim($data['email'])),
@@ -26,10 +29,27 @@ class CreateUserAccountAction
                 'lgpd_consent_at' => $data['lgpd_consent_at'] ?? now(),
             ]);
 
-            // Todo usuário no Motirõ recebe o papel de competidor para poder participar de hackathons com a mesma conta
-            $competitorRole = Role::where('name', 'competitor')->first();
-            if ($competitorRole) {
-                $user->roles()->syncWithoutDetaching([$competitorRole->id]);
+            if ($createParticipantProfile) {
+                UserParticipant::firstOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'education_institution' => $data['education_institution'] ?? null,
+                        'education_course' => $data['education_course'] ?? null,
+                        'professional_experience' => $data['professional_experience'] ?? null,
+                        'skills' => $data['skills'] ?? null,
+                        'technologies' => $data['technologies'] ?? null,
+                        'github_url' => $data['github_url'] ?? null,
+                        'linkedin_url' => $data['linkedin_url'] ?? null,
+                        'portfolio_url' => $data['portfolio_url'] ?? null,
+                        'website_url' => $data['website_url'] ?? null,
+                        'is_profile_public' => $data['is_profile_public'] ?? false,
+                    ]
+                );
+
+                $competitorRole = Role::where('name', 'competitor')->first();
+                if ($competitorRole) {
+                    $user->roles()->syncWithoutDetaching([$competitorRole->id]);
+                }
             }
 
             return $user;

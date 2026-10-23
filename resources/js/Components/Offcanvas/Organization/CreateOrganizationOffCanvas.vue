@@ -8,10 +8,20 @@ const open = ref(false);
 const form = useForm({
     name: "",
     email: "",
-    password: "",
+    type: "Empresa",
     website: "",
     description: "",
 });
+
+const categories = [
+    "Empresa",
+    "Universidade ou instituição de ensino",
+    "Comunidade ou coletivo",
+    "Organização social / Sem fins lucrativos",
+    "Instituição pública",
+    "Startup",
+    "Outra",
+];
 
 const storeOrganization = () => {
     form.post(route("organization.store"), {
@@ -33,13 +43,13 @@ const storeOrganization = () => {
 
     <Offcanvas
         id="menu-create-organization"
-        title="Solicitar criação de organização"
+        title="Criar nova organização"
         placement="end"
         v-model="open"
     >
         <form @submit.prevent="storeOrganization">
             <div class="mb-3">
-                <label for="name" class="form-label">Nome da Empresa</label>
+                <label for="name" class="form-label">Nome da Instituição *</label>
                 <input
                     type="text"
                     class="form-control"
@@ -51,26 +61,23 @@ const storeOrganization = () => {
             </div>
 
             <div class="mb-3">
-                <label for="email" class="form-label">E-mail Corporativo</label>
+                <label for="type" class="form-label">Tipo de Organização</label>
+                <select id="type" class="form-select" v-model="form.type">
+                    <option v-for="cat in categories" :key="cat" :value="cat">
+                        {{ cat }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">E-mail Institucional</label>
                 <input
                     type="email"
                     class="form-control"
                     id="email"
                     name="email"
                     v-model="form.email"
-                    required
-                />
-            </div>
-
-            <div class="mb-3">
-                <label for="password" class="form-label">Senha</label>
-                <input
-                    type="password"
-                    class="form-control"
-                    id="password"
-                    name="password"
-                    v-model="form.password"
-                    required
+                    placeholder="contato@organizacao.com"
                 />
             </div>
 
@@ -94,12 +101,18 @@ const storeOrganization = () => {
                     name="description"
                     v-model="form.description"
                     rows="4"
+                    placeholder="Breve descrição dos objetivos e atuação..."
                 ></textarea>
             </div>
 
             <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary">
-                    Fazer solicitação
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    :disabled="form.processing"
+                >
+                    <span v-if="form.processing" class="spinner-border spinner-border-sm me-2"></span>
+                    <span>{{ form.processing ? 'Criando...' : 'Criar Organização' }}</span>
                 </button>
             </div>
         </form>

@@ -51,10 +51,10 @@ const isExpiringSoon = (expiresAt) => {
                     </div>
                     <div>
                         <h4 class="h5 fw-bold mb-1">
-                            Você tem {{ invitations.length }} convite(s) de guilda pendente(s)
+                            Você tem {{ invitations.length }} convite(s) de guild pendente(s)
                         </h4>
                         <p class="mb-0 small text-white-50">
-                            Ao aceitar um convite, você passa a integrar a guilda e pode colaborar em projetos e novos hackathons.
+                            Ao aceitar um convite, você passa a integrar a guild e pode colaborar em projetos e novos hackathons.
                         </p>
                     </div>
                 </div>
@@ -70,7 +70,7 @@ const isExpiringSoon = (expiresAt) => {
             </div>
             <h4 class="fw-bold text-dark mb-2">Nenhum convite pendente</h4>
             <p class="text-muted small mx-auto mb-3 col-md-7">
-                Você não possui nenhum convite em aberto no momento. Quando líderes ou colegas adicionarem seu e-mail para uma guilda, as notificações e solicitações aparecerão aqui.
+                Você não possui nenhum convite em aberto no momento. Quando líderes ou colegas adicionarem seu e-mail para uma guild, as notificações e solicitações aparecerão aqui.
             </p>
             <div class="alert alert-light border d-inline-block small py-2 px-3 text-secondary mb-0">
                 <font-awesome-icon :icon="['fas', 'lightbulb']" class="text-warning me-1" />
@@ -87,7 +87,7 @@ const isExpiringSoon = (expiresAt) => {
             >
                 <div class="card border-0 shadow-sm rounded-4 bg-white h-100 d-flex flex-column justify-content-between overflow-hidden">
                     <div class="p-4">
-                        <!-- Topo com Avatar e Dados da Guilda -->
+                        <!-- Topo com Avatar e Dados da Guild -->
                         <div class="d-flex align-items-start gap-3 mb-3">
                             <div
                                 v-if="invite.team?.logo || invite.team?.image_url"
@@ -111,20 +111,20 @@ const isExpiringSoon = (expiresAt) => {
                             <div class="overflow-hidden flex-grow-1">
                                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                     <h4 class="h6 fw-bold text-dark mb-0 text-truncate">
-                                        {{ invite.team ? invite.team.name : 'Guilda' }}
+                                        {{ invite.team ? invite.team.name : 'Guild' }}
                                     </h4>
                                     <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle small">
                                         Aguardando sua resposta
                                     </span>
                                 </div>
                                 <span class="text-muted small d-block mt-1">
-                                    Convidado por: <strong>{{ invite.inviter ? invite.inviter.name : 'Líder da guilda' }}</strong>
+                                    Convidado por: <strong>{{ invite.inviter ? invite.inviter.name : 'Líder da guild' }}</strong>
                                     <span v-if="invite.inviter?.email" class="text-muted">({{ invite.inviter.email }})</span>
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Descrição da Guilda convidante -->
+                        <!-- Descrição da Guild convidante -->
                         <p v-if="invite.team?.description" class="text-secondary small mb-3">
                             {{ invite.team.description }}
                         </p>

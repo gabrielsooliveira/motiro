@@ -18,31 +18,17 @@ return new class extends Migration
             $table->string('avatar')->nullable();
             $table->text('bio')->nullable();
             $table->string('phone')->nullable();
+            $table->string('city')->nullable();
+            $table->string('state', 50)->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
 
-            // Informações do perfil de participante
-            $table->string('city')->nullable();
-            $table->string('state', 50)->nullable();
-            $table->string('education_institution')->nullable();
-            $table->string('education_course')->nullable();
-            $table->text('professional_experience')->nullable();
-            $table->json('skills')->nullable();
-            $table->json('technologies')->nullable();
-
-            // Links externos / portfólio
-            $table->string('github_url')->nullable();
-            $table->string('linkedin_url')->nullable();
-            $table->string('portfolio_url')->nullable();
-            $table->string('website_url')->nullable();
-
-            // LGPD / Privacidade
-            $table->boolean('is_profile_public')->default(false);
+            // LGPD / Termos da conta
             $table->timestamp('lgpd_consent_at')->nullable();
             $table->timestamp('terms_accepted_at')->nullable();
 
-            // Metadados
+            // Metadados de autenticação
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

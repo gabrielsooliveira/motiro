@@ -109,7 +109,7 @@ const steps = [
                 
                 <div class="d-flex flex-column flex-sm-row gap-3">
                     <Link
-                        href="#"
+                        :href="route('participant.register')"
                         class="btn btn-primary btn-lg fw-bold shadow-sm"
                     >
                         <font-awesome-icon :icon="['fas', 'user-astronaut']" class="me-2" />
@@ -117,7 +117,7 @@ const steps = [
                     </Link>
 
                     <Link
-                        href="#"
+                        :href="route('organization.register')"
                         class="btn btn-outline-dark btn-lg fw-bold"
                     >
                         <font-awesome-icon :icon="['fas', 'building']" class="me-2" />
@@ -197,10 +197,10 @@ const steps = [
                         </ul>
 
                         <Link
-                            href="#"
+                            :href="route('participant.register')"
                             class="btn btn-success btn-lg fw-bold text-white w-100 shadow-sm"
                         >
-                            Quero Competir &rarr;
+                            Quero Competir
                         </Link>
                     </div>
                 </div>
@@ -227,10 +227,10 @@ const steps = [
                         </ul>
 
                         <Link
-                            href="#"
+                            :href="route('organization.register')"
                             class="btn btn-primary btn-lg fw-bold text-white w-100 shadow-sm"
                         >
-                            Quero Criar um Hackathon &rarr;
+                            Quero Criar um Hackathon
                         </Link>
                     </div>
                 </div>
@@ -272,10 +272,10 @@ const steps = [
                 o Motirõ é o seu ponto de encontro.
             </p>
             <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <Link href="#" class="btn btn-outline-light btn-lg fw-semibold">
+                <Link :href="route('hackathon.index')" class="btn btn-outline-light btn-lg fw-semibold">
                     Explorar Hackathons
                 </Link>
-                <Link href="#" class="btn btn-primary btn-lg fw-semibold">
+                <Link :href="route('participant.register')" class="btn btn-primary btn-lg fw-semibold">
                     Começar Gratuitamente
                 </Link>
             </div>

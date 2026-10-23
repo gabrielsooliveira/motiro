@@ -110,7 +110,7 @@ const submitGroup = () => {
             <div class="small">
                 <strong>O que é um Grupo de Participação?</strong>
                 <p class="mb-0 mt-1 text-secondary">
-                    Ao contrário de uma guilda permanente, o Grupo de Participação existe <strong>estritamente no contexto de um hackathon específico</strong>. Cada participante só pode pertencer a <strong>um grupo ativo por evento</strong>. Os integrantes podem vir da mesma guilda permanente, de guildas diferentes ou ser participantes avulsos que se inscreveram individualmente.
+                    Ao contrário de uma guild permanente, o Grupo de Participação existe <strong>estritamente no contexto de um hackathon específico</strong>. Cada participante só pode pertencer a <strong>um grupo ativo por evento</strong>. Os integrantes podem vir da mesma guild permanente, de guilds diferentes ou ser participantes avulsos que se inscreveram individualmente.
                 </p>
             </div>
         </div>
@@ -160,11 +160,11 @@ const submitGroup = () => {
 
                         <h4 class="h5 fw-bold text-dark mb-1">{{ group.name }}</h4>
 
-                        <!-- Badge de Guilda de Origem -->
+                        <!-- Badge de Guild de Origem -->
                         <div v-if="group.origin_team" class="mb-2">
                             <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle small">
                                 <font-awesome-icon :icon="['fas', 'users-rectangle']" class="me-1" />
-                                Formado a partir da guilda: {{ group.origin_team.name }}
+                                Formado a partir da guild: {{ group.origin_team.name }}
                             </span>
                         </div>
 
@@ -257,22 +257,22 @@ const submitGroup = () => {
                             :class="creationMode === 'from_guild' ? 'btn-primary' : 'btn-outline-secondary'"
                             @click="creationMode = 'from_guild'"
                         >
-                            A partir de uma Guilda
+                            A partir de uma Guild
                         </button>
                     </div>
                 </div>
 
-                <!-- Caso a partir de guilda -->
+                <!-- Caso a partir de guild -->
                 <div v-if="creationMode === 'from_guild'" class="mb-3">
-                    <label class="form-label fw-semibold small">Selecione sua Guilda Permanente *</label>
+                    <label class="form-label fw-semibold small">Selecione sua Guild Permanente *</label>
                     <select v-model="groupForm.guild_id" class="form-select" required>
-                        <option value="" disabled>Escolha uma guilda...</option>
+                        <option value="" disabled>Escolha uma guild...</option>
                         <option v-for="team in teams" :key="team.id" :value="team.id">
                             {{ team.name }} ({{ team.members?.length || 1 }} membros)
                         </option>
                     </select>
                     <div class="form-text small">
-                        Os membros da guilda que também possuírem inscrição válida neste hackathon serão adicionados ao grupo.
+                        Os membros da guild que também possuírem inscrição válida neste hackathon serão adicionados ao grupo.
                     </div>
                 </div>
 

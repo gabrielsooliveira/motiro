@@ -198,12 +198,12 @@ const getStageStatus = (stage) => {
             <li class="nav-item">
                 <Link
                     class="nav-link"
-                    :class="{ active: $page.url.startsWith('/participante/guildas') || $page.url.startsWith('/participante/equipes') || $page.url.startsWith('/dashboard/teams') || $page.url.startsWith('/dashboard/guilds') }"
-                    :href="route().has('participant.guilds.index') ? route('participant.guilds.index') : route('participant.teams.index')"
+                    :class="{ active: $page.url.startsWith('/participant/guilds') || $page.url.startsWith('/dashboard/guilds') }"
+                    :href="route('participant.guilds.index')"
                 >
                     <font-awesome-icon :icon="['fas', 'shield-halved']" class="me-1" />
-                    Minhas Guildas
-                    <span class="badge ms-1" :class="($page.url.startsWith('/participante/guildas') || $page.url.startsWith('/participante/equipes') || $page.url.startsWith('/dashboard/teams') || $page.url.startsWith('/dashboard/guilds')) ? 'bg-white text-primary' : 'bg-primary-subtle text-primary'">
+                    Minhas Guilds
+                    <span class="badge ms-1" :class="($page.url.startsWith('/participant/guilds') || $page.url.startsWith('/dashboard/guilds')) ? 'bg-white text-primary' : 'bg-primary-subtle text-primary'">
                         {{ teams.length }}
                     </span>
                 </Link>
@@ -212,7 +212,7 @@ const getStageStatus = (stage) => {
                 <Link
                     class="nav-link"
                     :class="{ active: $page.url.startsWith('/participante/grupos') || $page.url.startsWith('/dashboard/groups') }"
-                    :href="route('participant.groups.index')"
+                    :href="route().has('participant.groups.index') ? route('participant.groups.index') : route('participant.guilds.index')"
                 >
                     <font-awesome-icon :icon="['fas', 'people-group']" class="me-1" />
                     Grupos de Participação
@@ -225,7 +225,7 @@ const getStageStatus = (stage) => {
                 <Link
                     class="nav-link"
                     :class="{ active: $page.url.startsWith('/participante/meus-hackathons') || $page.url.startsWith('/dashboard/my-hackathons') }"
-                    :href="route('participant.my_hackathons')"
+                    :href="route().has('participant.my_hackathons') ? route('participant.my_hackathons') : route('participant.hackathons')"
                 >
                     <font-awesome-icon :icon="['fas', 'trophy']" class="me-1" />
                     Meus Hackathons
@@ -323,7 +323,7 @@ const getStageStatus = (stage) => {
                             Minha Inscrição no Hackathon
                         </h5>
                         <Link v-if="activeHackathon" :href="route('hackathon.show', activeHackathon.slug)" class="btn btn-sm btn-outline-primary">
-                            Ver Hackathon &rarr;
+                            Ver Hackathon
                         </Link>
                     </div>
                     <div class="card-body p-4 d-flex flex-column justify-content-between">
@@ -411,8 +411,8 @@ const getStageStatus = (stage) => {
                             <font-awesome-icon :icon="['fas', 'users-rectangle']" class="text-primary me-2" />
                             Minha Equipe
                         </h5>
-                        <Link :href="route('team.show', primaryTeam.id)" class="btn btn-sm btn-outline-primary">
-                            Ver Equipe &rarr;
+                        <Link :href="route('participant.guilds.show', primaryTeam.id)" class="btn btn-sm btn-outline-primary">
+                            Ver Equipe
                         </Link>
                     </div>
 
@@ -447,7 +447,7 @@ const getStageStatus = (stage) => {
                             <div v-else class="text-muted small mt-1">
                                 Esta equipe ainda não está inscrita em nenhum hackathon ativo.
                                 <Link :href="route('participant.hackathons')" class="d-block mt-1 text-primary fw-semibold">
-                                    Encontrar um Hackathon para Inscrever &rarr;
+                                    Encontrar um Hackathon para Inscrever 
                                 </Link>
                             </div>
                         </div>
@@ -458,7 +458,7 @@ const getStageStatus = (stage) => {
                                 <h6 class="fw-bold mb-0 small text-uppercase text-muted">
                                     Integrantes ({{ primaryTeam.members ? primaryTeam.members.length : 1 }})
                                 </h6>
-                                <Link v-if="isLeader" :href="route('team.show', primaryTeam.id)" class="btn btn-sm btn-link p-0 small text-decoration-none">
+                                <Link v-if="isLeader" :href="route('participant.guilds.show', primaryTeam.id)" class="btn btn-sm btn-link p-0 small text-decoration-none">
                                     + Convidar Integrante
                                 </Link>
                             </div>
@@ -660,28 +660,28 @@ const getStageStatus = (stage) => {
         </div>
         </div>
 
-        <!-- SEÇÃO 2: MINHAS GUILDAS -->
+        <!-- SEÇÃO 2: MINHAS GUILDS -->
         <div v-else-if="activeSection === 'guilds'">
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
                     <div>
-                        <h4 class="fw-bold mb-1 text-dark">Minhas Guildas</h4>
+                        <h4 class="fw-bold mb-1 text-dark">Minhas Guilds</h4>
                         <p class="text-muted small mb-0">
-                            Guildas representam suas guildas independentes de hackathons. Você pode reunir membros, convidar participantes por e-mail e organizar equipes sem compromisso com eventos específicos.
+                            Guilds representam suas equipes independentes de hackathons. Você pode reunir membros, convidar participantes por e-mail e organizar equipes sem compromisso com eventos específicos.
                         </p>
                     </div>
                     <button class="btn btn-primary d-flex align-items-center gap-2" @click="$emit('create-team')">
                         <font-awesome-icon :icon="['fas', 'plus']" />
-                        <span>Nova Guilda</span>
+                        <span>Nova Guild</span>
                     </button>
                 </div>
 
                 <div v-if="teams.length === 0" class="text-center py-5 text-muted">
                     <font-awesome-icon :icon="['fas', 'users-rectangle']" class="fs-1 mb-3 opacity-50" />
                     <h5 class="fw-bold text-dark">Você ainda não faz parte de nenhuma equipe permanente.</h5>
-                    <p class="small text-secondary mb-3">Crie sua guilda para convidar amigos e colegas de trabalho!</p>
+                    <p class="small text-secondary mb-3">Crie sua guild para convidar amigos e colegas de trabalho!</p>
                     <button class="btn btn-outline-primary btn-sm" @click="$emit('create-team')">
-                        Criar Minha Primeira Guilda
+                        Criar Minha Primeira Guild
                     </button>
                 </div>
 
@@ -700,8 +700,8 @@ const getStageStatus = (stage) => {
                                 </div>
                             </div>
                             <div class="pt-2 border-top mt-2">
-                                <Link :href="route('team.show', team.id)" class="btn btn-sm btn-outline-primary w-100">
-                                    Gerenciar Guilda
+                                <Link :href="route('participant.guilds.show', team.id)" class="btn btn-sm btn-outline-primary w-100">
+                                    Gerenciar Guild
                                 </Link>
                             </div>
                         </div>
@@ -726,7 +726,7 @@ const getStageStatus = (stage) => {
                     <font-awesome-icon :icon="['fas', 'people-group']" class="fs-1 mb-3 opacity-50" />
                     <h5 class="fw-bold text-dark">Você não está em nenhum grupo de participação ativo.</h5>
                     <p class="small text-secondary mb-3">
-                        Ao se inscrever em um hackathon que exija ou permita equipes, forme um grupo diretamente ou a partir de uma de suas guildas!
+                        Ao se inscrever em um hackathon que exija ou permita equipes, forme um grupo diretamente ou a partir de uma de suas guilds!
                     </p>
                     <Link :href="route('participant.hackathons')" class="btn btn-outline-primary btn-sm">
                         Explorar Hackathons
@@ -748,7 +748,7 @@ const getStageStatus = (stage) => {
                                 </div>
                                 <h5 class="fw-bold text-dark mb-1">{{ group.name }}</h5>
                                 <div v-if="group.origin_team" class="badge bg-info-subtle text-info border border-info-subtle mb-2">
-                                    Originado da guilda: {{ group.origin_team.name }}
+                                    Originado da guild: {{ group.origin_team.name }}
                                 </div>
                                 <p class="text-muted small mb-3">
                                     {{ group.description || 'Grupo competitivo formado para este Hackathon.' }}
@@ -850,7 +850,7 @@ const getStageStatus = (stage) => {
                                 </td>
                                 <td class="text-end pe-3">
                                     <Link v-if="reg.hackathon" :href="route('hackathon.show', reg.hackathon.slug)" class="btn btn-sm btn-outline-primary">
-                                        Acessar &rarr;
+                                        Acessar
                                     </Link>
                                 </td>
                             </tr>

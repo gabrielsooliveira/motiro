@@ -69,7 +69,7 @@ const submitForm = () => {
 <template>
     <ModalDialog
         :is-visible="show"
-        title="Criar Nova Guilda"
+        title="Criar Nova Guild"
         size="lg"
         @close="closeModal"
     >
@@ -78,14 +78,14 @@ const submitForm = () => {
             <div class="alert alert-primary bg-primary bg-opacity-10 border-0 text-primary-emphasis d-flex align-items-start gap-2 p-3 rounded-3 mb-4 small">
                 <font-awesome-icon :icon="['fas', 'circle-info']" class="mt-1 flex-shrink-0" />
                 <div>
-                    <strong>Guilda Permanente:</strong> Cria uma equipe fixa que pertence ao seu perfil no Motirõ. Integrantes convidados não são inscritos automaticamente em hackathons.
+                    <strong>Guild Permanente:</strong> Cria uma equipe fixa que pertence ao seu perfil no Motirõ. Integrantes convidados não são inscritos automaticamente em hackathons.
                 </div>
             </div>
 
-            <!-- Nome da Guilda -->
+            <!-- Nome da Guild -->
             <div class="mb-3">
                 <label class="form-label fw-bold text-dark small mb-1">
-                    Nome da Guilda <span class="text-danger">*</span>
+                    Nome da Guild <span class="text-danger">*</span>
                 </label>
                 <div class="input-group">
                     <span class="input-group-text bg-light border-end-0 text-muted">
@@ -106,10 +106,10 @@ const submitForm = () => {
                 </div>
             </div>
 
-            <!-- Descrição da Guilda -->
+            <!-- Descrição da Guild -->
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <label class="form-label fw-bold text-dark small mb-0">Descrição da Guilda</label>
+                    <label class="form-label fw-bold text-dark small mb-0">Descrição da Guild</label>
                     <span class="text-muted small">{{ form.description?.length || 0 }}/500</span>
                 </div>
                 <textarea
@@ -118,17 +118,17 @@ const submitForm = () => {
                     :class="{ 'is-invalid': form.errors.description }"
                     rows="3"
                     maxlength="500"
-                    placeholder="Conte sobre o propósito da guilda, competências principais ou objetivos em conjunto..."
+                    placeholder="Conte sobre o propósito da guild, competências principais ou objetivos em conjunto..."
                 ></textarea>
                 <div v-if="form.errors.description" class="invalid-feedback d-block small mt-1">
                     {{ form.errors.description }}
                 </div>
             </div>
 
-            <!-- Upload de Imagem / Logo da Guilda -->
+            <!-- Upload de Imagem / Logo da Guild -->
             <div class="mb-4">
                 <label class="form-label fw-bold text-dark small mb-1">
-                    Imagem ou Capa da Guilda (opcional)
+                    Imagem ou Capa da Guild (opcional)
                 </label>
                 <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border">
                     <div
@@ -208,10 +208,10 @@ const submitForm = () => {
                         type="checkbox"
                     />
                     <label class="form-check-label fw-bold small text-dark" for="modal_create_set_as_leader">
-                        Definir-me como líder ativo desta guilda
+                        Definir-me como líder ativo desta guild
                     </label>
                     <p class="text-muted small mb-0 mt-1">
-                        Você poderá transferir ou delegar a liderança para qualquer integrante aceito a qualquer momento nas configurações da guilda.
+                        Você poderá transferir ou delegar a liderança para qualquer integrante aceito a qualquer momento nas configurações da guild.
                     </p>
                 </div>
             </div>
@@ -228,7 +228,7 @@ const submitForm = () => {
                 >
                     <span v-if="form.processing" class="spinner-border spinner-border-sm" role="status"></span>
                     <font-awesome-icon v-else :icon="['fas', 'plus']" />
-                    <span>{{ form.processing ? 'Criando Guilda...' : 'Criar Guilda' }}</span>
+                    <span>{{ form.processing ? 'Criando Guild...' : 'Criar Guild' }}</span>
                 </button>
             </div>
         </form>

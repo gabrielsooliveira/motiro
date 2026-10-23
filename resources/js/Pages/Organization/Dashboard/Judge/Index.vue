@@ -47,7 +47,7 @@ const declareConflict = (assignment) => {
                 <h1 class="fw-bold mb-1">Painel de Avaliação do Juiz</h1>
                 <p class="text-muted mb-0">Avalie os projetos atribuídos e registre eventuais conflitos de interesse.</p>
             </div>
-            <Link :href="route('dashboard.index')" class="btn btn-outline-secondary">
+            <Link :href="route('organization.dashboard')" class="btn btn-outline-secondary">
                 Voltar para Dashboard
             </Link>
         </div>

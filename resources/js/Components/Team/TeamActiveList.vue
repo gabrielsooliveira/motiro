@@ -116,10 +116,10 @@ const resolveHackathon = (team) => {
                             Status: <strong class="text-success">Ativa</strong>
                         </small>
                         <Link
-                            :href="route('participant.teams.show', team.id)"
+                            :href="route('participant.guilds.show', team.id)"
                             class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm"
                         >
-                            Acessar Equipe &rarr;
+                            Acessar Equipe 
                         </Link>
                     </div>
                 </div>
@@ -174,7 +174,7 @@ const resolveHackathon = (team) => {
                             :href="route('hackathon.show', group.hackathon.slug)"
                             class="btn btn-outline-primary btn-sm rounded-pill px-3"
                         >
-                            Ver no Hackathon &rarr;
+                            Ver no Hackathon 
                         </Link>
                     </div>
                 </div>

@@ -27,8 +27,8 @@ class UpdateGuildRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'O nome da guilda é obrigatório.',
-            'name.max' => 'O nome da guilda não pode ultrapassar 255 caracteres.',
+            'name.required' => 'O nome da guild é obrigatório.',
+            'name.max' => 'O nome da guild não pode ultrapassar 255 caracteres.',
             'description.max' => 'A descrição não pode ultrapassar 2000 caracteres.',
             'image.image' => 'O arquivo enviado deve ser uma imagem válida.',
             'image.mimes' => 'A imagem deve estar nos formatos JPEG, PNG, JPG, WEBP ou GIF.',

@@ -10,24 +10,34 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureOrganizationContext
 {
     /**
-     * Handle an incoming request for institutional context.
+     * Garante que o usuário autenticado possua vínculo ativo com a organização.
+     * Impede que usuários puramente participantes acessem a área administrativa.
      */
     public function handle(Request $request, Closure $next, ?string $requiredRole = null): Response
     {
         $user = $request->user();
+
         if (!$user) {
             return redirect()->route('organization.login')
                 ->with('error', 'Faça login na Área da Organização para acessar.');
         }
 
+        // Verifica se a conta possui ao menos uma organização vinculada
+        if (!$user->hasOrganizationProfile()) {
+            abort(403, 'Acesso restrito: sua conta não possui vínculo ativo com nenhuma organização.');
+        }
+
         $activeOrg = ContextService::getActiveOrganization($request);
 
-        // If no active organization in session, try to resolve safely
+        // Se nenhuma organização estiver ativa na sessão, resolve com segurança
         if (!$activeOrg) {
-            $userOrgs = $user->organizations()->wherePivot('is_active', true)->get();
+            if (method_exists($user, 'ensureOwnershipIntegrity')) {
+                $user->ensureOwnershipIntegrity();
+            }
+
+            $userOrgs = $user->activeOrganizations()->get();
 
             if ($userOrgs->isEmpty()) {
-                // Deny administrative access without leaking or redirecting to participant portal
                 abort(403, 'Acesso restrito: você não possui vínculo ativo com nenhuma organização.');
             }
 
@@ -39,12 +49,12 @@ class EnsureOrganizationContext
             }
         }
 
-        // Verify specific role if requested (e.g. 'admin')
+        // Validação de papel restrito (ex: admin ou owner)
         if ($requiredRole === 'admin') {
             $isOwner = $activeOrg->owner_id === $user->id;
             $isAdmin = $user->organizations()
                 ->where('organizations.id', $activeOrg->id)
-                ->wherePivot('role', 'admin')
+                ->whereIn('organization_user.role', ['owner', 'admin'])
                 ->wherePivot('is_active', true)
                 ->exists();
 

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Representa um Convite ou Solicitação de Guilda Permanente.
+ * Representa um Convite ou Solicitação de Guild Permanente.
  */
 class GuildInvitation extends Model
 {

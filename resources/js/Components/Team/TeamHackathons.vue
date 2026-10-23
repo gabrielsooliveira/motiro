@@ -33,7 +33,7 @@ const openFormModal = (reg) => {
 const submitCreateTeamForHackathon = () => {
     if (!selectedRegistration.value?.hackathon_id) return;
 
-    // Se selecionou uma guilda de origem, usa a rota especializada de formar a partir da guilda
+    // Se selecionou uma guild de origem, usa a rota especializada de formar a partir da guild
     if (form.origin_guild_id && route().has("participant.groups.form_from_guild")) {
         form.post(route("participant.groups.form_from_guild", selectedRegistration.value.hackathon_id), {
             onSuccess: () => {
@@ -114,7 +114,7 @@ const submitCreateTeamForHackathon = () => {
                             :href="route('hackathon.show', reg.hackathon.slug)"
                             class="text-decoration-none text-muted small"
                         >
-                            Ver detalhes do evento &rarr;
+                            Ver detalhes do evento 
                         </Link>
 
                         <button
@@ -143,20 +143,20 @@ const submitCreateTeamForHackathon = () => {
                     Evento: <strong class="text-dark">{{ selectedRegistration.hackathon.title }}</strong>
                 </div>
 
-                <!-- Opção de Formar a partir de uma Guilda -->
+                <!-- Opção de Formar a partir de uma Guild -->
                 <div v-if="guilds && guilds.length > 0" class="mb-3 p-3 bg-light rounded-3 border">
                     <label class="form-label small fw-bold text-dark mb-1">
                         <font-awesome-icon :icon="['fas', 'shield-halved']" class="text-primary me-1" />
-                        Puxar integrantes da sua Guilda (Opcional)
+                        Puxar integrantes da sua Guild (Opcional)
                     </label>
                     <select v-model="form.origin_guild_id" class="form-select form-select-sm">
-                        <option value="">Formar equipe avulsa (sem guilda)</option>
+                        <option value="">Formar equipe avulsa (sem guild)</option>
                         <option v-for="g in guilds" :key="g.id" :value="g.id">
                             {{ g.name }} ({{ g.members ? g.members.length : 0 }} membros)
                         </option>
                     </select>
                     <div class="form-text small mt-1">
-                        Seus colegas de guilda inscritos neste hackathon serão adicionados automaticamente à equipe.
+                        Seus colegas de guild inscritos neste hackathon serão adicionados automaticamente à equipe.
                     </div>
                 </div>
 

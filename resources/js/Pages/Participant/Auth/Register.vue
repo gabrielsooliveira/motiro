@@ -1,18 +1,12 @@
 <script setup>
 import { useForm, Head, Link } from "@inertiajs/vue3";
 import { ref } from "vue";
+import PasswordStrength from "@/js/Components/PasswordStrength.vue";
 
-const props = defineProps({
-    initialType: {
-        type: String,
-        default: null,
-    },
-});
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 
-const selectedType = ref(props.initialType || null);
-
-const competitorForm = useForm({
-    type: "competitor",
+const form = useForm({
     name: "",
     email: "",
     password: "",
@@ -20,268 +14,184 @@ const competitorForm = useForm({
     terms: false,
 });
 
-const organizationForm = useForm({
-    type: "organization",
-    name: "",
-    email: "",
-    organization_type: "Empresa",
-    website: "",
-    password: "",
-    password_confirmation: "",
-    terms: false,
-});
-
-const submitCompetitor = () => {
-    competitorForm.post(route("register.store"));
-};
-
-const submitOrganization = () => {
-    organizationForm.post(route("register.store"));
+const submit = () => {
+    form.post(route("participant.register.store"), {
+        preserveScroll: true,
+    });
 };
 </script>
 
 <template>
     <Head>
-        <title>Criar Conta</title>
+        <title>Área do Participante | Criar Conta</title>
     </Head>
 
-    <div class="p-3 auth-register-container">
-        
-        <div class="text-center mb-4">
-            <Link href="#" class="text-decoration-none">
-                <h2 class="fw-bold text-white title-page mb-1">Motirõ</h2>
+    <div class="mb-4 text-center">
+        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 rounded-pill small mb-2">
+            <font-awesome-icon :icon="['fas', 'user-astronaut']" class="me-1" />
+            Portal do Participante
+        </span>
+        <h2 class="h3 fw-bold text-white mb-1">Crie sua Conta de Participante</h2>
+        <p class="text-white text-opacity-75 small mb-0">
+            Descubra desafios, monte equipes multidisciplinares e submeta projetos inovadores.
+        </p>
+    </div>
+
+    <form @submit.prevent="submit" class="auth-form">
+        <!-- Nome Completo -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold text-white small" for="name">Nome Completo *</label>
+            <input
+                id="name"
+                type="text"
+                v-model="form.name"
+                class="form-control"
+                :class="{ 'is-invalid': form.errors.name }"
+                placeholder="ex: Ana Clara Santos"
+                required
+                autofocus
+            />
+            <div v-if="form.errors.name" class="invalid-feedback d-block">
+                {{ form.errors.name }}
+            </div>
+        </div>
+
+        <!-- E-mail -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold text-white small" for="email">E-mail *</label>
+            <input
+                id="email"
+                type="email"
+                v-model="form.email"
+                class="form-control"
+                :class="{ 'is-invalid': form.errors.email }"
+                placeholder="seu.email@exemplo.com"
+                required
+                autocomplete="email"
+            />
+            <div v-if="form.errors.email" class="invalid-feedback d-block">
+                {{ form.errors.email }}
+            </div>
+        </div>
+
+        <!-- Senha e Confirmação -->
+        <div class="row g-2 mb-3">
+            <div class="col-12 col-sm-6">
+                <label class="form-label fw-semibold text-white small" for="password">Senha *</label>
+                <div class="input-group">
+                    <input
+                        id="password"
+                        :type="showPassword ? 'text' : 'password'"
+                        v-model="form.password"
+                        class="form-control"
+                        :class="{ 'is-invalid': form.errors.password }"
+                        placeholder="Mínimo 6 dígitos"
+                        required
+                        autocomplete="new-password"
+                    />
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary text-white"
+                        @click="showPassword = !showPassword"
+                        tabindex="-1"
+                        aria-label="Alternar visibilidade da senha"
+                    >
+                        <font-awesome-icon :icon="showPassword ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
+                    </button>
+                </div>
+
+                <!-- Password Strength Meter (Bootstrap 6 style) -->
+                <PasswordStrength :password="form.password" />
+
+                <div v-if="form.errors.password" class="invalid-feedback d-block mt-1">
+                    {{ form.errors.password }}
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6">
+                <label class="form-label fw-semibold text-white small" for="password_confirmation">Confirmar Senha *</label>
+                <div class="input-group">
+                    <input
+                        id="password_confirmation"
+                        :type="showConfirmPassword ? 'text' : 'password'"
+                        v-model="form.password_confirmation"
+                        class="form-control"
+                        placeholder="Repita sua senha"
+                        required
+                        autocomplete="new-password"
+                    />
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary text-white"
+                        @click="showConfirmPassword = !showConfirmPassword"
+                        tabindex="-1"
+                        aria-label="Alternar visibilidade da confirmação de senha"
+                    >
+                        <font-awesome-icon :icon="showConfirmPassword ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Termos de Uso e LGPD -->
+        <div class="form-check mb-4">
+            <input
+                type="checkbox"
+                v-model="form.terms"
+                class="form-check-input"
+                id="terms"
+                required
+            />
+            <label class="form-check-label text-white text-opacity-75 small" for="terms">
+                Concordo com os <a href="#" class="text-warning text-decoration-underline">Termos de Uso</a> e autorizo o tratamento de dados conforme a <a href="#" class="text-warning text-decoration-underline">Política de Privacidade (LGPD)</a>.
+            </label>
+            <div v-if="form.errors.terms" class="invalid-feedback d-block">
+                {{ form.errors.terms }}
+            </div>
+        </div>
+
+        <!-- Botão de Cadastro -->
+        <div class="d-grid mb-3">
+            <button
+                type="submit"
+                class="btn btn-primary fw-semibold py-2 d-flex align-items-center justify-content-center gap-2"
+                :disabled="form.processing"
+            >
+                <span v-if="form.processing" class="spinner-border spinner-border-sm" role="status"></span>
+                <span>{{ form.processing ? "Criando conta..." : "Criar Conta de Participante" }}</span>
+                <font-awesome-icon v-if="!form.processing" :icon="['fas', 'arrow-right']" class="small" />
+            </button>
+        </div>
+    </form>
+
+    <!-- Links de Navegação e Contexto -->
+    <div class="text-center pt-3 border-top border-secondary-subtle">
+        <p class="small text-white mb-2">
+            Já possui uma conta no Motirõ?
+            <Link
+                :href="route('participant.login')"
+                class="text-decoration-none fw-semibold text-warning"
+            >
+                Fazer login
             </Link>
-            <p class="text-light text-opacity-75 small">
-                Conectando inovação, talentos e organizações em Hackathons.
-            </p>
-        </div>
+        </p>
 
-        
-        <div v-if="!selectedType" class="animate__animated animate__fadeIn">
-            <h5 class="fw-bold text-white text-center mb-3">Como você deseja utilizar o Motirõ?</h5>
-            
-            <div class="card bg-dark border-secondary mb-3 shadow-sm text-white">
-                <div class="card-body p-4 text-center">
-                    <div class="mb-3 text-primary fs-1">
-                        <font-awesome-icon :icon="['fas', 'user-astronaut']" />
-                    </div>
-                    <h5 class="fw-bold mb-1">Participante</h5>
-                    <p class="text-light text-opacity-75 small mb-3">
-                        Participe de Hackathons, forme ou encontre equipes, submeta projetos e mostre seu potencial.
-                    </p>
-                    <button class="btn btn-primary w-100 fw-semibold" @click="selectedType = 'competitor'">
-                        Criar Conta de Participante
-                    </button>
-                </div>
-            </div>
+        <p class="small text-white mb-3">
+            Representa uma instituição ou deseja organizar um evento?
+            <Link
+                :href="route('organization.register')"
+                class="text-decoration-none fw-semibold text-info"
+            >
+                Cadastrar Organização
+            </Link>
+        </p>
 
-            <div class="card bg-dark border-secondary shadow-sm text-white">
-                <div class="card-body p-4 text-center">
-                    <div class="mb-3 text-info fs-1">
-                        <font-awesome-icon :icon="['fas', 'building']" />
-                    </div>
-                    <h5 class="fw-bold mb-1">Organização</h5>
-                    <p class="text-light text-opacity-75 small mb-3">
-                        Crie e gerencie seus próprios Hackathons, etapas, regras, equipes e bancas de juízes.
-                    </p>
-                    <button class="btn btn-outline-light w-100 fw-semibold" @click="selectedType = 'organization'">
-                        Cadastrar Organização
-                    </button>
-                </div>
-            </div>
-
-            <div class="text-center mt-4">
-                <span class="text-light text-opacity-75 small">Já possui uma conta? </span>
-                <Link :href="route('login')" class="text-primary text-decoration-none fw-semibold small">
-                    Faça login
-                </Link>
-            </div>
-        </div>
-
-        
-        <div v-else-if="selectedType === 'competitor'">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <button type="button" class="btn btn-link link-light text-decoration-none p-0 small" @click="selectedType = null">
-                    &larr; Escolher outro perfil
-                </button>
-                <span class="badge bg-primary">Perfil: Participante</span>
-            </div>
-
-            <form @submit.prevent="submitCompetitor">
-                <div class="mb-3">
-                    <label class="form-label text-white fw-semibold small" for="comp_name">Nome Completo</label>
-                    <input
-                        id="comp_name"
-                        type="text"
-                        v-model="competitorForm.name"
-                        class="form-control"
-                        placeholder="Seu nome"
-                        required
-                    />
-                    <span v-if="competitorForm.errors.name" class="text-danger small">{{ competitorForm.errors.name }}</span>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-white fw-semibold small" for="comp_email">E-mail</label>
-                    <input
-                        id="comp_email"
-                        type="email"
-                        v-model="competitorForm.email"
-                        class="form-control"
-                        placeholder="seu@email.com"
-                        required
-                    />
-                    <span v-if="competitorForm.errors.email" class="text-danger small">{{ competitorForm.errors.email }}</span>
-                </div>
-
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <label class="form-label text-white fw-semibold small" for="comp_pass">Senha</label>
-                        <input
-                            id="comp_pass"
-                            type="password"
-                            v-model="competitorForm.password"
-                            class="form-control"
-                            required
-                        />
-                        <span v-if="competitorForm.errors.password" class="text-danger small">{{ competitorForm.errors.password }}</span>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-white fw-semibold small" for="comp_conf">Confirmar Senha</label>
-                        <input
-                            id="comp_conf"
-                            type="password"
-                            v-model="competitorForm.password_confirmation"
-                            class="form-control"
-                            required
-                        />
-                    </div>
-                </div>
-
-                <div class="form-check mb-3">
-                    <input type="checkbox" v-model="competitorForm.terms" class="form-check-input" id="comp_terms" required />
-                    <label class="form-check-label text-light text-opacity-75 small" for="comp_terms">
-                        Concordo com os Termos de Uso e Política de Privacidade (LGPD).
-                    </label>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100 fw-semibold mb-3" :disabled="competitorForm.processing">
-                    Finalizar Cadastro de Participante
-                </button>
-
-                <div class="text-center">
-                    <span class="text-light text-opacity-75 small">Já possui uma conta? </span>
-                    <Link :href="route('login')" class="text-primary text-decoration-none fw-semibold small">
-                        Faça login
-                    </Link>
-                </div>
-            </form>
-        </div>
-
-        
-        <div v-else-if="selectedType === 'organization'">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <button type="button" class="btn btn-link link-light text-decoration-none p-0 small" @click="selectedType = null">
-                    &larr; Escolher outro perfil
-                </button>
-                <span class="badge bg-info text-dark">Perfil: Organização</span>
-            </div>
-
-            <form @submit.prevent="submitOrganization">
-                <div class="mb-3">
-                    <label class="form-label text-white fw-semibold small" for="org_name">Nome da Organização / Empresa</label>
-                    <input
-                        id="org_name"
-                        type="text"
-                        v-model="organizationForm.name"
-                        class="form-control"
-                        placeholder="ex: Tech Inovações, Universidade XPTO"
-                        required
-                    />
-                    <span v-if="organizationForm.errors.name" class="text-danger small">{{ organizationForm.errors.name }}</span>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-white fw-semibold small" for="org_type">Tipo de Organização</label>
-                    <select id="org_type" v-model="organizationForm.organization_type" class="form-select" required>
-                        <option value="Empresa">Empresa</option>
-                        <option value="Universidade">Universidade</option>
-                        <option value="Escola">Escola</option>
-                        <option value="Organização social">Organização social</option>
-                        <option value="Órgão público">Órgão público</option>
-                        <option value="Comunidade">Comunidade</option>
-                        <option value="Startup">Startup</option>
-                        <option value="Outro">Outro</option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-white fw-semibold small" for="org_email">E-mail Corporativo / Organizacional</label>
-                    <input
-                        id="org_email"
-                        type="email"
-                        v-model="organizationForm.email"
-                        class="form-control"
-                        placeholder="contato@organizacao.com"
-                        required
-                    />
-                    <span v-if="organizationForm.errors.email" class="text-danger small">{{ organizationForm.errors.email }}</span>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-white fw-semibold small" for="org_website">Website Oficial (opcional)</label>
-                    <input
-                        id="org_website"
-                        type="url"
-                        v-model="organizationForm.website"
-                        class="form-control"
-                        placeholder="https://suaorganizacao.com"
-                    />
-                    <span v-if="organizationForm.errors.website" class="text-danger small">{{ organizationForm.errors.website }}</span>
-                </div>
-
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <label class="form-label text-white fw-semibold small" for="org_pass">Senha</label>
-                        <input
-                            id="org_pass"
-                            type="password"
-                            v-model="organizationForm.password"
-                            class="form-control"
-                            required
-                        />
-                        <span v-if="organizationForm.errors.password" class="text-danger small">{{ organizationForm.errors.password }}</span>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-white fw-semibold small" for="org_conf">Confirmar Senha</label>
-                        <input
-                            id="org_conf"
-                            type="password"
-                            v-model="organizationForm.password_confirmation"
-                            class="form-control"
-                            required
-                        />
-                    </div>
-                </div>
-
-                <div class="form-check mb-3">
-                    <input type="checkbox" v-model="organizationForm.terms" class="form-check-input" id="org_terms" required />
-                    <label class="form-check-label text-light text-opacity-75 small" for="org_terms">
-                        Concordo com os Termos de Uso e Política de Privacidade (LGPD).
-                    </label>
-                </div>
-
-                <button type="submit" class="btn btn-info text-dark w-100 fw-semibold mb-3" :disabled="organizationForm.processing">
-                    Criar Organização & Acessar Painel
-                </button>
-
-                <div class="text-center">
-                    <span class="text-light text-opacity-75 small">Já possui uma conta? </span>
-                    <Link :href="route('login')" class="text-primary text-decoration-none fw-semibold small">
-                        Faça login
-                    </Link>
-                </div>
-            </form>
-        </div>
+        <Link
+            :href="route('home')"
+            class="text-decoration-none text-white text-opacity-75 small"
+        >
+            <font-awesome-icon :icon="['fas', 'arrow-left']" class="me-1" />
+            Voltar para a página inicial
+        </Link>
     </div>
 </template>

@@ -30,7 +30,7 @@ createInertiaApp({
         };
         const page = resolvePageComponent(name, pages);
         page.then(module => {
-            if (name === 'Auth/SelectContext') {
+            if (name === 'Auth/SelectContext' || name === 'Organization/SelectContext' || name === 'Participant/CompleteProfile') {
                 module.default.layout = null;
             } else if (name.startsWith('Participant/Auth/') || name.startsWith('Organization/Auth/')) {
                 module.default.layout = LayoutAuth;

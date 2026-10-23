@@ -33,8 +33,8 @@ const toggleView = () => {
     </div>
 
     
-    <div v-if="form.errors.email || $page.props.flash?.error" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" role="alert">
-        {{ form.errors.email || $page.props.flash?.error }}
+    <div v-if="form.errors.email || form.errors.error || $page.props.flash?.error" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" role="alert">
+        {{ form.errors.email || form.errors.error || $page.props.flash?.error }}
     </div>
 
     <form @submit.prevent="form.post(route('organization.login.store'))">
@@ -133,7 +133,7 @@ const toggleView = () => {
         </p>
 
         <Link
-            href="#"
+            :href="route('home')"
             class="text-decoration-none text-white small"
         >
             <font-awesome-icon icon="fa-solid fa-arrow-left" class="me-1" />

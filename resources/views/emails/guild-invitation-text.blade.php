@@ -1,14 +1,14 @@
-Convite para Guilda — Motirõ
-=============================
+Convite para Guild — Motirõ
+===========================
 
 Olá,
 
-{{ $inviter ? $inviter->name : 'Um participante' }} convidou você para ingressar na guilda permanente {{ $guild->name }} na plataforma Motirõ.
+{{ $inviter ? $inviter->name : 'Um participante' }} convidou você para ingressar na guild permanente {{ $guild->name }} na plataforma Motirõ.
 
-Guilda: {{ $guild->name }}
-Descrição: {{ $guild->description ?: 'Guilda independente de hackathons para colaboração e desenvolvimento de projetos.' }}
+Guild: {{ $guild->name }}
+Descrição: {{ $guild->description ?: 'Guild independente de hackathons para colaboração e desenvolvimento de projetos.' }}
 
-Para visualizar os detalhes da guilda e responder ao convite (aceitar ou recusar), acesse o link abaixo:
+Para visualizar os detalhes da guild e responder ao convite (aceitar ou recusar), acesse o link abaixo:
 {{ $inviteUrl }}
 
 @if($invitation->expires_at)

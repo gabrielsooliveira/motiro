@@ -109,11 +109,11 @@ const totalMembersCount = computed(() => {
 
             <div class="d-flex gap-2">
                 <Link
-                    href="#"
+                    :href="route('participant.guilds.index')"
                     class="btn btn-outline-secondary rounded-pill px-3 d-inline-flex align-items-center gap-2 shadow-sm"
                 >
                     <font-awesome-icon :icon="['fas', 'shield-halved']" />
-                    <span>Ver Minhas Guildas</span>
+                    <span>Ver Minhas Guilds</span>
                 </Link>
                 <button
                     type="button"

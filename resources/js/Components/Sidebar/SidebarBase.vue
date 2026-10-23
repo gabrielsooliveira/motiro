@@ -92,7 +92,7 @@ const navbarClass = computed(() => {
                 <font-awesome-icon :icon="['fas', 'bars']" size="lg" />
             </button>
 
-            <Link href="#" class="text-decoration-none fw-bold text-dark fs-5">
+            <Link :href="route('home')" class="text-decoration-none fw-bold text-dark fs-5">
                 Motirõ
             </Link>
         </div>
@@ -102,7 +102,7 @@ const navbarClass = computed(() => {
     <aside class="sidebar d-none d-lg-flex flex-column justify-content-between z-5">
         <div class="sidebar-top">
             <div class="px-3 pt-3 pb-2 border-bottom d-flex align-items-center justify-content-between">
-                <Link href="#" class="d-flex align-items-center gap-2 text-decoration-none">
+                <Link :href="route('home')" class="d-flex align-items-center gap-2 text-decoration-none">
                     <span class="fs-4 fw-bold tracking-tight sidebar-brand">Motirõ</span>
                 </Link>
                 <span v-if="badgeLabel" class="badge px-2 py-1 rounded-pill" :class="badgeClass">

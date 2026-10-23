@@ -63,9 +63,9 @@ import { Link, usePage } from "@inertiajs/vue3";
             <div class="border-top pt-3 mt-4 d-flex flex-column flex-sm-row justify-content-between align-items-center text-muted small">
                 <p class="mb-2 mb-sm-0">&copy; {{ new Date().getFullYear() }} Motirõ. Todos os direitos reservados.</p>
                 <div class="d-flex gap-3">
-                    <Link href="#" class="text-muted text-decoration-none">Blog</Link>
-                    <Link href="#" class="text-muted text-decoration-none">Dúvidas Frequentes</Link>
-                    <Link href="#" class="text-muted text-decoration-none">Sobre Nós</Link>
+                    <Link :href="route('news.index')" class="text-muted text-decoration-none">Blog</Link>
+                    <Link :href="route('home')" class="text-muted text-decoration-none">Dúvidas Frequentes</Link>
+                    <Link :href="route('home')" class="text-muted text-decoration-none">Sobre Nós</Link>
                 </div>
             </div>
         </div>

@@ -12,10 +12,12 @@ use App\Http\Requests\Organization\StoreOrganizationRequest;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class RegisterController extends Controller
@@ -33,6 +35,9 @@ class RegisterController extends Controller
         'Outra',
     ];
 
+    /**
+     * Exibe o formulário de cadastro de organização.
+     */
     public function index(Request $request): Response
     {
         return $this->create($request);
@@ -40,12 +45,13 @@ class RegisterController extends Controller
 
     /**
      * Renderiza a tela de cadastro de organização em etapas.
-     * Pula a Etapa 1 automaticamente se o usuário já estiver autenticado.
+     * Identifica usuário logado para avançar automaticamente a Etapa 1.
      */
     public function create(Request $request): Response
     {
         $invitationToken = $request->query('invitation');
         $invitation = null;
+
         if ($invitationToken) {
             $invitation = OrganizationInvitation::with('organization')
                 ->where('token', $invitationToken)
@@ -60,7 +66,7 @@ class RegisterController extends Controller
             'email' => $user->email,
         ] : null;
 
-        return inertia('Organization/Auth/Register', [
+        return Inertia::render('Organization/Auth/Register', [
             'initialType' => $request->query('type', 'organization'),
             'authUser' => $authUser,
             'categories' => self::ORGANIZATION_CATEGORIES,
@@ -74,13 +80,15 @@ class RegisterController extends Controller
     }
 
     /**
-     * Etapa 1 (Opção A) — Autentica uma conta pessoal existente para prosseguir no fluxo.
+     * Etapa 1 (Opção A) — Autentica uma conta pessoal existente no fluxo de cadastro.
      */
-    public function loginPersonalAccount(LoginPersonalAccountRequest $request)
+    public function loginPersonalAccount(LoginPersonalAccountRequest $request): JsonResponse|RedirectResponse
     {
-        if (!Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+        $credentials = $request->only('email', 'password');
+
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()->withErrors([
-                'login_email' => 'As credenciais fornecidas não coincidem com nossos registros. Verifique seu e-mail e senha ou recupere seu acesso.',
+                'login_email' => 'As credenciais fornecidas não coincidem com nossos registros. Verifique seu e-mail e senha.',
             ]);
         }
 
@@ -98,17 +106,16 @@ class RegisterController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Conta conectada com sucesso! Prossiga com as informações da sua organização.');
+        return back()->with('success', 'Conta pessoal autenticada! Prossiga com os dados da organização.');
     }
 
     /**
-     * Etapa 1 (Opção B) — Criação de conta pessoal única no Motirõ.
+     * Etapa 1 (Opção B) — Cria uma conta pessoal única no Motirõ.
      */
     public function registerPersonalAccount(
         StoreUserAccountRequest $request,
-        ?CreateUserAccountAction $createUserAction = null
-    ) {
-        $createUserAction ??= app(CreateUserAccountAction::class);
+        CreateUserAccountAction $createUserAction
+    ): JsonResponse|RedirectResponse {
         $user = $createUserAction->execute($request->validated());
 
         Auth::login($user);
@@ -125,55 +132,25 @@ class RegisterController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Conta pessoal criada com sucesso! Agora vamos aos dados da organização.');
+        return back()->with('success', 'Conta pessoal criada com sucesso! Prossiga com os dados da organização.');
     }
 
     /**
-     * Etapa 3 — Criação definitiva da Organização com vínculo administrativo atômico.
+     * Etapa 3 — Criação definitiva da Organização com vínculo atômico de administrador.
      */
     public function store(
         Request $request,
-        ?CreateUserAccountAction $createUserAction = null,
-        ?CreateOrganizationAction $createOrgAction = null,
-        ?AcceptOrganizationInvitationAction $acceptInviteAction = null
-    ) {
-        $createUserAction ??= app(CreateUserAccountAction::class);
-        $createOrgAction ??= app(CreateOrganizationAction::class);
-        $acceptInviteAction ??= app(AcceptOrganizationInvitationAction::class);
-
-        $type = $request->input('type', 'organization');
-
-        // Se o tipo for participante, delega para o controller de participante
-        if ($type === 'competitor') {
-            return app(\App\Http\Controllers\Auth\Participant\RegisterController::class)->store($request);
+        CreateUserAccountAction $createUserAction,
+        CreateOrganizationAction $createOrgAction,
+        AcceptOrganizationInvitationAction $acceptInviteAction
+    ): RedirectResponse {
+        // Aceitação de convite institucional
+        if ($request->filled('invitation_token')) {
+            return $this->handleInvitation($request, $createUserAction, $acceptInviteAction);
         }
 
-        /** @var StoreOrganizationRequest $orgRequest */
-        $orgRequest = $request instanceof StoreOrganizationRequest
-            ? $request
-            : app(StoreOrganizationRequest::class);
-
-        // Caso seja aceitação de convite institucional
-        $invitationToken = $request->input('invitation_token');
-        if ($invitationToken) {
-            $invitation = OrganizationInvitation::where('token', $invitationToken)
-                ->where('status', 'pending')
-                ->first();
-
-            if ($invitation) {
-                return $this->handleInvitation(
-                    $request,
-                    $invitation,
-                    $createUserAction,
-                    $acceptInviteAction
-                );
-            }
-        }
-
-        // Resolução do usuário responsável pela criação
+        // Resolução do usuário autenticado responsável
         $user = Auth::user();
-
-        // Suporte a requisição combinada (guest enviando criação de conta pessoal + organização ao mesmo tempo)
         if (!$user) {
             $user = $this->resolveUserFromGuestPayload($request, $createUserAction);
             if (!$user) {
@@ -183,12 +160,14 @@ class RegisterController extends Controller
             }
         }
 
+        /** @var StoreOrganizationRequest $orgRequest */
+        $orgRequest = app(StoreOrganizationRequest::class);
         $orgName = $orgRequest->resolvedOrganizationName();
+
         if (empty($orgName)) {
             return back()->withErrors(['organization_name' => 'O nome da organização é obrigatório.']);
         }
 
-        // Criação atômica da organização via Action
         $targetOrg = $createOrgAction->execute($user, [
             'name' => $orgName,
             'type' => $orgRequest->resolvedOrganizationType(),
@@ -198,15 +177,13 @@ class RegisterController extends Controller
             'logo' => $orgRequest->file('logo') ?: $orgRequest->input('logo'),
         ], $request);
 
-        // Se a chamada veio da rota unificada register.store ou pediu redirecionamento direto
-        if ($request->routeIs('register.store') || $request->input('redirect_to') === 'dashboard') {
+        if ($request->input('redirect_to') === 'dashboard') {
             return redirect()->route('organization.dashboard')
                 ->with('success', 'Organização cadastrada com sucesso! Bem-vindo ao painel.');
         }
 
-        // Redireciona para a Etapa 4 (Conclusão e acesso ao painel)
         return redirect()->route('organization.register.success', ['organization' => $targetOrg->id])
-            ->with('success', 'Organização cadastrada com sucesso! Agora você pode configurar seu espaço e começar a organizar seus hackathons.');
+            ->with('success', 'Organização cadastrada com sucesso! Configure seu espaço para começar.');
     }
 
     /**
@@ -219,7 +196,6 @@ class RegisterController extends Controller
             return redirect()->route('organization.login');
         }
 
-        // Garante que o usuário autenticado tenha vínculo com a organização criada
         $hasLink = $organization->owner_id === $user->id ||
             $organization->users()->where('users.id', $user->id)->exists();
 
@@ -227,7 +203,7 @@ class RegisterController extends Controller
             abort(403, 'Acesso não autorizado aos dados desta organização.');
         }
 
-        return inertia('Organization/Auth/Success', [
+        return Inertia::render('Organization/Auth/Success', [
             'organization' => [
                 'id' => $organization->id,
                 'name' => $organization->name,
@@ -246,20 +222,13 @@ class RegisterController extends Controller
     }
 
     /**
-     * Auxiliar para resolver usuário a partir de payload combinado
+     * Auxiliar para resolver usuário se enviado em payload convidado combinado
      */
     private function resolveUserFromGuestPayload(Request $request, CreateUserAccountAction $createUserAction): ?User
     {
-        $userName = $request->input('personal_name') ?: $request->input('user_name');
-        $userEmail = $request->input('personal_email') ?: $request->input('user_email');
+        $userName = $request->input('personal_name') ?: $request->input('user_name') ?: $request->input('name');
+        $userEmail = $request->input('personal_email') ?: $request->input('user_email') ?: $request->input('email');
         $password = $request->input('password');
-
-        if (!$userName && $request->has('name')) {
-            $userName = $request->input('name');
-        }
-        if (!$userEmail && $request->has('email')) {
-            $userEmail = $request->input('email');
-        }
 
         if (!$userEmail || !$password) {
             return null;
@@ -272,9 +241,7 @@ class RegisterController extends Controller
         $existingUser = User::where('email', strtolower(trim($userEmail)))->first();
         if ($existingUser) {
             if (!Hash::check($password, $existingUser->password)) {
-                abort(back()->withErrors([
-                    'login_email' => 'Já existe uma conta para este e-mail pessoal, mas a senha informada não confere.',
-                ]));
+                return null;
             }
             $user = $existingUser;
         } else {
@@ -292,28 +259,39 @@ class RegisterController extends Controller
     }
 
     /**
-     * Processa aceitação de convite institucional delegando para Actions
+     * Processa a aceitação de convite institucional
      */
     private function handleInvitation(
         Request $request,
-        OrganizationInvitation $invitation,
         CreateUserAccountAction $createUserAction,
         AcceptOrganizationInvitationAction $acceptInviteAction
-    ) {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'confirmed', 'min:6'],
-        ]);
+    ): RedirectResponse {
+        $invitation = OrganizationInvitation::where('token', $request->input('invitation_token'))
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$invitation) {
+            return back()->withErrors([
+                'invitation_token' => 'Este convite não foi encontrado ou já expirou.',
+            ]);
+        }
 
         $currentUser = Auth::user();
 
         if ($currentUser) {
             $user = $currentUser;
         } else {
+            $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'password' => ['required', 'confirmed', 'min:6'],
+            ]);
+
             $existingUser = User::where('email', $invitation->email)->first();
             if ($existingUser) {
                 if (!Hash::check($request->password, $existingUser->password)) {
-                    abort(422, 'A senha informada não confere com a conta existente vinculada a este convite.');
+                    return back()->withErrors([
+                        'password' => 'A senha informada não confere com a conta existente vinculada a este convite.',
+                    ]);
                 }
                 $user = $existingUser;
             } else {
@@ -323,15 +301,12 @@ class RegisterController extends Controller
                     'password' => $request->password,
                 ]);
             }
+
+            Auth::login($user);
+            $request->session()->regenerate();
         }
 
         $acceptInviteAction->execute($invitation, $user, $request);
-
-        if (!Auth::check()) {
-            Auth::login($user);
-        }
-
-        $request->session()->regenerate();
 
         return redirect()->route('organization.dashboard')
             ->with('success', 'Convite aceito! Bem-vindo(a) à equipe da organização.');

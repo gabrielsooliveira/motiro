@@ -1,10 +1,17 @@
 <script setup>
-import { Link } from "@inertiajs/vue3";
+import { computed } from "vue";
+import { Link, usePage } from "@inertiajs/vue3";
 import SidebarBase from "@/js/Components/Sidebar/SidebarBase.vue";
+
+const page = usePage();
+const user = computed(() => page.props.user || page.props.auth?.user);
+const context = computed(() => page.props.context || {});
+const activeOrg = computed(() => context.value.active_organization);
+const hasParticipantProfile = computed(() => !!user.value?.has_participant_profile);
 </script>
 
 <template>
-    <SidebarBase badge-label="Organização" badge-class="brand-badge">
+    <SidebarBase :badge-label="activeOrg ? activeOrg.name : 'Organização'" badge-class="brand-badge text-truncate">
         <template #default="{ closeMenu }">
             <div class="d-flex flex-column gap-3">
                 <div>
@@ -50,7 +57,7 @@ import SidebarBase from "@/js/Components/Sidebar/SidebarBase.vue";
                                 @click="closeMenu"
                             >
                                 <font-awesome-icon :icon="['fas', 'users-gear']" class="nav-icon" />
-                                <span>Usuários da Instituição</span>
+                                <span>Membros e Convites</span>
                             </Link>
                         </li>
                         <li class="nav-item">
@@ -62,6 +69,44 @@ import SidebarBase from "@/js/Components/Sidebar/SidebarBase.vue";
                             >
                                 <font-awesome-icon :icon="['fas', 'arrow-right-arrow-left']" class="nav-icon" />
                                 <span>Trocar Organização</span>
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <div class="nav-section-title px-2 mb-1 text-uppercase">
+                        Área do Participante
+                    </div>
+                    <ul class="nav flex-column gap-1 list-unstyled mb-0">
+                        <li v-if="hasParticipantProfile" class="nav-item">
+                            <Link
+                                class="nav-link-custom"
+                                :href="route('participant.dashboard')"
+                                @click="closeMenu"
+                            >
+                                <font-awesome-icon :icon="['fas', 'user-astronaut']" class="nav-icon" />
+                                <span>Meu Painel Participante</span>
+                            </Link>
+                        </li>
+                        <li v-else class="nav-item">
+                            <Link
+                                class="nav-link-custom"
+                                :href="route('participant.complete_profile')"
+                                @click="closeMenu"
+                            >
+                                <font-awesome-icon :icon="['fas', 'user-plus']" class="nav-icon" />
+                                <span>Ativar Perfil Participante</span>
+                            </Link>
+                        </li>
+                        <li class="nav-item">
+                            <Link
+                                class="nav-link-custom"
+                                :href="route('context.select')"
+                                @click="closeMenu"
+                            >
+                                <font-awesome-icon :icon="['fas', 'layer-group']" class="nav-icon" />
+                                <span>Selecionar Contexto</span>
                             </Link>
                         </li>
                     </ul>

@@ -220,7 +220,7 @@ const formatDate = (isoString) => {
                             :href="route('hackathon.show', hackathon.slug)"
                             class="btn btn-outline-primary btn-sm rounded-pill px-3"
                         >
-                            Ver Hackathon &rarr;
+                            Ver Hackathon
                         </Link>
                     </div>
                 </div>

@@ -2,8 +2,8 @@
 
 namespace App\Mail;
 
-use App\Models\Team;
-use App\Models\TeamInvitation;
+use App\Models\Guild;
+use App\Models\GuildInvitation;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -19,8 +19,8 @@ class GuildInvitationMail extends Mailable
     public string $inviteUrl;
 
     public function __construct(
-        public Team $guild,
-        public TeamInvitation $invitation,
+        public Guild $guild,
+        public GuildInvitation $invitation,
         public ?User $inviter = null,
         public string $plainToken = ''
     ) {
@@ -31,7 +31,7 @@ class GuildInvitationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Convite para ingressar na guilda {$this->guild->name} — Motirõ",
+            subject: "Convite para ingressar na guild {$this->guild->name} — Motirõ",
         );
     }
 

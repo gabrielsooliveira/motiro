@@ -83,16 +83,16 @@ const selectTab = (tab) => {
 
 <template>
     <Head>
-        <title>Minhas Guildas</title>
+        <title>Minhas Guilds</title>
     </Head>
 
     <div class="py-2">
         <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4 pb-2 border-bottom">
             <div>
                 <div class="d-flex align-items-center gap-2 mb-1">
-                    <h1 class="h2 fw-bold text-dark mb-0">Minhas Guildas</h1>
+                    <h1 class="h2 fw-bold text-dark mb-0">Minhas Guilds</h1>
                 </div>
-                <p class="text-muted small mb-0">Organize suas guildas de longo prazo no Motirõ, convide membros por e-mail e dispute hackathons com seus parceiros.</p>
+                <p class="text-muted small mb-0">Organize suas guilds de longo prazo no Motirõ, convide membros por e-mail e dispute hackathons com seus parceiros.</p>
             </div>
 
             <div class="d-flex gap-2 align-items-center flex-wrap">
@@ -103,7 +103,7 @@ const selectTab = (tab) => {
 
                 <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-sm px-4 rounded-pill" @click="showCreateGuildModal = true">
                     <font-awesome-icon :icon="['fas', 'plus']" />
-                    <span class="fw-semibold">Nova Guilda</span>
+                    <span class="fw-semibold">Nova Guild</span>
                 </button>
             </div>
         </div>
@@ -112,9 +112,9 @@ const selectTab = (tab) => {
             <div class="d-flex align-items-start gap-3">
                 <font-awesome-icon :icon="['fas', 'circle-info']" class="text-info fs-5 mt-1 flex-shrink-0" />
                 <div class="small">
-                    <strong>Como funcionam as Guildas no Motirõ?</strong>
+                    <strong>Como funcionam as Guilds no Motirõ?</strong>
                     <p class="mb-0 mt-1 text-secondary">
-                        Uma guilda representa sua equipe estável fora de eventos específicos. Criar ou entrar em uma guilda <strong>não inscreve você compulsoriamente em nenhum hackathon</strong>. Quando você for disputar um evento específico, formará ou vinculará um <em>Grupo de Participação</em> exclusivo daquele hackathon.
+                        Uma guild representa sua equipe estável fora de eventos específicos. Criar ou entrar em uma guild <strong>não inscreve você compulsoriamente em nenhum hackathon</strong>. Quando você for disputar um evento específico, formará ou vinculará um <em>Grupo de Participação</em> exclusivo daquele hackathon.
                     </p>
                 </div>
             </div>
@@ -132,7 +132,7 @@ const selectTab = (tab) => {
                         @click="selectTab('guilds')"
                     >
                         <font-awesome-icon :icon="['fas', 'shield-halved']" />
-                        <span>Minhas Guildas</span>
+                        <span>Minhas Guilds</span>
                         <span
                             class="badge rounded-pill ms-1"
                             :class="activeTab === 'guilds' ? 'bg-white text-primary' : 'bg-secondary text-white'"
@@ -190,7 +190,7 @@ const selectTab = (tab) => {
             />
         </div>
 
-        <!-- Modal de Criação de Guilda Dedicado -->
+        <!-- Modal de Criação de Guild Dedicado -->
         <CreateGuildModal
             :show="showCreateGuildModal"
             @close="showCreateGuildModal = false"

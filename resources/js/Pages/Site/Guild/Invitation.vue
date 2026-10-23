@@ -87,7 +87,7 @@ const formatDate = (isoString) => {
 
 <template>
     <Head>
-        <title>Convite para Guilda | Motirõ</title>
+        <title>Convite para Guild | Motirõ</title>
     </Head>
 
     <div class="container py-5 my-md-4">
@@ -103,7 +103,7 @@ const formatDate = (isoString) => {
                         {{ error || 'O link do convite informado não é válido, foi revogado ou não foi localizado em nossa base de dados.' }}
                     </p>
                     <div>
-                        <Link href="#" class="btn btn-primary d-inline-flex align-items-center gap-2">
+                        <Link :href="route('home')" class="btn btn-primary d-inline-flex align-items-center gap-2">
                             <font-awesome-icon :icon="['fas', 'house']" />
                             <span>Página Inicial</span>
                         </Link>
@@ -120,10 +120,10 @@ const formatDate = (isoString) => {
                     </span>
                     <h3 class="fw-bold text-dark mb-2">Prazo de Resposta Esgotado</h3>
                     <p class="text-muted small mb-4">
-                        O prazo para responder ao convite da guilda <strong>{{ guild?.name }}</strong> expirou em {{ formatDate(invitation.expires_at) }}. Solicite ao líder da guilda o reenvio de um novo convite.
+                        O prazo para responder ao convite da guild <strong>{{ guild?.name }}</strong> expirou em {{ formatDate(invitation.expires_at) }}. Solicite ao líder da guild o reenvio de um novo convite.
                     </p>
                     <div class="d-flex justify-content-center gap-2">
-                        <Link href="#" class="btn btn-outline-secondary">
+                        <Link :href="route('participant.dashboard')" class="btn btn-outline-secondary">
                             Meu Painel
                         </Link>
                     </div>
@@ -139,12 +139,12 @@ const formatDate = (isoString) => {
                     </h3>
                     <p class="text-muted small mb-4">
                         {{ invitation.status === 'accepted'
-                            ? 'Você já aceitou este convite e faz parte desta guilda.'
+                            ? 'Você já aceitou este convite e faz parte desta guild.'
                             : 'Este convite já foi recusado ou cancelado pelo responsável.' }}
                     </p>
                     <div>
-                        <Link :href="route().has('participant.guilds.index') ? route('participant.guilds.index') : route('participant.teams.index')" class="btn btn-primary">
-                            Ir para Minhas Guildas
+                        <Link :href="route('participant.guilds.index')" class="btn btn-primary">
+                            Ir para Minhas Guilds
                         </Link>
                     </div>
                 </div>
@@ -154,16 +154,16 @@ const formatDate = (isoString) => {
                     <div class="bg-primary text-white p-4 text-center">
                         <div class="badge bg-white bg-opacity-25 text-white mb-2 px-3 py-1 rounded-pill">
                             <font-awesome-icon :icon="['fas', 'users-rectangle']" class="me-1" />
-                            Convite para Guilda
+                            Convite para Guild
                         </div>
                         <h2 class="h3 fw-bold mb-1">Você foi convidado!</h2>
                         <p class="small text-white-50 mb-0">
-                            Participe da guilda permanente no Motirõ
+                            Participe da guild permanente no Motirõ
                         </p>
                     </div>
 
                     <div class="card-body p-4 p-md-5">
-                        <!-- Card da Guilda -->
+                        <!-- Card da Guild -->
                         <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 mb-4 border">
                             <div v-if="guild?.image_url" class="rounded-3 overflow-hidden border bg-white flex-shrink-0" style="width: 64px; height: 64px;">
                                 <img :src="guild.image_url" :alt="guild.name" class="w-100 h-100 object-fit-cover" />
@@ -186,9 +186,9 @@ const formatDate = (isoString) => {
 
                         <!-- Descrição -->
                         <div class="mb-4">
-                            <h6 class="fw-bold text-dark small text-uppercase mb-2">Sobre a guilda</h6>
+                            <h6 class="fw-bold text-dark small text-uppercase mb-2">Sobre a guild</h6>
                             <p class="text-secondary small mb-0">
-                                {{ guild?.description || 'Esta guilda reúne participantes para desenvolvimento contínuo de projetos e formação de times em hackathons.' }}
+                                {{ guild?.description || 'Esta guild reúne participantes para desenvolvimento contínuo de projetos e formação de times em hackathons.' }}
                             </p>
                         </div>
 
@@ -196,7 +196,7 @@ const formatDate = (isoString) => {
                         <div class="border-top border-bottom py-3 mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-2 small">
                                 <span class="text-muted">Convidado por:</span>
-                                <strong class="text-dark">{{ inviter?.name || 'Líder da Guilda' }}</strong>
+                                <strong class="text-dark">{{ inviter?.name || 'Líder da Guild' }}</strong>
                             </div>
                             <div v-if="invitation.expires_at" class="d-flex justify-content-between align-items-center small">
                                 <span class="text-muted">Expira em:</span>
@@ -212,13 +212,13 @@ const formatDate = (isoString) => {
                             </div>
                             <div class="d-grid gap-2">
                                 <Link
-                                    href="#"
+                                    :href="route('participant.login')"
                                     class="btn btn-primary py-2 fw-semibold"
                                 >
                                     Entrar na Minha Conta
                                 </Link>
                                 <Link
-                                    href="#"
+                                    :href="route('participant.register')"
                                     class="btn btn-outline-secondary py-2"
                                 >
                                     Criar Nova Conta no Motirõ
@@ -242,7 +242,7 @@ const formatDate = (isoString) => {
                                     @click="handleAccept"
                                 >
                                     <font-awesome-icon :icon="['fas', 'check']" />
-                                    <span>Aceitar Convite e Entrar na Guilda</span>
+                                    <span>Aceitar Convite e Entrar na Guild</span>
                                 </button>
                                 <button
                                     type="button"
@@ -261,7 +261,7 @@ const formatDate = (isoString) => {
 
         <ModalConfirmation
             :is-visible="showDeclineConfirm"
-            message="Recusar Convite da Guilda"
+            message="Recusar Convite da Guild"
             sub-message="Tem certeza de que deseja recusar este convite? Esta ação cancelará o acesso."
             confirm-text="Sim, Recusar"
             cancel-text="Voltar"

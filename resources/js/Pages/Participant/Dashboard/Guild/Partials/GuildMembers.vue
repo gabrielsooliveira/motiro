@@ -47,7 +47,7 @@ const formatDate = (dateString) => {
     });
 };
 
-// Extrai e consolida membros de todas as guildas do usuário
+// Extrai e consolida membros de todas as guilds do usuário
 const consolidatedMembers = computed(() => {
     const map = new Map();
 
@@ -86,7 +86,7 @@ const consolidatedMembers = computed(() => {
 const filteredMembers = computed(() => {
     let list = consolidatedMembers.value;
 
-    // Filtro por guilda específica
+    // Filtro por guild específica
     if (selectedTeamId.value !== "all") {
         const tId = selectedTeamId.value;
         list = list.filter((m) => m.guilds.some((g) => String(g.teamId) === String(tId)));
@@ -109,7 +109,7 @@ const filteredMembers = computed(() => {
 
 <template>
     <div>
-        <!-- Barra de Controle: Busca e Filtro por Guilda -->
+        <!-- Barra de Controle: Busca e Filtro por Guild -->
         <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
             <div class="row g-3 align-items-center">
                 <div class="col-12 col-md-6 col-lg-5">
@@ -136,7 +136,7 @@ const filteredMembers = computed(() => {
 
                 <div class="col-12 col-md-6 col-lg-4">
                     <select v-model="selectedTeamId" class="form-select bg-light border">
-                        <option value="all">Todas as Guildas ({{ rawGuilds.length }})</option>
+                        <option value="all">Todas as Guilds ({{ rawGuilds.length }})</option>
                         <option v-for="team in rawGuilds" :key="team.id" :value="team.id">
                             {{ team.name }} ({{ team.members?.length || 0 }} membros)
                         </option>
@@ -158,7 +158,7 @@ const filteredMembers = computed(() => {
             </div>
             <h4 class="fw-bold text-dark mb-2">Nenhum membro encontrado</h4>
             <p class="text-muted small mx-auto mb-3 col-md-7">
-                {{ searchQuery || selectedTeamId !== 'all' ? 'Tente ajustar os filtros ou os termos pesquisados.' : 'Suas guildas ainda não possuem outros integrantes além de você. Convide colegas pela tela de gerenciamento de guilda.' }}
+                {{ searchQuery || selectedTeamId !== 'all' ? 'Tente ajustar os filtros ou os termos pesquisados.' : 'Suas guilds ainda não possuem outros integrantes além de você. Convide colegas pela tela de gerenciamento de guild.' }}
             </p>
             <button
                 v-if="searchQuery || selectedTeamId !== 'all'"
@@ -201,10 +201,10 @@ const filteredMembers = computed(() => {
                             </div>
                         </div>
 
-                        <!-- Guildas Compartilhadas e Papéis -->
+                        <!-- Guilds Compartilhadas e Papéis -->
                         <div class="border rounded-3 p-3 bg-light bg-opacity-50 mb-3">
                             <span class="small fw-bold text-dark d-block mb-2">
-                                <font-awesome-icon :icon="['fas', 'shield-halved']" class="me-1 text-muted" /> Guildas em comum ({{ member.guilds.length }}):
+                                <font-awesome-icon :icon="['fas', 'shield-halved']" class="me-1 text-muted" /> Guilds em comum ({{ member.guilds.length }}):
                             </span>
                             <div class="d-flex flex-column gap-2">
                                 <div
@@ -230,14 +230,14 @@ const filteredMembers = computed(() => {
                         </div>
                     </div>
 
-                    <!-- Rodapé com Link Rápido para uma das guildas -->
+                    <!-- Rodapé com Link Rápido para uma das guilds -->
                     <div class="pt-2 border-top mt-auto d-flex justify-content-between align-items-center small text-muted">
                         <span>Ingressou em {{ formatDate(member.guilds[0]?.joinedAt) }}</span>
                         <Link
                             :href="getGuildShowUrl(member.guilds[0]?.teamId)"
                             class="text-primary text-decoration-none fw-semibold"
                         >
-                            Ver Guilda &rarr;
+                            Ver Guild
                         </Link>
                     </div>
                 </div>

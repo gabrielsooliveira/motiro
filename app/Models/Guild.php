@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Representa a Guilda Permanente na plataforma Motirõ.
+ * Representa a Guild Permanente na plataforma Motirõ.
  * Existe independentemente de qualquer hackathon e possui ciclo de vida próprio.
  */
 class Guild extends Model

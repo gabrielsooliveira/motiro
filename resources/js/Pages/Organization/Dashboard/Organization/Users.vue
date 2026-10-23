@@ -118,7 +118,10 @@ const cancelInvite = (invitationId) => {
 };
 
 const copyInviteLink = (token) => {
-    const url = route("register") + "?invitation=" + token;
+    const baseUrl = route().has("organization.register")
+        ? route("organization.register")
+        : (route().has("register") ? route("register") : "/organizacao/cadastro");
+    const url = baseUrl + "?invitation=" + token;
     navigator.clipboard.writeText(url).then(() => {
         alert("Link de cadastro copiado para a área de transferência!");
     });

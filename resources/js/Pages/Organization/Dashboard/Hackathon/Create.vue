@@ -780,7 +780,7 @@ const formatDate = (isoStr) => {
                                 </div>
                                 <div class="text-muted small">
                                     <font-awesome-icon :icon="['fas', 'calendar-days']" class="me-1 text-primary" />
-                                    {{ formatDate(stg.start_date) }} &rarr; {{ formatDate(stg.end_date) }}
+                                    {{ formatDate(stg.start_date) }} / {{ formatDate(stg.end_date) }}
                                 </div>
                                 <p v-if="stg.description" class="small text-secondary mb-0 mt-2 text-truncate">
                                     {{ stg.description }}

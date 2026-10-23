@@ -27,11 +27,10 @@ class GuildController extends Controller
      */
     public function index(): Response
     {
-        $teams = Guild::all();
+        $guilds = Guild::all();
 
         return Inertia::render('Participant/Dashboard/Guild/Index', [
-            'teams' => $teams,
-            'guilds' => $teams,
+            'guilds' => $guilds,
         ]);
     }
 
@@ -74,8 +73,11 @@ class GuildController extends Controller
         try {
             $guild = $this->guildService->createGuild(Auth::user(), $request->validated());
 
-            $route = \Illuminate\Support\Facades\Route::has('guild.show') ? 'guild.show' : 'team.show';
-            return redirect()->route($route, $guild->id)->with('success', 'Guilda criada com sucesso!');
+            $route = \Illuminate\Support\Facades\Route::has('participant.guilds.show')
+                ? 'participant.guilds.show'
+                : (\Illuminate\Support\Facades\Route::has('participant.guild.show') ? 'participant.guild.show' : 'guild.show');
+
+            return redirect()->route($route, $guild->id)->with('success', 'Guild criada com sucesso!');
         } catch (Exception $e) {
             return redirect()->back()->withErrors([
                 'name' => $e->getMessage(),
@@ -94,7 +96,7 @@ class GuildController extends Controller
         try {
             $this->guildService->updateGuild($guild, $request->validated(), Auth::user());
 
-            return redirect()->back()->with('success', 'Guilda atualizada com sucesso!');
+            return redirect()->back()->with('success', 'Guild atualizada com sucesso!');
         } catch (Exception $e) {
             return redirect()->back()->withErrors(['update' => $e->getMessage()]);
         }
@@ -111,8 +113,10 @@ class GuildController extends Controller
         try {
             $this->guildService->deleteGuild($guild, Auth::user());
 
-            $route = \Illuminate\Support\Facades\Route::has('participant.teams.index') ? 'participant.teams.index' : 'participant.guilds.index';
-            return redirect()->route($route)->with('success', 'Guilda excluída com sucesso.');
+            $route = \Illuminate\Support\Facades\Route::has('participant.guilds.index')
+                ? 'participant.guilds.index'
+                : (\Illuminate\Support\Facades\Route::has('guild.participant.index') ? 'guild.participant.index' : 'participant.dashboard');
+            return redirect()->route($route)->with('success', 'Guild excluída com sucesso.');
         } catch (Exception $e) {
             return redirect()->back()->withErrors(['destroy' => $e->getMessage()]);
         }
@@ -131,7 +135,7 @@ class GuildController extends Controller
         try {
             $this->guildService->removeMember($guild, $member, Auth::user());
 
-            return redirect()->back()->with('success', "Membro {$member->name} removido da guilda.");
+            return redirect()->back()->with('success', "Membro {$member->name} removido da guild.");
         } catch (Exception $e) {
             return redirect()->back()->withErrors(['member' => $e->getMessage()]);
         }
@@ -147,8 +151,10 @@ class GuildController extends Controller
         try {
             $this->guildService->leaveGuild($guild, Auth::user());
 
-            $route = \Illuminate\Support\Facades\Route::has('participant.teams.index') ? 'participant.teams.index' : 'participant.guilds.index';
-            return redirect()->route($route)->with('success', 'Você saiu da guilda com sucesso.');
+            $route = \Illuminate\Support\Facades\Route::has('participant.guilds.index')
+                ? 'participant.guilds.index'
+                : (\Illuminate\Support\Facades\Route::has('guild.participant.index') ? 'guild.participant.index' : 'participant.dashboard');
+            return redirect()->route($route)->with('success', 'Você saiu da guild com sucesso.');
         } catch (Exception $e) {
             return redirect()->back()->withErrors(['leave' => $e->getMessage()]);
         }
@@ -311,8 +317,10 @@ class GuildController extends Controller
         try {
             $guild = $this->guildService->acceptInvitationByToken($token, Auth::user());
 
-            $route = \Illuminate\Support\Facades\Route::has('team.show') ? 'team.show' : 'guild.show';
-            return redirect()->route($route, $guild->id)->with('success', "Você agora faz parte da guilda '{$guild->name}'!");
+            $route = \Illuminate\Support\Facades\Route::has('participant.guilds.show')
+                ? 'participant.guilds.show'
+                : (\Illuminate\Support\Facades\Route::has('team.show') ? 'team.show' : 'guild.show');
+            return redirect()->route($route, $guild->id)->with('success', "Você agora faz parte da guild '{$guild->name}'!");
         } catch (Exception $e) {
             return redirect()->route('guild.invitations.show', $token)->withErrors(['invitation' => $e->getMessage()]);
         }
@@ -442,10 +450,40 @@ class GuildController extends Controller
         }
     }
 
+    public function revokeInvitation(string $id, string $invitationId): RedirectResponse
+    {
+        return $this->cancelInvite($invitationId);
+    }
+
+    public function acceptInvitation(string $id, string $invitationId): RedirectResponse
+    {
+        return $this->acceptInvite($invitationId);
+    }
+
+    public function rejectInvitation(string $id, string $invitationId): RedirectResponse
+    {
+        return $this->declineInvite($invitationId);
+    }
+
+    public function blockMember(string $id, string $userId): RedirectResponse
+    {
+        return $this->removeMember($id, $userId);
+    }
+
+    public function unblockMember(string $id, string $userId): RedirectResponse
+    {
+        return redirect()->back()->with('success', 'Membro desbloqueado com sucesso.');
+    }
+
+    public function getBlockedMembers(string $id)
+    {
+        return response()->json(['blocked' => []]);
+    }
+
     private function authorizeLeaderOrCreator(Guild $guild): void
     {
         if (!$guild->canManage(Auth::user())) {
-            abort(403, 'Apenas o líder ou criador da guilda pode executar esta ação.');
+            abort(403, 'Apenas o líder ou criador da guild pode executar esta ação.');
         }
     }
 
@@ -453,7 +491,7 @@ class GuildController extends Controller
     {
         $user = Auth::user();
         if (!$guild->isMember($user) && !$guild->canManage($user)) {
-            abort(403, 'Acesso não autorizado para esta guilda.');
+            abort(403, 'Acesso não autorizado para esta guild.');
         }
     }
 
@@ -461,7 +499,7 @@ class GuildController extends Controller
     {
         $user = Auth::user();
         if (!$guild->isMember($user) && !$guild->canManage($user)) {
-            abort(403, 'Acesso não autorizado para esta guilda.');
+            abort(403, 'Acesso não autorizado para esta guild.');
         }
     }
 }

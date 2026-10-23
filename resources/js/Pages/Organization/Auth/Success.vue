@@ -14,7 +14,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <Head title="Organização Cadastrada | Motirõ" />
+    <Head title="Organização Cadastrada" />
 
     <div class="text-center py-2 animate__animated animate__fadeIn">
         
@@ -94,7 +94,7 @@ const props = defineProps({
         </div>
 
         <div class="text-center">
-            <Link href="#" class="text-secondary text-decoration-none small">
+            <Link :href="route('home')" class="text-secondary text-decoration-none small">
                 <font-awesome-icon :icon="['fas', 'house']" class="me-1" />
                 Página Inicial do Motirõ
             </Link>

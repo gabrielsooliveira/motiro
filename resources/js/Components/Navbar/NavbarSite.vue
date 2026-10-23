@@ -57,6 +57,14 @@ const isHackathonsActive = computed(() => {
     return currentPath.value.startsWith("/hackathons");
 });
 
+const isGuildsActive = computed(() => {
+    return currentPath.value.startsWith("/guilds");
+});
+
+const isNewsActive = computed(() => {
+    return currentPath.value.startsWith("/noticias");
+});
+
 const handleScroll = () => {
     if (typeof window !== "undefined") {
         isScrolled.value = window.scrollY > 8;
@@ -134,7 +142,7 @@ onBeforeUnmount(() => {
 
 const navbarClass = computed(() => {
     return [
-        "navbar navbar-expand-lg fixed-top z-3 navbar-site",
+        "navbar navbar-expand-lg navbar-site fixed-top z-3",
         { "navbar-site-scrolled": !isMdUp.value || isScrolled.value },
     ];
 });
@@ -143,19 +151,14 @@ const navbarClass = computed(() => {
 <template>
     <nav :class="navbarClass">
         <div class="container d-flex align-items-center justify-content-between">
-            <!-- Brand / Logo -->
             <Link
                 class="navbar-brand fw-bold fs-4 title-page brand-logo text-decoration-none py-0"
-                href="#"
+                :href="route('home')"
             >
                 Motirõ
             </Link>
 
-            <!-- Desktop Menu -->
-            <div
-                class="collapse navbar-collapse d-none d-lg-flex align-items-center justify-content-between ms-lg-4"
-            >
-                <!-- Clean Desktop Navigation Links -->
+            <div class="collapse navbar-collapse d-none d-lg-flex align-items-center justify-content-between ms-lg-4">
                 <ul class="site-nav-clean mx-auto">
                     <li>
                         <Link
@@ -181,11 +184,11 @@ const navbarClass = computed(() => {
                         <Link
                             :href="route('guild.index')"
                             class="site-nav-clean-link"
-                            :class="{ active: isTeamsActive }"
-                            :aria-current="isTeamsActive ? 'page' : undefined"
+                            :class="{ active: isGuildsActive }"
+                            :aria-current="isGuildsActive ? 'page' : undefined"
                             disabled
                         >
-                            Equipes
+                            Guilds
                         </Link>
                     </li>
                     <li>
@@ -201,11 +204,10 @@ const navbarClass = computed(() => {
                     </li>
                 </ul>
 
-                <!-- Desktop Action Buttons -->
                 <div class="d-flex align-items-center gap-2">
                     <template v-if="user">
                         <Link
-                            href="#"
+                            :href="route('participant.dashboard')"
                             class="btn btn-primary fw-semibold btn-sm px-3 py-2 d-flex align-items-center gap-2 rounded-3 shadow-sm"
                         >
                             <span>{{ dashboardDestination.label }}</span>
@@ -213,7 +215,7 @@ const navbarClass = computed(() => {
                         </Link>
                         <Link
                             v-if="userOrgs.length > 0"
-                            href="#"
+                            :href="route('organization.select')"
                             class="btn btn-outline-secondary fw-semibold btn-sm px-2 py-2 rounded-3"
                             title="Alternar Contexto"
                         >
@@ -229,13 +231,13 @@ const navbarClass = computed(() => {
                             Entrar
                         </Link>
                         <Link
-                            href="#"
+                            :href="route('participant.register')"
                             class="btn btn-outline-primary fw-semibold btn-sm px-3 py-2 rounded-3"
                         >
                             Quero Participar
                         </Link>
                         <Link
-                            href="#"
+                            :href="route('organization.register')"
                             class="btn btn-primary fw-semibold btn-sm px-3 py-2 rounded-3 shadow-sm"
                         >
                             Organizar Hackathon
@@ -244,7 +246,6 @@ const navbarClass = computed(() => {
                 </div>
             </div>
 
-            <!-- Mobile Hamburger Button -->
             <button
                 class="btn d-lg-none border-0 navbar-toggler p-2 text-dark"
                 type="button"
@@ -256,17 +257,12 @@ const navbarClass = computed(() => {
         </div>
     </nav>
 
-    <!-- Clean Responsive Mobile Drawer -->
     <transition name="mobile-drawer">
-        <div
-            v-if="isMenuOpen"
-            class="mobile-menu site-mobile-drawer position-fixed top-0 start-0 w-100 h-100 d-flex flex-column p-4 z-3 overflow-y-auto"
-        >
-            <!-- Drawer Header -->
+        <div v-if="isMenuOpen" class="mobile-menu site-mobile-drawer position-fixed top-0 start-0 w-100 h-100 d-flex flex-column p-4 z-3 overflow-y-auto">
             <div class="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom border-light-subtle">
                 <Link
                     class="navbar-brand fw-bold fs-4 title-page brand-logo text-decoration-none"
-                    href="#"
+                    :href="route('home')"
                     @click="handleMobileNavClick"
                 >
                     Motirõ
@@ -280,7 +276,6 @@ const navbarClass = computed(() => {
                 </button>
             </div>
 
-            <!-- Clean Mobile Nav List -->
             <nav class="site-mobile-nav-list mb-4">
                 <Link
                     :href="route('home')"
@@ -294,7 +289,7 @@ const navbarClass = computed(() => {
                 </Link>
 
                 <Link
-                    href="#"
+                    :href="route('hackathon.index')"
                     class="site-mobile-nav-link"
                     :class="{ active: isHackathonsActive }"
                     :aria-current="isHackathonsActive ? 'page' : undefined"
@@ -303,9 +298,30 @@ const navbarClass = computed(() => {
                     <span>Hackathons</span>
                     <span v-if="isHackathonsActive" class="site-mobile-nav-dot" aria-hidden="true"></span>
                 </Link>
+
+                <Link
+                    :href="route('guild.index')"
+                    class="site-mobile-nav-link"
+                    :class="{ active: isGuildsActive }"
+                    :aria-current="isGuildsActive ? 'page' : undefined"
+                    @click="handleMobileNavClick"
+                >
+                    <span>Guilds</span>
+                    <span v-if="isGuildsActive" class="site-mobile-nav-dot" aria-hidden="true"></span>
+                </Link>
+
+                <Link
+                    :href="route('news.index')"
+                    class="site-mobile-nav-link"
+                    :class="{ active: isNewsActive }"
+                    :aria-current="isNewsActive ? 'page' : undefined"
+                    @click="handleMobileNavClick"
+                >
+                    <span>Noticias</span>
+                    <span v-if="isNewsActive" class="site-mobile-nav-dot" aria-hidden="true"></span>
+                </Link>
             </nav>
 
-            <!-- Drawer Bottom Actions -->
             <div class="mt-auto pt-3 border-top border-light-subtle d-grid gap-2">
                 <template v-if="user">
                     <div class="text-muted small mb-1 px-1">
@@ -339,14 +355,14 @@ const navbarClass = computed(() => {
                         Entrar na Conta
                     </Link>
                     <Link
-                        :href="route('participant.login')"
+                        :href="route('participant.register')"
                         class="btn btn-outline-primary btn-lg fw-semibold rounded-3"
                         @click="handleMobileNavClick"
                     >
                         Quero Participar
                     </Link>
                     <Link
-                        :href="route('organization.login')"
+                        :href="route('organization.register')"
                         class="btn btn-primary btn-lg fw-semibold rounded-3 shadow-sm"
                         @click="handleMobileNavClick"
                     >

@@ -96,7 +96,7 @@ const registrationDeadlineFormatted = computed(() => {
 
             <!-- Title -->
             <h3 class="hackathon-discovery-card__title">
-                <Link href="#">
+                <Link :href="route('hackathon.show', hackathon.slug || hackathon.id)">
                     {{ hackathon.title }}
                 </Link>
             </h3>
@@ -124,7 +124,7 @@ const registrationDeadlineFormatted = computed(() => {
             <div class="hackathon-discovery-card__footer">
                 <div class="hackathon-discovery-card__actions">
                     <Link
-                        href="#"
+                        :href="route('hackathon.show', hackathon.slug || hackathon.id)"
                         class="btn btn-sm btn-outline-secondary"
                         title="Ver página de detalhes e regulamento"
                     >

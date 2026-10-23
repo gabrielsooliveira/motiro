@@ -13,17 +13,16 @@ use Inertia\Response;
 class ContextController extends Controller
 {
     /**
-     * Show context selection screen with reliable organization data
+     * Exibe a tela de escolha e alternância de contexto (Participante vs Organizações).
      */
     public function select(): Response|RedirectResponse
     {
         $user = Auth::user();
         if (!$user) {
-            return redirect()->route('organization.login');
+            return redirect()->route('select.login');
         }
 
-        $organizations = $user->organizations()
-            ->wherePivot('is_active', true)
+        $organizations = $user->activeOrganizations()
             ->withCount('hackathons')
             ->get(['organizations.id', 'organizations.name', 'organizations.slug', 'organizations.logo', 'organizations.type', 'organizations.description'])
             ->map(function ($org) {
@@ -34,13 +33,15 @@ class ContextController extends Controller
                     'logo' => $org->logo,
                     'type' => $org->type,
                     'description' => $org->description,
-                    'role' => $org->pivot->role,
+                    'role' => $org->pivot?->role ?? ($org->owner_id === $user->id ? 'owner' : 'collaborator'),
                     'hackathons_count' => $org->hackathons_count,
                 ];
             });
 
         return Inertia::render('Organization/SelectContext', [
             'organizations' => $organizations,
+            'hasParticipantProfile' => $user->hasParticipantProfile(),
+            'hasOrganizationProfile' => $user->hasOrganizationProfile(),
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -50,25 +51,35 @@ class ContextController extends Controller
     }
 
     /**
-     * Switch current active context safely
+     * Alterna o contexto ativo da sessão de forma segura.
      */
     public function switch(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('select.login');
+        }
+
         $validated = $request->validate([
-            'type' => 'required|in:competitor,organization',
-            'organization_id' => 'required_if:type,organization|nullable|uuid',
+            'type' => ['required', 'string', 'in:competitor,organization'],
+            'organization_id' => ['required_if:type,organization', 'nullable', 'uuid'],
         ]);
 
         if ($validated['type'] === 'competitor') {
+            if (!$user->hasParticipantProfile()) {
+                return redirect()->route('participant.complete_profile')
+                    ->with('warning', 'Você ainda não possui um perfil de participante. Complete seus dados para participar de hackathons.');
+            }
+
             ContextService::setCompetitorContext($request);
-            return redirect()->route('participant.dashboard')->with('success', 'Contexto alterado para Participante.');
+            return redirect()->route('participant.dashboard')->with('success', 'Contexto de participante ativado.');
         }
 
-        // Backend validates the link before setting context
+        // Contexto Organizacional
         $success = ContextService::setOrganizationContext($request, $validated['organization_id']);
 
         if (!$success) {
-            return redirect()->back()->with('error', 'Acesso não autorizado para a organização selecionada.');
+            return back()->withErrors(['error' => 'Você não possui permissão ativa para acessar esta organização.']);
         }
 
         return redirect()->route('organization.dashboard')->with('success', 'Contexto institucional ativado.');

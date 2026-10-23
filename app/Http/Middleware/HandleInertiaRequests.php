@@ -38,7 +38,15 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
 
         return [
-            'user' => fn() => $user,
+            'user' => fn() => $user ? [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'avatar' => $user->avatar,
+                'has_participant_profile' => $user->hasParticipantProfile(),
+                'has_organization_profile' => $user->hasOrganizationProfile(),
+            ] : null,
+            'context' => fn() => \App\Services\ContextService::getContextData($request),
             'flash' => [
                 'success' => fn() => $request->session()->get('success'),
                 'error' => fn() => $request->session()->get('error'),

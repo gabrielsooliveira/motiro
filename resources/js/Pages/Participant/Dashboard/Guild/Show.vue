@@ -64,7 +64,7 @@ const submitInvite = () => {
     });
 };
 
-// Formulário de Edição da Guilda
+// Formulário de Edição da Guild
 const editForm = useForm({
     name: currentGuild.name,
     description: currentGuild.description || "",
@@ -137,7 +137,7 @@ const openConfirmation = ({ message, subMessage = "", confirmText = "Confirmar",
 const transferLeadershipTo = (memberId) => {
     openConfirmation({
         message: "Transferir Liderança",
-        subMessage: "Deseja transferir a liderança da guilda para este integrante?",
+        subMessage: "Deseja transferir a liderança da guild para este integrante?",
         confirmText: "Transferir",
         onConfirm: () => {
             router.post(
@@ -153,7 +153,7 @@ const transferLeadershipTo = (memberId) => {
 const handleRemoveMember = (member) => {
     openConfirmation({
         message: "Remover Integrante",
-        subMessage: `Tem certeza de que deseja remover ${member.name} da guilda?`,
+        subMessage: `Tem certeza de que deseja remover ${member.name} da guild?`,
         confirmText: "Remover",
         onConfirm: () => {
             router.delete(guildRoute("members.remove", { id: currentGuild.id, userId: member.id }));
@@ -163,8 +163,8 @@ const handleRemoveMember = (member) => {
 
 const handleLeaveGuild = () => {
     openConfirmation({
-        message: "Sair da Guilda",
-        subMessage: "Tem certeza de que deseja sair desta guilda?",
+        message: "Sair da Guild",
+        subMessage: "Tem certeza de que deseja sair desta guild?",
         confirmText: "Sair",
         onConfirm: () => {
             router.post(guildRoute("leave", currentGuild.id));
@@ -174,8 +174,8 @@ const handleLeaveGuild = () => {
 
 const handleDeleteGuild = () => {
     openConfirmation({
-        message: "Excluir Guilda",
-        subMessage: "ATENÇÃO: Deseja realmente excluir esta guilda? Esta ação é irreversível.",
+        message: "Excluir Guild",
+        subMessage: "ATENÇÃO: Deseja realmente excluir esta guild? Esta ação é irreversível.",
         confirmText: "Sim, Excluir",
         onConfirm: () => {
             router.delete(guildRoute("destroy", currentGuild.id));
@@ -214,7 +214,7 @@ const formatDate = (isoString) => {
 
 <template>
     <Head>
-        <title>Guilda | {{ currentGuild.name }}</title>
+        <title>Guild | {{ currentGuild.name }}</title>
     </Head>
 
     <div class="py-3">
@@ -225,15 +225,15 @@ const formatDate = (isoString) => {
                 class="text-decoration-none text-muted small d-inline-flex align-items-center gap-2"
             >
                 <font-awesome-icon :icon="['fas', 'arrow-left']" />
-                <span>Voltar para Minhas Guildas</span>
+                <span>Voltar para Minhas Guilds</span>
             </Link>
         </div>
 
-        <!-- Cabeçalho Limpo e Minimalista da Guilda -->
+        <!-- Cabeçalho Limpo e Minimalista da Guild -->
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center gap-3">
-                    <!-- Imagem / Logo da Guilda -->
+                    <!-- Imagem / Logo da Guild -->
                     <div
                         v-if="currentGuild.logo || currentGuild.image_url"
                         class="rounded-4 overflow-hidden border bg-light flex-shrink-0 guild-avatar"
@@ -268,7 +268,7 @@ const formatDate = (isoString) => {
             </div>
         </div>
 
-        <!-- Navegação por Abas Responsiva da Guilda -->
+        <!-- Navegação por Abas Responsiva da Guild -->
         <ul class="nav nav-pills gap-2 border-bottom pb-3 mb-4 flex-nowrap overflow-x-auto" role="tablist">
             <li class="nav-item" role="presentation">
                 <button
@@ -332,12 +332,12 @@ const formatDate = (isoString) => {
                     @click="activeTab = 'overview'"
                 >
                     <font-awesome-icon :icon="['fas', 'circle-info']" />
-                    <span>Informações da Guilda</span>
+                    <span>Informações da Guild</span>
                 </button>
             </li>
         </ul>
 
-        <!-- Viewport do Conteúdo das Abas da Guilda -->
+        <!-- Viewport do Conteúdo das Abas da Guild -->
         <div class="tab-content-viewport pb-5">
             <!-- ABA 1: INTEGRANTES -->
             <div v-if="activeTab === 'members'">
@@ -346,7 +346,7 @@ const formatDate = (isoString) => {
                         <div>
                             <h5 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
                                 <font-awesome-icon :icon="['fas', 'users']" class="text-primary" />
-                                <span>Membros da guilda ({{ currentGuild.members ? currentGuild.members.length : 0 }})</span>
+                                <span>Membros da guild ({{ currentGuild.members ? currentGuild.members.length : 0 }})</span>
                             </h5>
                         </div>
                         <button
@@ -399,7 +399,7 @@ const formatDate = (isoString) => {
                                             v-if="member.id !== currentGuild.leader_id"
                                             type="button"
                                             class="btn btn-outline-warning btn-sm py-1 px-2 small"
-                                            title="Tornar Líder da Guilda"
+                                            title="Tornar Líder da Guild"
                                             @click="transferLeadershipTo(member.id)"
                                         >
                                             <font-awesome-icon :icon="['fas', 'crown']" class="me-1" />
@@ -409,7 +409,7 @@ const formatDate = (isoString) => {
                                             v-if="currentGuild.creator_id !== member.id"
                                             type="button"
                                             class="btn btn-outline-danger btn-sm py-1 px-2 small"
-                                            title="Remover integrante da guilda"
+                                            title="Remover integrante da guild"
                                             @click="handleRemoveMember(member)"
                                         >
                                             <font-awesome-icon :icon="['fas', 'user-minus']" class="me-1" />
@@ -452,7 +452,7 @@ const formatDate = (isoString) => {
                                             />
                                         </div>
                                         <div class="form-text small mt-1">
-                                            O participante receberá um e-mail com link exclusivo para aceitar o convite para esta guilda.
+                                            O participante receberá um e-mail com link exclusivo para aceitar o convite para esta guild.
                                         </div>
                                         <div v-if="inviteForm.errors.email_or_username" class="text-danger small mt-1">
                                             {{ inviteForm.errors.email_or_username }}
@@ -487,7 +487,7 @@ const formatDate = (isoString) => {
                             <div class="card-body p-0">
                                 <div v-if="!currentGuild.invitations || currentGuild.invitations.length === 0" class="text-muted text-center py-5 small">
                                     <font-awesome-icon :icon="['fas', 'envelope-open']" class="fs-2 text-muted opacity-50 mb-2 d-block" />
-                                    Nenhum convite emitido para esta guilda até o momento.
+                                    Nenhum convite emitido para esta guild até o momento.
                                 </div>
 
                                 <ul v-else class="list-group list-group-flush">
@@ -551,7 +551,7 @@ const formatDate = (isoString) => {
                                 <font-awesome-icon :icon="['fas', 'trophy']" class="text-warning" />
                                 <span>Participações em Hackathons ({{ currentGuild.registrations ? currentGuild.registrations.length : 0 }})</span>
                             </h5>
-                            <span class="text-muted small">Eventos competitivos em que membros ou equipes desta guilda participaram</span>
+                            <span class="text-muted small">Eventos competitivos em que membros ou equipes desta guild participaram</span>
                         </div>
                     </div>
 
@@ -560,7 +560,7 @@ const formatDate = (isoString) => {
                             <font-awesome-icon :icon="['fas', 'trophy']" class="fs-1 text-warning opacity-50 mb-3 d-block" />
                             <h6 class="fw-bold text-dark">Nenhuma participação registrada</h6>
                             <p class="small text-secondary mb-3">
-                                Esta guilda ainda não possui registros de participações em hackathons. Os membros podem formar equipes para disputar desafios na plataforma.
+                                Esta guild ainda não possui registros de participações em hackathons. Os membros podem formar equipes para disputar desafios na plataforma.
                             </p>
                             <Link :href="route('participant.hackathons')" class="btn btn-outline-primary btn-sm rounded-pill px-3">
                                 Explorar Hackathons
@@ -591,7 +591,7 @@ const formatDate = (isoString) => {
                                             :href="route('hackathon.show', reg.hackathon.slug)"
                                             class="btn btn-sm btn-outline-primary rounded-pill px-3"
                                         >
-                                            Ver Evento &rarr;
+                                            Ver Evento
                                         </Link>
                                     </div>
                                 </div>
@@ -609,7 +609,7 @@ const formatDate = (isoString) => {
                             <div class="card-header bg-transparent py-3 border-bottom d-flex justify-content-between align-items-center">
                                 <h5 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
                                     <font-awesome-icon :icon="['fas', 'circle-info']" class="text-primary" />
-                                    <span>Sobre a Guilda</span>
+                                    <span>Sobre a Guild</span>
                                 </h5>
                                 <button
                                     v-if="canManage"
@@ -623,13 +623,13 @@ const formatDate = (isoString) => {
                             </div>
                             <div class="card-body p-4">
                                 <div class="mb-3">
-                                    <label class="form-label text-muted small fw-semibold text-uppercase">Nome da Guilda</label>
+                                    <label class="form-label text-muted small fw-semibold text-uppercase">Nome da Guild</label>
                                     <div class="fs-5 fw-bold text-dark">{{ currentGuild.name }}</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label text-muted small fw-semibold text-uppercase">Descrição / Manifesto</label>
                                     <p class="text-secondary mb-0">
-                                        {{ currentGuild.description || 'Nenhuma descrição informada para esta guilda.' }}
+                                        {{ currentGuild.description || 'Nenhuma descrição informada para esta guild.' }}
                                     </p>
                                 </div>
                                 <div class="row g-3 pt-3 border-top">
@@ -649,7 +649,7 @@ const formatDate = (isoString) => {
                     <div class="col-lg-4">
                         <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
                             <div class="card-header bg-transparent py-3 border-bottom">
-                                <h6 class="card-title mb-0 fw-bold text-dark">Ações da Guilda</h6>
+                                <h6 class="card-title mb-0 fw-bold text-dark">Ações da Guild</h6>
                             </div>
                             <div class="card-body p-4 d-flex flex-column gap-2">
                                 <button
@@ -669,7 +669,7 @@ const formatDate = (isoString) => {
                                     @click="handleLeaveGuild"
                                 >
                                     <font-awesome-icon :icon="['fas', 'right-from-bracket']" />
-                                    <span>Sair da Guilda</span>
+                                    <span>Sair da Guild</span>
                                 </button>
 
                                 <button
@@ -679,7 +679,7 @@ const formatDate = (isoString) => {
                                     @click="handleDeleteGuild"
                                 >
                                     <font-awesome-icon :icon="['fas', 'trash']" />
-                                    <span>Excluir Guilda</span>
+                                    <span>Excluir Guild</span>
                                 </button>
                             </div>
                         </div>
@@ -688,16 +688,16 @@ const formatDate = (isoString) => {
             </div>
         </div>
 
-        <!-- Modal de Edição da Guilda -->
+        <!-- Modal de Edição da Guild -->
         <ModalDialog
             :is-visible="showEditModal"
-            title="Editar Dados da Guilda"
+            title="Editar Dados da Guild"
             size="md"
             @close="showEditModal = false"
         >
             <form @submit.prevent="submitEdit">
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold text-dark">Nome da Guilda</label>
+                    <label class="form-label small fw-semibold text-dark">Nome da Guild</label>
                     <input v-model="editForm.name" type="text" class="form-control" required />
                 </div>
                 <div class="mb-3">
@@ -705,7 +705,7 @@ const formatDate = (isoString) => {
                     <textarea v-model="editForm.description" class="form-control" rows="3"></textarea>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold text-dark">Logo / Imagem da Guilda</label>
+                    <label class="form-label small fw-semibold text-dark">Logo / Imagem da Guild</label>
                     <input type="file" class="form-control" accept="image/*" @change="handleImageUpload" />
                     <div v-if="imagePreview" class="mt-2 text-center">
                         <img :src="imagePreview" alt="Prévia" class="rounded-3 border object-fit-cover" style="width: 80px; height: 80px;" />
@@ -732,7 +732,7 @@ const formatDate = (isoString) => {
         >
             <form @submit.prevent="submitElectLeader">
                 <p class="text-muted small mb-3">
-                    Selecione um dos integrantes da guilda para assumir o papel de líder:
+                    Selecione um dos integrantes da guild para assumir o papel de líder:
                 </p>
                 <div class="mb-3">
                     <select v-model="leaderForm.leader_id" class="form-select" required>

@@ -151,7 +151,7 @@ class HackathonController extends Controller
             ->orWhereHas('users', function ($q) use ($user) {
                 $q->where('users.id', $user->id)
                   ->where('organization_user.is_active', true)
-                  ->whereIn('organization_user.role', ['admin', 'manager']);
+                  ->whereIn('organization_user.role', ['owner', 'admin', 'manager']);
             })
             ->get();
 

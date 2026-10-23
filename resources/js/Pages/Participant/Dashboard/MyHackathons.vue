@@ -59,11 +59,11 @@ const executeCancel = () => {
             </div>
 
             <div class="d-flex gap-2">
-                <Link href="#" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+                <Link :href="route('participant.dashboard')" class="btn btn-outline-secondary d-flex align-items-center gap-2">
                     <font-awesome-icon :icon="['fas', 'arrow-left']" />
                     <span>Voltar ao Painel</span>
                 </Link>
-                <Link href="#" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
+                <Link :href="route('hackathon.index')" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
                     <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
                     <span>Explorar Hackathons</span>
                 </Link>
@@ -193,7 +193,7 @@ const executeCancel = () => {
                                         :href="route('hackathon.show', reg.hackathon.slug)"
                                         class="btn btn-sm btn-outline-primary"
                                     >
-                                        Acessar &rarr;
+                                        Acessar
                                     </Link>
                                     <button
                                         v-if="reg.status !== 'cancelled' && reg.status !== 'disqualified'"

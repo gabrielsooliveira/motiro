@@ -2,53 +2,60 @@
 
 namespace App\Http\Controllers\Organization;
 
+use App\Actions\Organization\CreateOrganizationAction;
 use App\Http\Controllers\Controller;
-use App\Models\Organization;
-use App\Models\OrganizationUser;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class OrganizationController extends Controller
 {
-    public function index()
+    /**
+     * Lista as organizações vinculadas ao usuário autenticado.
+     */
+    public function index(Request $request): Response
     {
-        $organizations = OrganizationUser::where('user_id', auth()->user()->id)
-            ->with('organization:id,name,logo,description')
-            ->select('organization_id', 'role')
-            ->get();
+        $user = $request->user();
 
-        return inertia('Organization/Dashboard/Organization/Index', [
+        $organizations = $user->activeOrganizations()
+            ->withCount('hackathons')
+            ->get(['organizations.id', 'organizations.name', 'organizations.slug', 'organizations.logo', 'organizations.type', 'organizations.description'])
+            ->map(function ($org) {
+                return [
+                    'id' => $org->id,
+                    'name' => $org->name,
+                    'slug' => $org->slug,
+                    'logo' => $org->logo,
+                    'type' => $org->type,
+                    'description' => $org->description,
+                    'role' => $org->pivot->role,
+                    'hackathons_count' => $org->hackathons_count,
+                ];
+            });
+
+        return Inertia::render('Organization/Dashboard/Organization/Index', [
             'organizations' => $organizations,
         ]);
     }
 
-    public function store(Request $request)
+    /**
+     * Cria uma nova organização vinculada ao usuário autenticado.
+     */
+    public function store(Request $request, CreateOrganizationAction $createOrgAction): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:organizations,email',
-            'password' => 'required|min:6',
-            'website' => 'nullable|url',
-            'description' => 'nullable|string|max:500',
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255', 'unique:organizations,email'],
+            'type' => ['nullable', 'string', 'max:100'],
+            'website' => ['nullable', 'url', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'logo' => ['nullable'],
         ]);
 
-        $data = [
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'slug' => Str::slug($validated['name']),
-            'password' => bcrypt($validated['password']),
-            'website' => $validated['website'] ?? null,
-            'description' => $validated['description'] ?? null,
-            'owner_id' => $request->user()->id,
-        ];
+        $organization = $createOrgAction->execute($request->user(), $validated, $request);
 
-        $org = Organization::create($data);
-        OrganizationUser::create([
-            "organization_id" => $org->id,
-            "user_id" => $request->user()->id,
-            "role" => "admin",
-        ]);
-
-        return redirect()->back()->with('success', 'Solicitação de organização criada com sucesso. Aguarde a aprovação.');
+        return redirect()->route('organization.dashboard')
+            ->with('success', "Organização '{$organization->name}' criada com sucesso!");
     }
 }

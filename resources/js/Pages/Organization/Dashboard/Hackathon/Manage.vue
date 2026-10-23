@@ -1649,7 +1649,7 @@ const deleteCriterion = (critId) => {
                                     <div class="text-muted small">
                                         <font-awesome-icon :icon="['fas', 'calendar-days']" class="me-1 text-primary" />
                                         {{ new Date(stage.start_date).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) }}
-                                        &rarr;
+                            
                                         {{ new Date(stage.end_date).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) }}
                                     </div>
                                     <p v-if="stage.description" class="text-secondary small mb-0 mt-1">

@@ -10,7 +10,7 @@ import { Head, Link } from '@inertiajs/vue3';
     <div class="d-flex flex-column justify-content-center align-items-center pt-5">
         <div class="container select-login-container">
             <div class="text-center mb-5">
-                <Link href="#" class="text-decoration-none">
+                <Link :href="route('home')" class="text-decoration-none">
                     <span class="fs-2 fw-bold text-dark">Motirõ</span>
                 </Link>
                 <h1 class="h3 fw-bold text-dark mt-2 mb-1">Como você deseja acessar a plataforma?</h1>
@@ -34,7 +34,7 @@ import { Head, Link } from '@inertiajs/vue3';
 
                         <div class="mt-4 pt-3 border-top">
                             <Link
-                                href="#"
+                                :href="route('participant.login')"
                                 class="btn btn-warning w-100 fw-bold d-flex align-items-center justify-content-center gap-2 py-2 mb-2 shadow-sm text-dark"
                             >
                                 <span>Acessar como Participante</span>
@@ -43,7 +43,7 @@ import { Head, Link } from '@inertiajs/vue3';
 
                             <div class="text-center">
                                 <Link
-                                    href="#"
+                                    :href="route('participant.register')"
                                     class="text-decoration-none small text-muted"
                                 >
                                     Não tem conta? <span class="text-dark fw-semibold">Cadastre-se</span>
@@ -68,19 +68,13 @@ import { Head, Link } from '@inertiajs/vue3';
                         </div>
 
                         <div class="mt-4 pt-3 border-top">
-                            <Link
-                                href="#"
-                                class="btn btn-primary w-100 fw-bold d-flex align-items-center justify-content-center gap-2 py-2 mb-2 shadow-sm text-white"
-                            >
+                            <Link :href="route('organization.login')" class="btn btn-primary w-100 fw-bold d-flex align-items-center justify-content-center gap-2 py-2 mb-2 shadow-sm text-white">
                                 <span>Acessar como Organização</span>
                                 <font-awesome-icon :icon="['fas', 'arrow-right']" class="small" />
                             </Link>
 
                             <div class="text-center">
-                                <Link
-                                    href="#"
-                                    class="text-decoration-none small text-muted"
-                                >
+                                <Link :href="route('organization.register')" class="text-decoration-none small text-muted">
                                     Nova instituição? <span class="text-primary fw-semibold">Cadastrar organização</span>
                                 </Link>
                             </div>

@@ -73,7 +73,7 @@ const handleDeclineInvite = (id) => {
                     <span class="text-muted small">Eventos abertos para inscrição que você pode participar</span>
                 </div>
                 <Link :href="route('participant.hackathons')" class="text-primary text-decoration-none small fw-semibold">
-                    Ver todos &rarr;
+                    Ver todos
                 </Link>
             </div>
 
