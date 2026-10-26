@@ -108,7 +108,7 @@ const executeCancel = () => {
                 Descubra competições incríveis, participe de desafios com prêmios e conecte-se com desenvolvedores e organizações inovadoras.
             </p>
             <div>
-                <Link :href="route('participant.hackathons')" class="btn btn-primary d-inline-flex align-items-center gap-2">
+                <Link :href="route('participant.hackathon.index')" class="btn btn-primary d-inline-flex align-items-center gap-2">
                     <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
                     <span>Ver Hackathons Disponíveis</span>
                 </Link>

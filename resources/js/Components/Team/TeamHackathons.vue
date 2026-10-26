@@ -61,7 +61,7 @@ const submitCreateTeamForHackathon = () => {
             <h5 class="fw-bold text-dark">Nenhum hackathon inscrito</h5>
             <p class="text-secondary small mb-4">Você ainda não realizou inscrições em hackathons para formar equipes.</p>
             <div>
-                <Link :href="route('participant.hackathons')" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                <Link :href="route('participant.hackathon.index')" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
                     Explorar Hackathons Abertos
                 </Link>
             </div>

@@ -51,7 +51,7 @@ const handleDeclineInvite = (id) => {
             </div>
 
             <div class="d-flex gap-2">
-                <Link :href="route('participant.hackathons')" class="btn btn-outline-primary d-flex align-items-center gap-2">
+                <Link :href="route('participant.hackathon.index')" class="btn btn-outline-primary d-flex align-items-center gap-2">
                     <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
                     <span>Explorar Hackathons</span>
                 </Link>
@@ -72,7 +72,7 @@ const handleDeclineInvite = (id) => {
                     <h2 class="h5 fw-bold mb-0 text-dark">Hackathons Disponíveis</h2>
                     <span class="text-muted small">Eventos abertos para inscrição que você pode participar</span>
                 </div>
-                <Link :href="route('participant.hackathons')" class="text-primary text-decoration-none small fw-semibold">
+                <Link :href="route('participant.hackathon.index')" class="text-primary text-decoration-none small fw-semibold">
                     Ver todos
                 </Link>
             </div>

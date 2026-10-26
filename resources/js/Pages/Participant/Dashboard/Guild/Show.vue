@@ -562,7 +562,7 @@ const formatDate = (isoString) => {
                             <p class="small text-secondary mb-3">
                                 Esta guild ainda não possui registros de participações em hackathons. Os membros podem formar equipes para disputar desafios na plataforma.
                             </p>
-                            <Link :href="route('participant.hackathons')" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                            <Link :href="route('participant.hackathon.index')" class="btn btn-outline-primary btn-sm rounded-pill px-3">
                                 Explorar Hackathons
                             </Link>
                         </div>

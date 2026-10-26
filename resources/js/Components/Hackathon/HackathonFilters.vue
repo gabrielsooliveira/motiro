@@ -32,7 +32,7 @@ function applyFilters() {
     if (myStatus.value) params.my_status = myStatus.value;
     if (sort.value && sort.value !== "latest") params.sort = sort.value;
 
-    router.get(route("participant.hackathons"), params, {
+    router.get(route("participant.hackathon.index"), params, {
         preserveState: true,
         preserveScroll: true,
         replace: true,

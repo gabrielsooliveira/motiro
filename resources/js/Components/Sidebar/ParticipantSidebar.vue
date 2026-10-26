@@ -1,15 +1,7 @@
 <script setup>
-import { computed } from "vue";
-import { Link, usePage } from "@inertiajs/vue3";
+import { Link } from "@inertiajs/vue3";
 import SidebarBase from "@/js/Components/Sidebar/SidebarBase.vue";
 
-const page = usePage();
-const user = computed(() => page.props.user || page.props.auth?.user);
-const context = computed(() => page.props.context || {});
-const hasOrgProfile = computed(() => {
-    return !!user.value?.has_organization_profile || 
-        (context.value.user_organizations && context.value.user_organizations.length > 0);
-});
 </script>
 
 <template>
@@ -55,7 +47,7 @@ const hasOrgProfile = computed(() => {
                             <Link
                                 class="nav-link-custom"
                                 :href="route('participant.hackathon.index')"
-                                :class="{ active: $page.url.startsWith('/hackathons') }"
+                                :class="{ active: $page.url.startsWith('/participant/hackathons') }"
                                 @click="closeMenu"
                             >
                                 <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="nav-icon" />

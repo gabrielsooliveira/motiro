@@ -125,7 +125,7 @@ const submitGroup = () => {
                 Para competir em equipe, inscreva-se em um hackathon que permita formação de grupos e crie ou solicite entrada no grupo da sua equipe.
             </p>
             <div class="d-flex justify-content-center gap-2">
-                <Link :href="route('participant.hackathons')" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+                <Link :href="route('participant.hackathon.index')" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
                     <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
                     <span>Explorar Hackathons Abertos</span>
                 </Link>

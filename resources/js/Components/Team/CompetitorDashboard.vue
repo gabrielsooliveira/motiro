@@ -225,7 +225,7 @@ const getStageStatus = (stage) => {
                 <Link
                     class="nav-link"
                     :class="{ active: $page.url.startsWith('/participante/meus-hackathons') || $page.url.startsWith('/dashboard/my-hackathons') }"
-                    :href="route().has('participant.my_hackathons') ? route('participant.my_hackathons') : route('participant.hackathons')"
+                    :href="route().has('participant.my_hackathons') ? route('participant.my_hackathons') : route('participant.hackathon.index')"
                 >
                     <font-awesome-icon :icon="['fas', 'trophy']" class="me-1" />
                     Meus Hackathons
@@ -394,7 +394,7 @@ const getStageStatus = (stage) => {
                             Encontre um Hackathon disponível, inscreva-se individualmente ou monte sua equipe com outros talentos para começar a competir.
                         </p>
                         <div class="d-flex justify-content-center gap-2">
-                            <Link :href="route('participant.hackathons')" class="btn btn-outline-primary btn-sm fw-semibold">
+                            <Link :href="route('participant.hackathon.index')" class="btn btn-outline-primary btn-sm fw-semibold">
                                 Explorar Hackathons
                             </Link>
                             <button class="btn btn-primary btn-sm fw-semibold" @click="$emit('create-team')">
@@ -446,7 +446,7 @@ const getStageStatus = (stage) => {
                             </div>
                             <div v-else class="text-muted small mt-1">
                                 Esta equipe ainda não está inscrita em nenhum hackathon ativo.
-                                <Link :href="route('participant.hackathons')" class="d-block mt-1 text-primary fw-semibold">
+                                <Link :href="route('participant.hackathon.index')" class="d-block mt-1 text-primary fw-semibold">
                                     Encontrar um Hackathon para Inscrever 
                                 </Link>
                             </div>
@@ -499,7 +499,7 @@ const getStageStatus = (stage) => {
                             Explore as competições abertas, verifique as datas e inscreva sua equipe para desbloquear a timeline de etapas.
                         </p>
                         <div>
-                            <Link :href="route('participant.hackathons')" class="btn btn-primary btn-sm fw-semibold">
+                            <Link :href="route('participant.hackathon.index')" class="btn btn-primary btn-sm fw-semibold">
                                 Explorar Hackathons Abertos
                             </Link>
                         </div>
@@ -728,7 +728,7 @@ const getStageStatus = (stage) => {
                     <p class="small text-secondary mb-3">
                         Ao se inscrever em um hackathon que exija ou permita equipes, forme um grupo diretamente ou a partir de uma de suas guilds!
                     </p>
-                    <Link :href="route('participant.hackathons')" class="btn btn-outline-primary btn-sm">
+                    <Link :href="route('participant.hackathon.index')" class="btn btn-outline-primary btn-sm">
                         Explorar Hackathons
                     </Link>
                 </div>
@@ -785,7 +785,7 @@ const getStageStatus = (stage) => {
                             Acompanhe seu status de inscrição, modalidade de participação e elegibilidade em cada competição.
                         </p>
                     </div>
-                    <Link :href="route('participant.hackathons')" class="btn btn-outline-primary btn-sm">
+                    <Link :href="route('participant.hackathon.index')" class="btn btn-outline-primary btn-sm">
                         Buscar Novos Hackathons
                     </Link>
                 </div>
@@ -794,7 +794,7 @@ const getStageStatus = (stage) => {
                     <font-awesome-icon :icon="['fas', 'trophy']" class="fs-1 mb-3 opacity-50" />
                     <h5 class="fw-bold text-dark">Você ainda não realizou nenhuma inscrição em hackathons.</h5>
                     <p class="small text-secondary mb-3">Confira o catálogo de eventos abertos e participe!</p>
-                    <Link :href="route('participant.hackathons')" class="btn btn-primary btn-sm">
+                    <Link :href="route('participant.hackathon.index')" class="btn btn-primary btn-sm">
                         Explorar Hackathons Abertos
                     </Link>
                 </div>

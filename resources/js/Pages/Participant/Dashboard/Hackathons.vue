@@ -146,7 +146,7 @@ function submitRegistration() {
                 Não localizamos nenhum evento correspondente aos filtros selecionados. Tente ajustar os termos de busca ou remover as restrições de filtro.
             </p>
             <div>
-                <Link :href="route('participant.hackathons')" class="btn btn-primary">
+                <Link :href="route('participant.hackathon.index')" class="btn btn-primary">
                     <font-awesome-icon :icon="['fas', 'rotate-left']" class="me-1" />
                     Redefinir filtros
                 </Link>

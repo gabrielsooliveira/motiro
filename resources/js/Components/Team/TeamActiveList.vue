@@ -42,7 +42,7 @@ const resolveHackathon = (team) => {
                         <span>Formar Nova Equipe</span>
                     </button>
                     <Link
-                        :href="route('participant.hackathons')"
+                        :href="route('participant.hackathon.index')"
                         class="btn btn-outline-secondary rounded-pill px-4 py-2"
                     >
                         <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="me-2" />
