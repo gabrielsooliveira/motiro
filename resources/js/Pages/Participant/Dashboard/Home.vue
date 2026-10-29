@@ -10,7 +10,7 @@ const { user } = page.props;
         <title>Área do Participante | Início</title>
     </Head>
 
-    <section class="pt-2">      
+    <section>      
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-2 border-bottom">
             <div>
                 <h1 class="h2 fw-bold text-capitalize text-dark mb-0">Olá, {{ user.name }}</h1>

@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link, usePage } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
+import DashboardHeader from "@/js/Components/Header/DashboardHeader.vue";
 import TeamActiveList from "@/js/Components/Team/TeamActiveList.vue";
 import TeamMembers from "@/js/Components/Team/TeamMembers.vue";
 import TeamInvites from "@/js/Components/Team/TeamInvites.vue";
@@ -94,20 +95,12 @@ const totalMembersCount = computed(() => {
 
     <div class="py-2">
         <!-- Cabeçalho Principal -->
-        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4 pb-2 border-bottom">
-            <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <h1 class="h2 fw-bold text-dark mb-0">Equipes de Hackathon</h1>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 small">
-                        Competição em Eventos
-                    </span>
-                </div>
-                <p class="text-muted small mb-0">
-                    Acompanhe suas equipes de disputa em hackathons, gerencie integrantes e submeta projetos para avaliação dos jurados.
-                </p>
-            </div>
-
-            <div class="d-flex gap-2">
+        <DashboardHeader
+            title="Equipes de Hackathon"
+            description="Acompanhe suas equipes de disputa em hackathons, gerencie integrantes e submeta projetos para avaliação dos jurados."
+            badge="Competição em Eventos"
+        >
+            <template #actions>
                 <Link
                     :href="route('participant.guilds.index')"
                     class="btn btn-outline-secondary rounded-pill px-3 d-inline-flex align-items-center gap-2 shadow-sm"
@@ -123,8 +116,8 @@ const totalMembersCount = computed(() => {
                     <font-awesome-icon :icon="['fas', 'plus']" />
                     <span>Formar Equipe</span>
                 </button>
-            </div>
-        </div>
+            </template>
+        </DashboardHeader>
 
         <!-- Cards de Métricas de Equipes -->
         <div class="row g-3 mb-4">

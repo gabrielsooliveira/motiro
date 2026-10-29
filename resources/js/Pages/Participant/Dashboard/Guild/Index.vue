@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link, usePage, router } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
+import DashboardHeader from "@/js/Components/Header/DashboardHeader.vue";
 import GuildsList from "@/js/Pages/Participant/Dashboard/Guild/Partials/GuildsList.vue";
 import GuildInvites from "@/js/Pages/Participant/Dashboard/Guild/Partials/GuildInvites.vue";
 import GuildMembers from "@/js/Pages/Participant/Dashboard/Guild/Partials/GuildMembers.vue";
@@ -86,27 +87,22 @@ const selectTab = (tab) => {
         <title>Minhas Guilds</title>
     </Head>
 
-    <div class="py-2">
-        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4 pb-2 border-bottom">
-            <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <h1 class="h2 fw-bold text-dark mb-0">Minhas Guilds</h1>
-                </div>
-                <p class="text-muted small mb-0">Organize suas guilds de longo prazo no Motirõ, convide membros por e-mail e dispute hackathons com seus parceiros.</p>
-            </div>
+    <DashboardHeader
+        title="Minhas Guilds"
+        description="Organize suas guilds de longo prazo no Motirõ, convide membros por e-mail e dispute hackathons com seus parceiros."
+    >
+        <template #actions>
+            <Link :href="route('participant.dashboard')" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-3 rounded-pill">
+                <font-awesome-icon :icon="['fas', 'arrow-left']" />
+                <span>Voltar ao Painel</span>
+            </Link>
 
-            <div class="d-flex gap-2 align-items-center flex-wrap">
-                <Link :href="route('participant.dashboard')" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-3 rounded-pill">
-                    <font-awesome-icon :icon="['fas', 'arrow-left']" />
-                    <span>Voltar ao Painel</span>
-                </Link>
-
-                <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-sm px-4 rounded-pill" @click="showCreateGuildModal = true">
-                    <font-awesome-icon :icon="['fas', 'plus']" />
-                    <span class="fw-semibold">Nova Guild</span>
-                </button>
-            </div>
-        </div>
+            <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-sm px-4 rounded-pill" @click="showCreateGuildModal = true">
+                <font-awesome-icon :icon="['fas', 'plus']" />
+                <span class="fw-semibold">Nova Guild</span>
+            </button>
+        </template>
+    </DashboardHeader>
 
         <div v-if="showInfoCard" class="alert alert-info border-0 shadow-sm d-flex align-items-start justify-content-between gap-3 p-3 mb-4 rounded-4">
             <div class="d-flex align-items-start gap-3">
@@ -196,5 +192,4 @@ const selectTab = (tab) => {
             @close="showCreateGuildModal = false"
             @submitted="showCreateGuildModal = false"
         />
-    </div>
 </template>

@@ -84,193 +84,146 @@ function submitRegistration() {
 </script>
 
 <template>
+
     <Head title="Explorar Hackathons" />
 
-    <div class="participant-discovery-page py-2">
-        
-        <header class="discovery-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-            <div>
-                <h1 class="discovery-header__title">
-                    Explorar Hackathons
-                </h1>
-                <p class="discovery-header__subtitle">
-                    Descubra desafios, forme equipes e construa soluções inovadoras na plataforma Motirõ.
-                </p>
-            </div>
 
-            <div class="d-flex align-items-center gap-2">
-                <Link
-                    :href="route('participant.dashboard')"
-                    class="btn btn-outline-secondary btn-sm"
-                >
-                    <font-awesome-icon :icon="['fas', 'arrow-left']" class="me-1" />
-                    Meu Painel
-                </Link>
-            </div>
-        </header>
-
-        
-        <HackathonFilters
-            :filters="filters"
-            :total-count="hackathons.total"
-        />
-
-        
-        <section v-if="hackathons.data && hackathons.data.length > 0" aria-label="Lista de Hackathons">
-            <div class="row g-4">
-                <div
-                    v-for="hackathon in hackathons.data"
-                    :key="hackathon.id"
-                    class="col-12 col-md-6 col-lg-4"
-                >
-                    <HackathonDiscoveryCard
-                        :hackathon="hackathon"
-                        @register="openRegisterModal"
-                    />
-                </div>
-            </div>
-
-            
-            <div class="mt-5 d-flex justify-content-center">
-                <Pagination :links="hackathons.links" />
-            </div>
-        </section>
-
-        
-        <section v-else class="empty-state py-5 text-center bg-surface border rounded-4 p-5" aria-label="Nenhum hackathon encontrado">
-            <div class="empty-state__icon-wrapper mb-3">
-                <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="display-4 text-muted" />
-            </div>
-            <h2 class="h4 fw-bold text-dark mb-2">Nenhum hackathon encontrado</h2>
-            <p class="text-secondary max-w-md mx-auto mb-4">
-                Não localizamos nenhum evento correspondente aos filtros selecionados. Tente ajustar os termos de busca ou remover as restrições de filtro.
+    <header class="discovery-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h1 class="discovery-header__title">
+                Explorar Hackathons
+            </h1>
+            <p class="discovery-header__subtitle">
+                Descubra desafios, forme equipes e construa soluções inovadoras na plataforma Motirõ.
             </p>
-            <div>
-                <Link :href="route('participant.hackathon.index')" class="btn btn-primary">
-                    <font-awesome-icon :icon="['fas', 'rotate-left']" class="me-1" />
-                    Redefinir filtros
-                </Link>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <Link :href="route('participant.dashboard')" class="btn btn-outline-secondary btn-sm">
+                <font-awesome-icon :icon="['fas', 'arrow-left']" class="me-1" />
+                Meu Painel
+            </Link>
+        </div>
+    </header>
+
+
+    <HackathonFilters :filters="filters" :total-count="hackathons.total" />
+
+
+    <section v-if="hackathons.data && hackathons.data.length > 0" aria-label="Lista de Hackathons">
+        <div class="row g-4">
+            <div v-for="hackathon in hackathons.data" :key="hackathon.id" class="col-12 col-md-6 col-lg-4">
+                <HackathonDiscoveryCard :hackathon="hackathon" @register="openRegisterModal" />
             </div>
-        </section>
+        </div>
 
-        
-        <!-- Modal de Inscrição no Hackathon -->
-        <ModalDialog
-            :is-visible="Boolean(showRegisterModal && selectedHackathon)"
-            title="Inscrição no Hackathon"
-            size="md"
-            @close="closeRegisterModal"
-        >
-            <form v-if="selectedHackathon" @submit.prevent="submitRegistration">
-                <div class="mb-3 text-muted small">
-                    Evento: <strong class="text-dark">{{ selectedHackathon.title }}</strong>
-                </div>
 
-                <div class="mb-4">
-                    <label class="form-label fw-semibold text-dark">
-                        Como deseja participar?
-                    </label>
+        <div class="mt-5 d-flex justify-content-center">
+            <Pagination :links="hackathons.links" />
+        </div>
+    </section>
 
-                    <div class="d-flex flex-column gap-2">
-                        <div v-if="allowsIndividual" class="form-check p-3 border rounded-3">
-                            <input
-                                id="regTypeIndividual"
-                                v-model="registrationForm.participation_type"
-                                class="form-check-input"
-                                type="radio"
-                                value="individual"
-                            />
-                            <label class="form-check-label w-100 cursor-pointer" for="regTypeIndividual">
-                                <div class="fw-semibold text-dark">Participação Individual</div>
-                                <div class="small text-muted">Você participará do evento de forma autônoma.</div>
-                            </label>
-                        </div>
 
-                        <div v-if="allowsTeam" class="form-check p-3 border rounded-3">
-                            <input
-                                id="regTypeTeam"
-                                v-model="registrationForm.participation_type"
-                                class="form-check-input"
-                                type="radio"
-                                value="team"
-                            />
-                            <label class="form-check-label w-100 cursor-pointer" for="regTypeTeam">
-                                <div class="fw-semibold text-dark">Participação por Equipe</div>
-                                <div class="small text-muted">Inscreva uma de suas equipes cadastradas no evento.</div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
+    <section v-else class="empty-state py-5 text-center bg-surface border rounded-4 p-5"
+        aria-label="Nenhum hackathon encontrado">
+        <div class="empty-state__icon-wrapper mb-3">
+            <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="display-4 text-muted" />
+        </div>
+        <h2 class="h4 fw-bold text-dark mb-2">Nenhum hackathon encontrado</h2>
+        <p class="text-secondary max-w-md mx-auto mb-4">
+            Não localizamos nenhum evento correspondente aos filtros selecionados. Tente ajustar os termos de busca ou
+            remover as restrições de filtro.
+        </p>
+        <div>
+            <Link :href="route('participant.hackathon.index')" class="btn btn-primary">
+                <font-awesome-icon :icon="['fas', 'rotate-left']" class="me-1" />
+                Redefinir filtros
+            </Link>
+        </div>
+    </section>
 
-                <div v-if="registrationForm.participation_type === 'team'" class="mb-3">
-                    <label class="form-label fw-semibold text-dark" for="teamSelector">
-                        Selecione a sua equipe
-                    </label>
+    <!-- Modal de Inscrição no Hackathon -->
+    <ModalDialog :is-visible="Boolean(showRegisterModal && selectedHackathon)" title="Inscrição no Hackathon" size="md"
+        @close="closeRegisterModal">
+        <form v-if="selectedHackathon" @submit.prevent="submitRegistration">
+            <div class="mb-3 text-muted small">
+                Evento: <strong class="text-dark">{{ selectedHackathon.title }}</strong>
+            </div>
 
-                    <div v-if="userTeams && userTeams.length > 0">
-                        <select
-                            id="teamSelector"
-                            v-model="registrationForm.team_id"
-                            class="form-select"
-                            required
-                        >
-                            <option value="" disabled>Escolha uma equipe...</option>
-                            <option
-                                v-for="team in userTeams"
-                                :key="team.id"
-                                :value="team.id"
-                            >
-                                {{ team.name }}
-                            </option>
-                        </select>
+            <div class="mb-4">
+                <label class="form-label fw-semibold text-dark">
+                    Como deseja participar?
+                </label>
+
+                <div class="d-flex flex-column gap-2">
+                    <div v-if="allowsIndividual" class="form-check p-3 border rounded-3">
+                        <input id="regTypeIndividual" v-model="registrationForm.participation_type"
+                            class="form-check-input" type="radio" value="individual" />
+                        <label class="form-check-label w-100 cursor-pointer" for="regTypeIndividual">
+                            <div class="fw-semibold text-dark">Participação Individual</div>
+                            <div class="small text-muted">Você participará do evento de forma autônoma.</div>
+                        </label>
                     </div>
 
-                    <div v-else class="alert alert-warning small mb-0">
-                        <font-awesome-icon :icon="['fas', 'triangle-exclamation']" class="me-1" />
-                        Você ainda não possui equipes cadastradas.
-                        <span class="d-block mt-1">
-                            Crie uma equipe antes de realizar a inscrição por equipe.
-                        </span>
-                    </div>
-
-                    <div v-if="registrationForm.errors.team_id" class="text-danger small mt-1">
-                        {{ registrationForm.errors.team_id }}
+                    <div v-if="allowsTeam" class="form-check p-3 border rounded-3">
+                        <input id="regTypeTeam" v-model="registrationForm.participation_type" class="form-check-input"
+                            type="radio" value="team" />
+                        <label class="form-check-label w-100 cursor-pointer" for="regTypeTeam">
+                            <div class="fw-semibold text-dark">Participação por Equipe</div>
+                            <div class="small text-muted">Inscreva uma de suas equipes cadastradas no evento.</div>
+                        </label>
                     </div>
                 </div>
+            </div>
 
-                <div v-if="registrationForm.errors.hackathon_id" class="text-danger small mt-1">
-                    {{ registrationForm.errors.hackathon_id }}
+            <div v-if="registrationForm.participation_type === 'team'" class="mb-3">
+                <label class="form-label fw-semibold text-dark" for="teamSelector">
+                    Selecione a sua equipe
+                </label>
+
+                <div v-if="userTeams && userTeams.length > 0">
+                    <select id="teamSelector" v-model="registrationForm.team_id" class="form-select" required>
+                        <option value="" disabled>Escolha uma equipe...</option>
+                        <option v-for="team in userTeams" :key="team.id" :value="team.id">
+                            {{ team.name }}
+                        </option>
+                    </select>
                 </div>
 
-                <div v-if="registrationForm.errors.registration" class="alert alert-danger py-2 small mt-2">
-                    <font-awesome-icon :icon="['fas', 'circle-exclamation']" class="me-1" />
-                    {{ registrationForm.errors.registration }}
+                <div v-else class="alert alert-warning small mb-0">
+                    <font-awesome-icon :icon="['fas', 'triangle-exclamation']" class="me-1" />
+                    Você ainda não possui equipes cadastradas.
+                    <span class="d-block mt-1">
+                        Crie uma equipe antes de realizar a inscrição por equipe.
+                    </span>
                 </div>
 
-                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
-                    <button
-                        type="button"
-                        class="btn btn-outline-secondary"
-                        @click="closeRegisterModal"
-                    >
-                        Cancelar
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                        :disabled="registrationForm.processing || (registrationForm.participation_type === 'team' && !registrationForm.team_id)"
-                    >
-                        <span
-                            v-if="registrationForm.processing"
-                            class="spinner-border spinner-border-sm me-1"
-                            role="status"
-                            aria-hidden="true"
-                        ></span>
-                        Confirmar Inscrição
-                    </button>
+                <div v-if="registrationForm.errors.team_id" class="text-danger small mt-1">
+                    {{ registrationForm.errors.team_id }}
                 </div>
-            </form>
-        </ModalDialog>
-    </div>
+            </div>
+
+            <div v-if="registrationForm.errors.hackathon_id" class="text-danger small mt-1">
+                {{ registrationForm.errors.hackathon_id }}
+            </div>
+
+            <div v-if="registrationForm.errors.registration" class="alert alert-danger py-2 small mt-2">
+                <font-awesome-icon :icon="['fas', 'circle-exclamation']" class="me-1" />
+                {{ registrationForm.errors.registration }}
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                <button type="button" class="btn btn-outline-secondary" @click="closeRegisterModal">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn btn-primary"
+                    :disabled="registrationForm.processing || (registrationForm.participation_type === 'team' && !registrationForm.team_id)">
+                    <span v-if="registrationForm.processing" class="spinner-border spinner-border-sm me-1" role="status"
+                        aria-hidden="true"></span>
+                    Confirmar Inscrição
+                </button>
+            </div>
+        </form>
+    </ModalDialog>
 </template>

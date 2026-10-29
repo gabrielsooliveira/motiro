@@ -8,6 +8,7 @@ import { ZiggyVue } from 'ziggy';
 import LayoutDashboard from '@/js/Layouts/Dashboard.vue';
 import LayoutAuth from '@/js/Layouts/Auth.vue';
 import LayoutSite from '@/js/Layouts/Site.vue';
+import DashboardHeader from '@/js/Components/Header/DashboardHeader.vue';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -45,6 +46,7 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         createApp({ render: () => h(App, props) })
             .component('font-awesome-icon', FontAwesomeIcon)
+            .component('DashboardHeader', DashboardHeader)
             .use(ZiggyVue)
             .use(plugin)
             .mount(el)

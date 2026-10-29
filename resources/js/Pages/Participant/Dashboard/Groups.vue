@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link, usePage, useForm } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
+import DashboardHeader from "@/js/Components/Header/DashboardHeader.vue";
 import ModalDialog from "@/js/Components/Modals/ModalDialog.vue";
 
 const props = defineProps({
